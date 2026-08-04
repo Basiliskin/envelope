@@ -1,0 +1,45 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/protect-secrets.sh",
+            "args": [],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(**/*.ts)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/lint-changed.sh",
+            "args": [],
+            "timeout": 30,
+            "statusMessage": "prettier + eslint"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/stop-verify.sh",
+            "args": [],
+            "timeout": 180,
+            "statusMessage": "tsc + тесты + страж покрытия"
+          }
+        ]
+      }
+    ]
+  }
+}

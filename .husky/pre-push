@@ -1,0 +1,2 @@
+npx tsc --noEmit || exit 1
+npm run test:unit || exit 1

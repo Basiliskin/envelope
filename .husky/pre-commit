@@ -1,0 +1,3 @@
+npx --no-install lint-staged
+node .claude/hooks/check-tests.mjs --staged || exit 1
+[ -x ./scripts/block-dead-code.sh ] && ./scripts/block-dead-code.sh || echo pre-commit: block-dead-code.sh не найден, пропускаю

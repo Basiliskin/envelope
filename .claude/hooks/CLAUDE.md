@@ -4,17 +4,12 @@
 **Mode:** Flat
 
 ## Overview
-Contains 2 source file(s) in `.claude/hooks`.
+Contains 1 source file(s) in `scripts/ts-pipeline/install/hooks`.
 
 ## File Map
 
 ### check-dead-exports.mjs
 - **Purpose:** Module with no detected exports.
-- **Relations:** Uses `node:child_process`, `node:fs`, `node:module`, `node:path`, `typescript`
-
-### check-tests.mjs
-- **Purpose:** Module with no detected exports.
-- **Relations:** Uses `node:child_process`, `node:fs`, `node:module`, `node:path`, `typescript`
 
 ## Notes / Patterns
 
