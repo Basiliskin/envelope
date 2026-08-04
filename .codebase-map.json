@@ -1,0 +1,750 @@
+{
+  "folders": [
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "eslint.config.mjs",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 1 source file(s).",
+      "path": ".",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "check-dead-exports.mjs",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "check-tests.mjs",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 2 source file(s).",
+      "path": ".claude/hooks",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "check-tests.mjs",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 1 source file(s).",
+      "path": ".claude/skills/scripts",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [
+            "createSpikeConfig",
+            "SpikeBuildOptions"
+          ],
+          "name": "build.ts",
+          "notes": null,
+          "purpose": "Provides createSpikeConfig function(s).",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [
+            "source",
+            "WorkerConstructor"
+          ],
+          "name": "vite-env.d.ts",
+          "notes": null,
+          "purpose": "Exports source, WorkerConstructor.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 2 source file(s).",
+      "path": "spikes/m0",
+      "subfolders": [
+        "argon2-worker",
+        "memory-probe",
+        "payload-roundtrip",
+        "scripts",
+        "singlefile-build"
+      ]
+    },
+    {
+      "files": [
+        {
+          "key_elements": [
+            "createSpikeConfig"
+          ],
+          "name": "vite.config.ts",
+          "notes": null,
+          "purpose": "Exports createSpikeConfig.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "spikes/m0/build",
+                "symbol": "createSpikeConfig"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 1 source file(s).",
+      "path": "spikes/m0/argon2-worker",
+      "subfolders": [
+        "src"
+      ]
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "argon2.worker.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "main.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 2 source file(s).",
+      "path": "spikes/m0/argon2-worker/src",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [
+            "createSpikeConfig"
+          ],
+          "name": "vite.config.ts",
+          "notes": null,
+          "purpose": "Exports createSpikeConfig.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "spikes/m0/build",
+                "symbol": "createSpikeConfig"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 1 source file(s).",
+      "path": "spikes/m0/memory-probe",
+      "subfolders": [
+        "src"
+      ]
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "main.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "memory.worker.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 2 source file(s).",
+      "path": "spikes/m0/memory-probe/src",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [
+            "createSpikeConfig"
+          ],
+          "name": "vite.config.ts",
+          "notes": null,
+          "purpose": "Exports createSpikeConfig.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "spikes/m0/build",
+                "symbol": "createSpikeConfig"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 1 source file(s).",
+      "path": "spikes/m0/payload-roundtrip",
+      "subfolders": [
+        "src"
+      ]
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "main.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "payload.worker.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 2 source file(s).",
+      "path": "spikes/m0/payload-roundtrip/src",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "browser-smoke.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "smoke.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 2 source file(s).",
+      "path": "spikes/m0/scripts",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [
+            "createSpikeConfig"
+          ],
+          "name": "vite.config.ts",
+          "notes": null,
+          "purpose": "Exports createSpikeConfig.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "spikes/m0/build",
+                "symbol": "createSpikeConfig"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 1 source file(s).",
+      "path": "spikes/m0/singlefile-build",
+      "subfolders": [
+        "src"
+      ]
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "combined.worker.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "main.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 2 source file(s).",
+      "path": "spikes/m0/singlefile-build/src",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [
+            "Argon2Params",
+            "Argon2ParamsValue",
+            "InvalidArgon2ParamsError"
+          ],
+          "name": "argon2-params.ts",
+          "notes": null,
+          "purpose": "Defines Argon2Params, InvalidArgon2ParamsError.",
+          "relations": {
+            "calls": [],
+            "extends": [
+              {
+                "ref": "Error",
+                "symbol": "InvalidArgon2ParamsError"
+              }
+            ],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "argon2-params.unit.test.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/argon2-params.js",
+                "symbol": null
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [
+            "DialDirection",
+            "InvalidSafeCombinationError",
+            "SafeCombination",
+            "SafeCombinationValue"
+          ],
+          "name": "safe-combination.ts",
+          "notes": null,
+          "purpose": "Defines InvalidSafeCombinationError, SafeCombination.",
+          "relations": {
+            "calls": [],
+            "extends": [
+              {
+                "ref": "Error",
+                "symbol": "InvalidSafeCombinationError"
+              }
+            ],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "safe-combination.unit.test.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/safe-combination.js",
+                "symbol": null
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [
+            "canonicalizeSecret",
+            "Password"
+          ],
+          "name": "secret.ts",
+          "notes": null,
+          "purpose": "Defines Password.",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/safe-combination.js",
+                "symbol": "SafeCombination"
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "secret.unit.test.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "src/domain/credential/secret.js",
+                "symbol": "canonicalizeSecret"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/safe-combination.js",
+                "symbol": "SafeCombination"
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 6 source file(s).",
+      "path": "src/domain/credential",
+      "subfolders": []
+    },
+    {
+      "files": [
+        {
+          "key_elements": [],
+          "name": "header-codec.int.test.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "src/infrastructure/crypto/header-codec.js",
+                "symbol": "decodeHeader"
+              },
+              {
+                "ref": "src/infrastructure/crypto/header-codec.js",
+                "symbol": "encodeHeader"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/argon2-params.js",
+                "symbol": "Argon2Params"
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [
+            "decodeHeader",
+            "encodeHeader",
+            "InvalidHeaderError",
+            "SPK1_DEFAULT_CHUNK_SIZE",
+            "SPK1_HEADER_SIZE",
+            "SPK1_NONCE_PREFIX_SIZE",
+            "SPK1_SALT_SIZE",
+            "SPK1_VERSION",
+            "Spk1Header"
+          ],
+          "name": "header-codec.ts",
+          "notes": null,
+          "purpose": "Defines InvalidHeaderError.",
+          "relations": {
+            "calls": [],
+            "extends": [
+              {
+                "ref": "Error",
+                "symbol": "InvalidHeaderError"
+              }
+            ],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/argon2-params.js",
+                "symbol": "Argon2Params"
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "kdf.int.test.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "src/infrastructure/crypto/kdf.js",
+                "symbol": "deriveContentKey"
+              },
+              {
+                "ref": "src/infrastructure/crypto/kdf.js",
+                "symbol": "deriveMasterKey"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/argon2-params.js",
+                "symbol": "Argon2Params"
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [
+            "Argon2DeriveInput",
+            "deriveContentKey",
+            "deriveMasterKey"
+          ],
+          "name": "kdf.ts",
+          "notes": null,
+          "purpose": "Provides deriveContentKey, deriveMasterKey function(s).",
+          "relations": {
+            "calls": [],
+            "extends": [],
+            "implements": [],
+            "imports": [
+              {
+                "ref": "src/domain/credential/argon2-params.js",
+                "symbol": "Argon2Params"
+              }
+            ],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [],
+          "name": "stream-aead.int.test.ts",
+          "notes": null,
+          "purpose": "Module with no detected exports.",
+          "relations": {
+            "calls": [
+              {
+                "ref": "src/infrastructure/crypto/stream-aead.js",
+                "symbol": "sealStream"
+              },
+              {
+                "ref": "src/infrastructure/crypto/stream-aead.js",
+                "symbol": "unsealStream"
+              }
+            ],
+            "extends": [],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        },
+        {
+          "key_elements": [
+            "AuthenticationError",
+            "SealedChunk",
+            "sealStream",
+            "SealStreamInput",
+            "unsealStream",
+            "UnsealStreamInput"
+          ],
+          "name": "stream-aead.ts",
+          "notes": null,
+          "purpose": "Defines AuthenticationError.",
+          "relations": {
+            "calls": [],
+            "extends": [
+              {
+                "ref": "Error",
+                "symbol": "AuthenticationError"
+              }
+            ],
+            "implements": [],
+            "imports": [],
+            "instantiates": [],
+            "used_by": []
+          }
+        }
+      ],
+      "last_updated": "2026-08-04",
+      "overview": "Contains 6 source file(s).",
+      "path": "src/infrastructure/crypto",
+      "subfolders": []
+    }
+  ],
+  "generated_at": "2026-08-04T15:54:09.331Z",
+  "project": {},
+  "root_path": "/Users/dimitrykatz/workspace/envelope",
+  "unresolved_refs": [],
+  "version": "1.0"
+}
