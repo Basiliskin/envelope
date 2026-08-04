@@ -30,4 +30,7 @@ and dial, lock the dial, click Open attachments, then download the file(s) and d
 # Surge
 
 1. npm install --global surge
-2.
+2. cd /Users/dimitrykatz/workspace/envelope/dist-composer/
+3. surge . publish
+   xenvelope.surge.sh
+4. https://xenvelope.surge.sh/composer.html
