@@ -71,6 +71,15 @@ export const SealProgressView = observer(
             {store.lastError}
           </p>
         ) : null}
+        {store.resultDownloadUrl !== null ? (
+          <a
+            data-testid="seal-download"
+            href={store.resultDownloadUrl}
+            download="envelope.html"
+          >
+            Download sealed envelope
+          </a>
+        ) : null}
         <button
           type="button"
           data-testid="seal-button"

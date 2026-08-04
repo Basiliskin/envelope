@@ -16,6 +16,9 @@ describe("composer SPA build", () => {
     if (existsSync("dist-composer")) {
       rmSync("dist-composer", { recursive: true, force: true });
     }
+    if (existsSync("dist-reader")) {
+      rmSync("dist-reader", { recursive: true, force: true });
+    }
   });
 
   it("emits a single self-contained HTML file", () => {

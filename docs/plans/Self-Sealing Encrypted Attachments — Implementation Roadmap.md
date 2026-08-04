@@ -202,9 +202,9 @@ Pure TS, no UI, no DOM.
 
 ### M6 — Packaging
 
-- [ ] Reader template imported as `?raw` at build time
-- [ ] Payload injected into `<script type="application/octet-stream">` — **not** a JS string literal, which invites escaping bugs
-- [ ] Build-time assertion: template contains exactly one payload placeholder
+- [x] Reader template imported as `?raw` at build time
+- [x] Payload injected into `<script type="application/octet-stream">` — **not** a JS string literal, which invites escaping bugs
+- [x] Build-time assertion: template contains exactly one payload placeholder
 
 ### M7 — Hardening
 

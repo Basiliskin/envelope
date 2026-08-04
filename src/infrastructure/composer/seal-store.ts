@@ -3,8 +3,12 @@ import type { ComposerSealDriver } from "./composer-seal-driver.js";
 import type { CredentialStore } from "./credential-store.js";
 import type { FileBasketStore } from "./file-basket-store.js";
 import type { Argon2ParamsValue } from "../../domain/credential/argon2-params.js";
-import { prepareSeal, type PrepareSealInput } from "../../application/composer/prepare-seal.js";
+import {
+  prepareSeal,
+  type PrepareSealInput,
+} from "../../application/composer/prepare-seal.js";
 import { analyzeSealBlockers } from "../../domain/composer/seal-blocker.js";
+import type { PackagingPort } from "../../application/ports/packaging-ports.js";
 
 export type SealPhase =
   | "idle"
@@ -34,17 +38,22 @@ export class SealStore {
   progress: SealProgress | null = null;
   lastError: string | null = null;
   resultBytes: Uint8Array | null = null;
+  resultDocument: string | null = null;
+  resultDownloadUrl: string | null = null;
 
   constructor(
     private readonly credential: CredentialStore,
     private readonly basket: FileBasketStore,
     private readonly driver: ComposerSealDriver,
+    private readonly packaging: PackagingPort,
   ) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
   get canStartSeal(): boolean {
-    return this.phase === "idle" || this.phase === "done" || this.phase === "error";
+    return (
+      this.phase === "idle" || this.phase === "done" || this.phase === "error"
+    );
   }
 
   get isSealing(): boolean {
@@ -76,10 +85,13 @@ export class SealStore {
 
   async start(): Promise<void> {
     if (!this.canStartSeal) return;
+    this.revokeDownloadUrl();
     runInAction(() => {
       this.phase = "calibrating";
       this.lastError = null;
       this.resultBytes = null;
+      this.resultDocument = null;
+      this.resultDownloadUrl = null;
       this.progress = { current: 0, total: 4 };
     });
     await yieldToObservers();
@@ -103,11 +115,16 @@ export class SealStore {
       runInAction(() => {
         this.phase = "emitting";
       });
-      await yieldToObservers();
+      const document = await this.packaging.emit(sealed);
+      const downloadUrl = URL.createObjectURL(
+        new Blob([document], { type: "text/html" }),
+      );
       runInAction(() => {
         this.phase = "done";
         this.progress = { current: 4, total: 4 };
         this.resultBytes = sealed;
+        this.resultDocument = document;
+        this.resultDownloadUrl = downloadUrl;
       });
     } catch (caught) {
       runInAction(() => {
@@ -119,15 +136,25 @@ export class SealStore {
   }
 
   reset(): void {
+    this.revokeDownloadUrl();
     runInAction(() => {
       this.phase = "idle";
       this.progress = null;
       this.lastError = null;
       this.resultBytes = null;
+      this.resultDocument = null;
+      this.resultDownloadUrl = null;
     });
   }
 
-  ensureSealReady(): { readonly ok: true } | { readonly ok: false; readonly error: string } {
+  private revokeDownloadUrl(): void {
+    if (this.resultDownloadUrl !== null) {
+      URL.revokeObjectURL(this.resultDownloadUrl);
+    }
+  }
+
+  ensureSealReady():
+    { readonly ok: true } | { readonly ok: false; readonly error: string } {
     const prepared = prepareSeal(this.buildInput());
     if (prepared.kind === "ready") {
       return { ok: true };

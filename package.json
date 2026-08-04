@@ -12,8 +12,9 @@
     "test:int": "vitest run --fileParallelism=false --passWithNoTests src/infrastructure/**/*.int.test.ts",
     "check:tests": "node .claude/hooks/check-tests.mjs --changed",
     "check:dead-code": "./scripts/block-dead-code.sh --all",
-    "build:composer": "vite build",
+    "build:composer": "npm run build:reader --silent && vite build",
     "build:reader": "vite build --config vite.reader.config.ts",
+    "build": "npm run build:composer",
     "prepare": "husky"
   },
   "keywords": [],

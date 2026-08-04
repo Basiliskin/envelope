@@ -4,14 +4,27 @@ import { ComposerSealDriver } from "./composer-seal-driver.js";
 import { CredentialStore } from "./credential-store.js";
 import { FileBasketStore } from "./file-basket-store.js";
 import { SealStore } from "./seal-store.js";
+import type { PackagingPort } from "../../application/ports/packaging-ports.js";
 
 const strongPassword = "correct horse battery staple extra";
 const [R1, R2, R3] = [37, 12, 88] as const;
+
+class FakePackaging implements PackagingPort {
+  emitted: readonly Uint8Array[] = [];
+
+  emit(payloadBytes: Uint8Array): Promise<string> {
+    this.emitted = [...this.emitted, payloadBytes];
+    return Promise.resolve(
+      `<html data-payload-bytes="${String(payloadBytes.byteLength)}"></html>`,
+    );
+  }
+}
 
 function armedStores(): {
   credential: CredentialStore;
   basket: FileBasketStore;
   driver: ComposerSealDriver;
+  packaging: FakePackaging;
 } {
   const credential = new CredentialStore();
   credential.setPassword(strongPassword);
@@ -30,6 +43,7 @@ function armedStores(): {
     credential,
     basket,
     driver: new ComposerSealDriver(),
+    packaging: new FakePackaging(),
   };
 }
 
@@ -39,10 +53,13 @@ describe("SealStore", () => {
       new CredentialStore(),
       new FileBasketStore(),
       new ComposerSealDriver(),
+      new FakePackaging(),
     );
     expect(seal.phase).toBe("idle");
     expect(seal.canStartSeal).toBe(true);
     expect(seal.isSealing).toBe(false);
+    expect(seal.resultDocument).toBeNull();
+    expect(seal.resultDownloadUrl).toBeNull();
   });
 
   it("ensureSealReady gates on blockers", () => {
@@ -50,6 +67,7 @@ describe("SealStore", () => {
       new CredentialStore(),
       new FileBasketStore(),
       new ComposerSealDriver(),
+      new FakePackaging(),
     );
     const result = seal.ensureSealReady();
     expect(result.ok).toBe(false);
@@ -59,15 +77,15 @@ describe("SealStore", () => {
   });
 
   it("ensureSealReady passes when the gates are open", () => {
-    const { credential, basket, driver } = armedStores();
-    const seal = new SealStore(credential, basket, driver);
+    const { credential, basket, driver, packaging } = armedStores();
+    const seal = new SealStore(credential, basket, driver, packaging);
     const result = seal.ensureSealReady();
     expect(result.ok).toBe(true);
   });
 
   it("start transitions through every sealing phase and resolves to done", async () => {
-    const { credential, basket, driver } = armedStores();
-    const seal = new SealStore(credential, basket, driver);
+    const { credential, basket, driver, packaging } = armedStores();
+    const seal = new SealStore(credential, basket, driver, packaging);
 
     const phases: string[] = [];
     const dispose = autorun(() => phases.push(seal.phase));
@@ -84,30 +102,44 @@ describe("SealStore", () => {
     expect(phases).toContain("emitting");
   });
 
+  it("packages the sealed bytes through the injected PackagingPort", async () => {
+    const { credential, basket, driver, packaging } = armedStores();
+    const seal = new SealStore(credential, basket, driver, packaging);
+    await seal.start();
+
+    expect(packaging.emitted).toHaveLength(1);
+    expect(packaging.emitted[0]).toBe(seal.resultBytes);
+    expect(seal.resultDocument).toContain("<html");
+    expect(seal.resultDownloadUrl).toMatch(/^blob:/);
+  });
+
   it("start records the first blocker message when the gates are not open", async () => {
     const seal = new SealStore(
       new CredentialStore(),
       new FileBasketStore(),
       new ComposerSealDriver(),
+      new FakePackaging(),
     );
     await seal.start();
     expect(seal.phase).toBe("error");
     expect(seal.lastError).toMatch(/password|file/i);
   });
 
-  it("reset returns the store to idle", async () => {
-    const { credential, basket, driver } = armedStores();
-    const seal = new SealStore(credential, basket, driver);
+  it("reset returns the store to idle and clears the packaged result", async () => {
+    const { credential, basket, driver, packaging } = armedStores();
+    const seal = new SealStore(credential, basket, driver, packaging);
     await seal.start();
     seal.reset();
     expect(seal.phase).toBe("idle");
     expect(seal.resultBytes).toBeNull();
+    expect(seal.resultDocument).toBeNull();
+    expect(seal.resultDownloadUrl).toBeNull();
     expect(seal.progress).toBeNull();
   });
 
   it("reactivity — progress observers see end-of-seal progress", async () => {
-    const { credential, basket, driver } = armedStores();
-    const seal = new SealStore(credential, basket, driver);
+    const { credential, basket, driver, packaging } = armedStores();
+    const seal = new SealStore(credential, basket, driver, packaging);
     const samples: number[] = [];
     const dispose = reaction(
       () => seal.progress?.current ?? -1,

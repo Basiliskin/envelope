@@ -2,9 +2,12 @@ import { createRoot } from "react-dom/client";
 import ReaderFactory from "./infrastructure/reader/reader-factory.js";
 import type { ReaderStore } from "./infrastructure/reader/reader-store.js";
 import { ReaderApp } from "./reader/reader-app.js";
+import { SEALED_PAYLOAD_ELEMENT_ID } from "./domain/packaging/package-template.js";
 
 export function readEmbeddedPackage(root: ParentNode = document): Uint8Array {
-  const payload = root.querySelector<HTMLScriptElement>("#sealed-payload");
+  const payload = root.querySelector<HTMLScriptElement>(
+    `#${SEALED_PAYLOAD_ELEMENT_ID}`,
+  );
   if (payload === null) return new Uint8Array();
   const encoded = payload.textContent?.replace(/\s+/g, "") ?? "";
   if (encoded.length === 0) return new Uint8Array();

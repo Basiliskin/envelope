@@ -3,6 +3,7 @@ import { CredentialStore } from "../infrastructure/composer/credential-store.js"
 import { FileBasketStore } from "../infrastructure/composer/file-basket-store.js";
 import { SealStore } from "../infrastructure/composer/seal-store.js";
 import { ComposerSealDriver } from "../infrastructure/composer/composer-seal-driver.js";
+import { ReaderTemplatePackaging } from "../infrastructure/packaging/reader-template-packaging.js";
 import { generateDiceware } from "../domain/composer/diceware.js";
 import { FileBasketView } from "./file-basket-view.js";
 import { PasswordField } from "./password-field.js";
@@ -23,7 +24,8 @@ export function buildDefaultComposer(): {
   const credential = new CredentialStore();
   const basket = new FileBasketStore();
   const driver = new ComposerSealDriver();
-  const seal = new SealStore(credential, basket, driver);
+  const packaging = new ReaderTemplatePackaging();
+  const seal = new SealStore(credential, basket, driver, packaging);
   return { credential, basket, seal };
 }
 
