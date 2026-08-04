@@ -14,9 +14,13 @@ STAGES=(
   "ESLint|npx eslint . --max-warnings 0"
   "Tests: coverage guard|node .claude/hooks/check-tests.mjs --changed"
   "Dead-code gate|./scripts/block-dead-code.sh --all"
-  "Unit tests|npx vitest run 'src/**/*.unit.test.ts' --passWithNoTests"
-  "Integration tests|npx vitest run 'src/**/*.int.test.ts' --fileParallelism=false --passWithNoTests"
-  "E2E|npx vitest run 'src/**/*.e2e.test.ts' --passWithNoTests"
+  # Plain substring filters, not shell globs: bash's non-recursive default
+  # ** silently degraded these to zero-match filters (masked green by
+  # --passWithNoTests — a stage that ran nothing still printed ✓). Verified
+  # by hand before this fix; see M7 hardening notes.
+  "Unit tests|npx vitest run '.unit.test.ts' --passWithNoTests"
+  "Integration tests|npx vitest run '.int.test.ts' --fileParallelism=false --passWithNoTests"
+  "E2E|npx vitest run '.e2e.test.ts' --passWithNoTests"
   "Security: deps|npm audit --audit-level=high"
   "Security: secrets|npx --no-install gitleaks detect --no-banner --redact"
 )

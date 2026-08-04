@@ -51,6 +51,8 @@ function snapshot(store: ReaderStore): () => string {
       store.progress?.current,
       store.files.length,
       store.error,
+      store.failedAttempts,
+      store.canUnseal,
     ].join(":");
 }
 
@@ -89,6 +91,13 @@ function Credentials({ store }: ReaderAppProps) {
         <button type="button" onClick={() => store.cancel()}>
           Cancel
         </button>
+      ) : null}
+      {store.backoffRemainingMs > 0 ? (
+        <p data-testid="reader-backoff">
+          Wait {Math.ceil(store.backoffRemainingMs / 1000)}s before trying again.
+          This delay is a convenience against fumbled retyping, not a security
+          measure — it does nothing against an offline attack on this file.
+        </p>
       ) : null}
     </section>
   );

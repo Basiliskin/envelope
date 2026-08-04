@@ -1,12 +1,9 @@
 import type { UnsealPackage } from "../../application/reader/unseal-package.js";
 import type { ReaderFile, ReaderProgress } from "../../domain/reader/types.js";
+import { exponentialBackoffMs } from "../../domain/reader/backoff.js";
 
 export type ReaderState =
-  | "preflighting"
-  | "ready"
-  | "unsealing"
-  | "done"
-  | "error";
+  "preflighting" | "ready" | "unsealing" | "done" | "error";
 
 export class ReaderStore {
   state: ReaderState = "preflighting";
@@ -18,12 +15,16 @@ export class ReaderStore {
   progress: ReaderProgress | null = null;
   files: readonly ReaderFile[] = [];
   error = "";
+  failedAttempts = 0;
+  private backoffUntil = 0;
+  private backoffTimer: ReturnType<typeof setTimeout> | null = null;
   private controller: AbortController | null = null;
   private notify = (): void => undefined;
 
   constructor(
     private readonly packageBytes: Uint8Array,
     private readonly unsealPackage: UnsealPackage,
+    private readonly now: () => number = () => Date.now(),
   ) {}
 
   subscribe(notify: () => void): () => void {
@@ -42,7 +43,22 @@ export class ReaderStore {
   }
 
   get canUnseal(): boolean {
-    return this.state === "ready" && this.password.length > 0 && this.dialLocked;
+    return (
+      (this.state === "ready" || this.state === "error") &&
+      this.password.length > 0 &&
+      this.dialLocked &&
+      this.backoffRemainingMs === 0
+    );
+  }
+
+  /**
+   * Milliseconds left before another unseal attempt is allowed. This is UX
+   * pacing only — see `exponentialBackoffMs` — not a security control: a
+   * brute-force script targets the file's crypto directly and never touches
+   * this UI, so it is never slowed by it.
+   */
+  get backoffRemainingMs(): number {
+    return Math.max(0, this.backoffUntil - this.now());
   }
 
   async preflight(): Promise<void> {
@@ -114,8 +130,11 @@ export class ReaderStore {
         },
       });
       this.state = "done";
+      this.failedAttempts = 0;
+      this.clearBackoff();
     } catch (error) {
       this.fail(error, false);
+      this.scheduleBackoff();
     } finally {
       this.controller = null;
       this.notify();
@@ -132,5 +151,24 @@ export class ReaderStore {
       revealDetails && error instanceof Error
         ? error.message
         : "Unable to open package. Check your password and safe combination.";
+  }
+
+  private scheduleBackoff(): void {
+    this.failedAttempts += 1;
+    const delayMs = exponentialBackoffMs(this.failedAttempts);
+    if (delayMs <= 0) return;
+    this.backoffUntil = this.now() + delayMs;
+    if (this.backoffTimer !== null) clearTimeout(this.backoffTimer);
+    // Convenience only: wakes observers so the UI re-enables the button the
+    // moment the delay elapses, instead of requiring another interaction.
+    this.backoffTimer = setTimeout(() => this.notify(), delayMs);
+  }
+
+  private clearBackoff(): void {
+    this.backoffUntil = 0;
+    if (this.backoffTimer !== null) {
+      clearTimeout(this.backoffTimer);
+      this.backoffTimer = null;
+    }
   }
 }

@@ -5,20 +5,17 @@ import {
   sealStream,
   unsealStream,
 } from "../crypto/stream-aead.js";
+import { decodeHeader, encodeHeader } from "../crypto/header-codec.js";
 import {
-  decodeHeader,
-  encodeHeader,
-} from "../crypto/header-codec.js";
-import { Archive, type ArchiveEntryInput } from "../../domain/archive/archive.js";
+  Archive,
+  type ArchiveEntryInput,
+} from "../../domain/archive/archive.js";
 import {
   createManifest,
   type Manifest,
 } from "../../domain/archive/manifest.js";
 import type { MessageBus } from "./message-bus.js";
-import type {
-  WorkerEvent,
-  WorkerRequest,
-} from "./worker-protocol.js";
+import type { WorkerEvent, WorkerRequest } from "./worker-protocol.js";
 import { isWorkerRequest } from "./worker-protocol.js";
 import type { FflateArchiveWriter } from "../archive/fflate-adapter.js";
 
@@ -100,11 +97,16 @@ export class WorkerHost {
       current: 0,
       total: request.argon2.iterations,
     });
-    const masterKey = await deriveMasterKey({
-      secret: request.canonicalSecret,
-      salt: request.salt,
-      params,
-    });
+    let masterKey: Uint8Array;
+    try {
+      masterKey = await deriveMasterKey({
+        secret: request.canonicalSecret,
+        salt: request.salt,
+        params,
+      });
+    } finally {
+      zeroOut(request.canonicalSecret);
+    }
     throwIfAborted(signal);
     this.send({
       kind: "progress",
@@ -117,13 +119,11 @@ export class WorkerHost {
     zeroOut(masterKey);
     throwIfAborted(signal);
     const archive = Archive.create(
-      request.entries.map(
-        (entry): ArchiveEntryInput => ({
-          path: entry.path,
-          bytes: entry.bytes,
-          mode: entry.mode,
-        }),
-      ),
+      request.entries.map((entry): ArchiveEntryInput => ({
+        path: entry.path,
+        bytes: entry.bytes,
+        mode: entry.mode,
+      })),
     );
     const manifest = await buildManifest(archive);
     const plaintext = await collectPlaintext(
@@ -171,12 +171,23 @@ export class WorkerHost {
     const header = decodeHeader(request.header);
     const params = header.argon2;
     throwIfAborted(signal);
-    this.send({ kind: "progress", id, phase: "kdf", current: 0, total: params.iterations });
-    const masterKey = await deriveMasterKey({
-      secret: request.canonicalSecret,
-      salt: header.salt,
-      params,
+    this.send({
+      kind: "progress",
+      id,
+      phase: "kdf",
+      current: 0,
+      total: params.iterations,
     });
+    let masterKey: Uint8Array;
+    try {
+      masterKey = await deriveMasterKey({
+        secret: request.canonicalSecret,
+        salt: header.salt,
+        params,
+      });
+    } finally {
+      zeroOut(request.canonicalSecret);
+    }
     throwIfAborted(signal);
     this.send({
       kind: "progress",
@@ -221,7 +232,11 @@ export class WorkerHost {
   }
 
   private ensureChunkSize(chunkSize: number): void {
-    if (!Number.isInteger(chunkSize) || chunkSize < 1 || chunkSize > 0xffffffff) {
+    if (
+      !Number.isInteger(chunkSize) ||
+      chunkSize < 1 ||
+      chunkSize > 0xffffffff
+    ) {
       throw new Error("Chunk size must be a positive uint32.");
     }
   }
@@ -274,12 +289,20 @@ async function sha256(bytes: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(digest);
 }
 
-function classifyError(error: unknown): "argument" | "authentication" | "memory" | "internal" {
+function classifyError(
+  error: unknown,
+): "argument" | "authentication" | "memory" | "internal" {
   if (error instanceof AuthenticationError) return "authentication";
-  if (error instanceof Error && /memory|allocate|allocate/i.test(error.message)) {
+  if (
+    error instanceof Error &&
+    /memory|allocate|allocate/i.test(error.message)
+  ) {
     return "memory";
   }
-  if (error instanceof Error && /byte|chunk|salt|nonce|argon2|argument/i.test(error.message)) {
+  if (
+    error instanceof Error &&
+    /byte|chunk|salt|nonce|argon2|argument/i.test(error.message)
+  ) {
     return "argument";
   }
   return "internal";
@@ -301,7 +324,10 @@ function transfer(value: Uint8Array): Uint8Array {
 
 function transferList(event: WorkerEvent): readonly Transferable[] {
   if (event.kind === "sealed") {
-    return [event.header.buffer, ...event.chunks.map((chunk) => chunk.ciphertext.buffer)];
+    return [
+      event.header.buffer,
+      ...event.chunks.map((chunk) => chunk.ciphertext.buffer),
+    ];
   }
   if (event.kind === "unsealed") {
     return [event.bytes.buffer];
@@ -310,7 +336,11 @@ function transferList(event: WorkerEvent): readonly Transferable[] {
 }
 
 function withChunkCount(header: Uint8Array, chunkCount: number): Uint8Array {
-  if (!Number.isInteger(chunkCount) || chunkCount < 1 || chunkCount > 0xffffffff) {
+  if (
+    !Number.isInteger(chunkCount) ||
+    chunkCount < 1 ||
+    chunkCount > 0xffffffff
+  ) {
     throw new Error("Chunk count must be a positive uint32.");
   }
   const copy = new Uint8Array(header);

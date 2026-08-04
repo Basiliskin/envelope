@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ComposerSealDriver, calibrateArgon2 } from "./composer-seal-driver.js";
 import { FileBasket } from "../../domain/composer/file-basket.js";
+import * as kdf from "../crypto/kdf.js";
 
 const strongPassword = "correct horse battery staple extra";
 const strongPositions: readonly [number, number, number] = [37, 12, 88];
@@ -34,6 +35,30 @@ describe("ComposerSealDriver", () => {
     expect(bytes.byteLength).toBeGreaterThan(0);
     // First 4 bytes are the SPK1 magic.
     expect(String.fromCharCode(...bytes.subarray(0, 4))).toBe("SPK1");
+  });
+
+  it("zeroes the canonical secret buffer once the KDF has consumed it", async () => {
+    const spy = vi.spyOn(kdf, "deriveMasterKey");
+    const basket = FileBasket.empty().withEntry({
+      id: "hello",
+      path: "hello.txt",
+      size: 5,
+      content: new Uint8Array([0x68, 0x69, 0x21, 0x0a, 0x00]),
+    });
+    await new ComposerSealDriver().seal({
+      basket,
+      password: strongPassword,
+      positions: strongPositions,
+      dialLocked: true,
+      argon2: defaultArgon2,
+      salt: new Uint8Array(16),
+      noncePrefix: new Uint8Array(4),
+      chunkSize: 1024 * 1024,
+    });
+    const secretPassedToKdf = spy.mock.calls.at(0)?.[0].secret;
+    expect(secretPassedToKdf).toBeDefined();
+    expect(secretPassedToKdf?.every((byte) => byte === 0)).toBe(true);
+    spy.mockRestore();
   });
 
   it("throws when the credential gates are not all satisfied", async () => {

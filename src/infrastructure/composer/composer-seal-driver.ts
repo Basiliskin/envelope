@@ -14,9 +14,7 @@ import {
   createManifest,
   type Manifest,
 } from "../../domain/archive/manifest.js";
-import type {
-  ArchiveWriterPort,
-} from "../../application/ports/archive-ports.js";
+import type { ArchiveWriterPort } from "../../application/ports/archive-ports.js";
 
 export class ComposerSealDriver {
   private readonly writer: ArchiveWriterPort;
@@ -34,11 +32,18 @@ export class ComposerSealDriver {
       );
     }
     const params = Argon2Params.create(prepared.input.argon2);
-    const masterKey = await deriveMasterKey({
-      secret: prepared.input.canonicalSecret,
-      salt: prepared.input.salt,
-      params,
-    });
+    let masterKey: Uint8Array;
+    try {
+      masterKey = await deriveMasterKey({
+        secret: prepared.input.canonicalSecret,
+        salt: prepared.input.salt,
+        params,
+      });
+    } finally {
+      // The canonical secret is password + dial in cleartext — zero it the
+      // moment the KDF has consumed it, on both the success and error path.
+      prepared.input.canonicalSecret.fill(0);
+    }
     const contentKey = await deriveContentKey(masterKey);
     masterKey.fill(0);
 
@@ -161,7 +166,11 @@ function serializeSealedPackage(
   let offset = header.byteLength;
   for (const chunk of ordered) {
     const lengthBytes = new Uint8Array(4);
-    new DataView(lengthBytes.buffer).setUint32(0, chunk.ciphertext.byteLength, false);
+    new DataView(lengthBytes.buffer).setUint32(
+      0,
+      chunk.ciphertext.byteLength,
+      false,
+    );
     output.set(lengthBytes, offset);
     offset += 4;
     output.set(chunk.ciphertext, offset);

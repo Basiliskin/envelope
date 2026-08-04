@@ -20,8 +20,8 @@ if [ -f .claude/hooks/check-tests.mjs ]; then
   fi
 fi
 
-if ls src/**/*.unit.test.ts >/dev/null 2>&1 || [ -d src ]; then
-  if ! out=$(npx --no-install vitest run 'src/**/*.unit.test.ts' --reporter=dot --passWithNoTests 2>&1); then
+if [ -d src ]; then
+  if ! out=$(npx --no-install vitest run '.unit.test.ts' --reporter=dot --passWithNoTests 2>&1); then
     block "Unit-тесты падают:
 $out"
   fi
