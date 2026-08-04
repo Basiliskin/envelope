@@ -20,14 +20,19 @@ export interface SafeDialProps {
 export function SafeDial({ store }: SafeDialProps) {
   useOptionalStore(store);
   return (
-    <section aria-label="Safe dial" data-testid="safe-dial">
+    <section
+      aria-label="Safe dial"
+      data-testid="safe-dial"
+      className="composer-card"
+    >
       <h2>Safe combination</h2>
       <DialRound round={1} direction="CW" value={store.firstPosition} store={store} />
       <DialRound round={2} direction="CCW" value={store.secondPosition} store={store} />
       <DialRound round={3} direction="CW" value={store.thirdPosition} store={store} />
-      <div>
+      <div className="btn-row">
         <button
           type="button"
+          className="btn"
           data-testid="dial-lock"
           onClick={() => store.lockDial()}
           disabled={!store.hasAllDialPositions || store.dialLocked}
@@ -36,6 +41,7 @@ export function SafeDial({ store }: SafeDialProps) {
         </button>
         <button
           type="button"
+          className="btn"
           data-testid="dial-unlock"
           onClick={() => store.unlockDial()}
           disabled={!store.dialLocked}
@@ -43,7 +49,10 @@ export function SafeDial({ store }: SafeDialProps) {
           Unlock
         </button>
       </div>
-      <p data-testid="dial-status">
+      <p
+        className={`dial-status${store.dialLocked ? " is-locked" : ""}`}
+        data-testid="dial-status"
+      >
         {store.dialLocked ? "Dial locked" : "Dial still adjustable"}
       </p>
     </section>
@@ -74,7 +83,11 @@ function DialRound({ round, direction, value, store }: DialRoundProps) {
   };
 
   return (
-    <div role="group" aria-label={`Round ${String(round)} (${direction})`}>
+    <div
+      role="group"
+      className="dial-round"
+      aria-label={`Round ${String(round)} (${direction})`}
+    >
       <label htmlFor={`dial-round-${String(round)}`}>
         Round {String(round)} ({direction})
       </label>
@@ -91,6 +104,7 @@ function DialRound({ round, direction, value, store }: DialRoundProps) {
       />
       <input
         type="number"
+        className="field-input"
         min={1}
         max={99}
         value={value ?? ""}
@@ -101,6 +115,7 @@ function DialRound({ round, direction, value, store }: DialRoundProps) {
       />
       <button
         type="button"
+        className="btn btn-sm"
         disabled={store.dialLocked}
         onClick={() => store.clearDial(round)}
         aria-label={`Clear round ${String(round)}`}

@@ -9,31 +9,44 @@ export interface PasswordFieldProps {
 export const PasswordField = observer(
   ({ store, onGeneratePassphrase }: PasswordFieldProps) => {
     return (
-      <section aria-label="Password" data-testid="password-field">
+      <section
+        aria-label="Password"
+        data-testid="password-field"
+        className="composer-card"
+      >
         <h2>Password</h2>
-        <input
-          type="password"
-          value={store.password}
-          data-testid="password-input"
-          onChange={(event) => store.setPassword(event.currentTarget.value)}
-          aria-invalid={store.credentialIssues.length > 0}
-        />
-        {onGeneratePassphrase !== undefined ? (
-          <button
-            type="button"
-            data-testid="password-generate"
-            onClick={() => {
-              const generated = onGeneratePassphrase();
-              store.setPassword(generated);
-            }}
-          >
-            Generate
-          </button>
-        ) : null}
+        <div className="field-row">
+          <input
+            type="password"
+            className="field-input"
+            value={store.password}
+            data-testid="password-input"
+            placeholder="Enter a password"
+            onChange={(event) => store.setPassword(event.currentTarget.value)}
+            aria-invalid={store.credentialIssues.length > 0}
+          />
+          {onGeneratePassphrase !== undefined ? (
+            <button
+              type="button"
+              className="btn"
+              data-testid="password-generate"
+              onClick={() => {
+                const generated = onGeneratePassphrase();
+                store.setPassword(generated);
+              }}
+            >
+              Generate
+            </button>
+          ) : null}
+        </div>
         {store.credentialIssues.length > 0 ? (
-          <ul data-testid="credential-issues">
+          <ul className="issue-list" data-testid="credential-issues">
             {store.credentialIssues.map((issue) => (
-              <li key={issue.code} data-testid={`issue-${issue.code}`}>
+              <li
+                key={issue.code}
+                className="issue-item"
+                data-testid={`issue-${issue.code}`}
+              >
                 {issue.message}
               </li>
             ))}

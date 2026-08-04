@@ -25,26 +25,50 @@ export const CombinedEntropy = observer(
       dialLocked: credential.dialLocked,
       argon2,
     });
+    const ratio = Math.max(
+      0,
+      Math.min(1, credential.combinedBits / MIN_COMBINED_ENTROPY_BITS),
+    );
+    const isReady = credential.combinedBits >= MIN_COMBINED_ENTROPY_BITS;
     return (
-      <section aria-label="Combined entropy" data-testid="combined-entropy">
+      <section
+        aria-label="Combined entropy"
+        data-testid="combined-entropy"
+        className="composer-card"
+      >
         <h2>Combined entropy</h2>
-        <p data-testid="combined-entropy-value">
+        <p className="entropy-value" data-testid="combined-entropy-value">
           {credential.combinedBits.toFixed(2)} bits
         </p>
-        <p data-testid="combined-entropy-threshold">
+        <div
+          className="entropy-bar-track"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={MIN_COMBINED_ENTROPY_BITS}
+          aria-valuenow={Math.round(credential.combinedBits)}
+        >
+          <div
+            className={`entropy-bar-fill${isReady ? " is-ready" : ""}`}
+            style={{ width: `${String(ratio * 100)}%` }}
+          />
+        </div>
+        <p className="entropy-threshold" data-testid="combined-entropy-threshold">
           Target: ≥ {String(MIN_COMBINED_ENTROPY_BITS)} bits
         </p>
-        <ul data-testid="blockers">
-          {blockers.map((blocker) => (
-            <li
-              key={blocker.code}
-              data-testid={`blocker-${blocker.code}`}
-              data-message={blocker.message}
-            >
-              {blocker.message}
-            </li>
-          ))}
-        </ul>
+        {blockers.length > 0 ? (
+          <ul className="issue-list" data-testid="blockers">
+            {blockers.map((blocker) => (
+              <li
+                key={blocker.code}
+                className="issue-item"
+                data-testid={`blocker-${blocker.code}`}
+                data-message={blocker.message}
+              >
+                {blocker.message}
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
     );
   },
@@ -58,21 +82,28 @@ export interface SealProgressViewProps {
 export const SealProgressView = observer(
   ({ store, onSeal }: SealProgressViewProps) => {
     return (
-      <section aria-label="Seal progress" data-testid="seal-progress">
+      <section
+        aria-label="Seal progress"
+        data-testid="seal-progress"
+        className="composer-card"
+      >
         <h2>Seal</h2>
-        <p data-testid="seal-phase">{store.phase}</p>
+        <p className="seal-phase" data-testid="seal-phase">
+          {store.phase}
+        </p>
         {store.progress !== null ? (
-          <p data-testid="seal-progress">
+          <p className="entropy-threshold" data-testid="seal-progress">
             {store.progress.current}/{store.progress.total}
           </p>
         ) : null}
         {store.lastError !== null ? (
-          <p role="alert" data-testid="seal-error">
+          <p role="alert" className="seal-error" data-testid="seal-error">
             {store.lastError}
           </p>
         ) : null}
         {store.resultDownloadUrl !== null ? (
           <a
+            className="seal-download"
             data-testid="seal-download"
             href={store.resultDownloadUrl}
             download="envelope.html"
@@ -82,6 +113,7 @@ export const SealProgressView = observer(
         ) : null}
         <button
           type="button"
+          className="btn btn-primary"
           data-testid="seal-button"
           onClick={onSeal}
           disabled={!store.canStartSeal}

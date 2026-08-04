@@ -50,8 +50,8 @@ interface ComposerBodyProps {
 const ComposerBody = observer(({ state }: ComposerBodyProps) => {
   const { credential, basket, seal } = state;
   return (
-    <main data-testid="composer-app">
-      <h1>Envelope Composer</h1>
+    <main data-testid="composer-app" className="composer-shell">
+      <h1 className="composer-title">Envelope Composer</h1>
       <FileBasketView
         store={basket}
         onSelectFiles={(files) => {

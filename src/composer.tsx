@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { ComposerApp, buildDefaultComposer } from "./composer/composer-app.js";
+import "./composer/composer.css";
 
 export function mountComposer(target: HTMLElement = document.body): () => void {
   const { credential, basket, seal } = buildDefaultComposer();
