@@ -8,15 +8,15 @@
     "verify": "./scripts/verify.sh",
     "verify:fast": "./scripts/verify.sh --fast",
     "typecheck": "npx tsc --noEmit",
-    "test:unit": "vitest run \"src/**/*.unit.test.ts\" --passWithNoTests",
-    "test:int": "vitest run \"src/**/*.int.test.ts\" --fileParallelism=false --passWithNoTests",
+    "test:unit": "vitest run --passWithNoTests src/domain/**/*.unit.test.ts src/application/**/*.unit.test.ts",
+    "test:int": "vitest run --fileParallelism=false --passWithNoTests src/infrastructure/**/*.int.test.ts",
     "check:tests": "node .claude/hooks/check-tests.mjs --changed",
     "check:dead-code": "./scripts/block-dead-code.sh --all"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.39.5",
@@ -25,5 +25,9 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.66.0",
     "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "fast-check": "^4.9.0",
+    "hash-wasm": "^4.12.0"
   }
 }
