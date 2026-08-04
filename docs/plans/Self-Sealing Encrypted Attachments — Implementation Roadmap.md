@@ -215,13 +215,21 @@ Pure TS, no UI, no DOM.
 
 ### M8 — Test matrix & release
 
-| Axis          | Cases                                                                               |
-| ------------- | ----------------------------------------------------------------------------------- |
-| Browsers      | Chrome, Firefox, Safari, Edge — desktop only                                        |
-| Protocol      | `file://` and `https://`                                                            |
-| Payload sizes | 1 KB · 10 MB · 100 MB · one file over cap                                           |
-| Failure modes | wrong password · wrong dial · corrupted byte · truncated file · header out of range |
-| Stress        | 1 GiB-param file opened on an 8 GB machine with 20 tabs open                        |
+| Axis              | Cases                                                                               | Coverage                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [x] Browsers      | Chrome, Firefox, Safari, Edge — desktop only                                        | Playwright: Chromium, Firefox, WebKit (`e2e-playwright/`). Real Safari/Edge: manual, see `docs/release-checklist.md`. |
+| [x] Protocol      | `file://` and `https://`                                                            | `e2e-playwright/file-protocol.spec.ts`, `https-protocol.spec.ts` (served origin proxies TLS specifics)                |
+| [x] Payload sizes | 1 KB · 10 MB · 100 MB · one file over cap                                           | `src/m8-test-matrix.int.test.ts`                                                                                      |
+| [x] Failure modes | wrong password · wrong dial · corrupted byte · truncated file · header out of range | `src/m8-test-matrix.int.test.ts` (Node) + browser-driven wrong-password case in `https-protocol.spec.ts`              |
+| [x] Stress        | 1 GiB-param file opened on an 8 GB machine with 20 tabs open                        | Manual, `docs/release-checklist.md` §2 — genuine memory pressure isn't reproducible in CI                             |
+
+Run: `./scripts/verify.sh` (pipeline) + `npm run test:e2e:browsers` (Playwright matrix) + `docs/release-checklist.md` (manual, pre-tag).
+
+M8 testing surfaced three real bugs, since fixed:
+
+- **Multi-chunk seal was silently broken.** `ComposerSealDriver` sealed the AEAD stream using a header with a placeholder `chunkCount: 1` as AAD, then patched in the real count only for the shipped package. Any payload over one chunk (1 MiB) produced a file that could never be decrypted. Only caught once a >1 MiB payload was round-tripped for real.
+- **The reader leaked a partial-credit oracle.** `unseal-package.ts` ran the composer's weak-combination strength check on decode attempts too, so a wrong dial guess that happened to be weak-shaped (`1-2-3`) failed with a distinct message before AEAD ever ran — violating §1's "same generic error" rule. Fixed with `SafeCombination.createForDecoding` (structural-only; the strength gate is authoring-time only).
+- **The composer's safe dial was frozen after first paint.** `CredentialStore` never implemented the `SafeDialStore.subscribe` contract, so the shared dial component (not wrapped in `observer`, to keep it out of the reader's size budget) never re-rendered on state change — the dial could never be locked through the UI. Fixed by implementing `subscribe` on `CredentialStore` via MobX `autorun`. A related bug in `ReaderStore.subscribe` (single-subscriber, later subscriber silently clobbers the earlier one) was fixed at the same time.
 
 ---
 

@@ -72,12 +72,16 @@ export class ComposerSealDriver {
       prepared.input.chunkSize,
     );
 
+    const chunkCount = Math.max(
+      1,
+      Math.ceil(plaintext.byteLength / prepared.input.chunkSize),
+    );
     const canonicalHeader = encodeHeader({
       argon2: params,
       salt: prepared.input.salt,
       noncePrefix: prepared.input.noncePrefix,
       chunkSize: prepared.input.chunkSize,
-      chunkCount: 1,
+      chunkCount,
     });
     const chunks = await sealStream({
       plaintext,
@@ -89,8 +93,7 @@ export class ComposerSealDriver {
     contentKey.fill(0);
     plaintext.fill(0);
 
-    const headerBytes = withChunkCount(canonicalHeader, chunks.length);
-    return serializeSealedPackage(headerBytes, chunks);
+    return serializeSealedPackage(canonicalHeader, chunks);
   }
 }
 
@@ -143,13 +146,6 @@ async function sha256(bytes: Uint8Array): Promise<Uint8Array> {
     view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength),
   );
   return new Uint8Array(digest);
-}
-
-function withChunkCount(header: Uint8Array, chunkCount: number): Uint8Array {
-  const copy = new Uint8Array(header);
-  const view = new DataView(copy.buffer);
-  view.setUint32(39, chunkCount, false);
-  return copy;
 }
 
 function serializeSealedPackage(

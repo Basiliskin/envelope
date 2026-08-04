@@ -24,6 +24,21 @@ export class SafeCombination {
     return new SafeCombination([...positions]);
   }
 
+  /**
+   * Structural-only construction for decode attempts. The strength gate
+   * (no zeros, no arithmetic runs, ...) is an authoring-time entropy
+   * requirement enforced by the composer — a sealed file can never contain
+   * a weak combination. Applying it again on read would let a wrong guess
+   * that happens to be weak-shaped fail with a distinct error message
+   * before the AEAD ever runs, which is exactly the partial-credit oracle
+   * the threat model forbids. Wrong password and wrong dial must produce
+   * the same generic failure.
+   */
+  static createForDecoding(positions: SafeCombinationValue): SafeCombination {
+    validatePositions(positions);
+    return new SafeCombination([...positions]);
+  }
+
   canonical(): string {
     return this.positions
       .map(

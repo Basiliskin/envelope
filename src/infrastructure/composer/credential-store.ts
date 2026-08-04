@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from "mobx";
 import { combinedEntropyBits } from "../../domain/composer/entropy.js";
 import {
   validateComposerCredential,
@@ -77,6 +77,21 @@ export class CredentialStore {
 
   selectArgon2Preset(preset: "floor" | "default" | "paranoid"): void {
     this.selectedArgon2Preset = preset;
+  }
+
+  // Bridges MobX reactivity to the shared `SafeDialStore.subscribe`
+  // contract, which `SafeDial` needs to re-render (it isn't wrapped in
+  // mobx-react-lite's `observer` — that dependency would leak into the
+  // reader bundle, which shares this component and has a strict size
+  // budget). `autorun` re-fires whenever any field read below changes.
+  subscribe(notify: () => void): () => void {
+    return autorun(() => {
+      void this.firstPosition;
+      void this.secondPosition;
+      void this.thirdPosition;
+      void this.dialLocked;
+      notify();
+    });
   }
 
   reset(): void {

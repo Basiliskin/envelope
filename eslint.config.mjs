@@ -40,6 +40,7 @@ export default [
       'fixtures/**',
       'eslint.config.*',
       'vitest.config.ts',
+      'playwright.config.ts',
       'vite.config.ts',
       '.claude/**',
       'scripts/**',
@@ -47,6 +48,11 @@ export default [
       // tsconfig / lint rules. Not part of the DDD scaffold and not
       // shipped as product code. See spikes/m0/docs/M0-results.md.
       'spikes/**',
+      // M8 cross-browser Playwright harness: drives the built apps from
+      // Node (fs, http), same rationale as spikes/** and scripts/**.
+      'e2e-playwright/**',
+      'playwright-report/**',
+      'test-results/**',
     ],
   },
   js.configs.recommended,

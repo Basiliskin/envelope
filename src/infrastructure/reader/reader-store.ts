@@ -19,7 +19,7 @@ export class ReaderStore {
   private backoffUntil = 0;
   private backoffTimer: ReturnType<typeof setTimeout> | null = null;
   private controller: AbortController | null = null;
-  private notify = (): void => undefined;
+  private readonly listeners = new Set<() => void>();
 
   constructor(
     private readonly packageBytes: Uint8Array,
@@ -27,11 +27,19 @@ export class ReaderStore {
     private readonly now: () => number = () => Date.now(),
   ) {}
 
+  // Multiple components subscribe to the same store at once (the reader
+  // shell and the shared safe-dial widget both call this), so this must
+  // fan out to every listener rather than keep a single slot — the latter
+  // silently drops whichever subscriber registered first.
   subscribe(notify: () => void): () => void {
-    this.notify = notify;
+    this.listeners.add(notify);
     return () => {
-      this.notify = (): void => undefined;
+      this.listeners.delete(notify);
     };
+  }
+
+  private notify(): void {
+    for (const listener of this.listeners) listener();
   }
 
   get hasAllDialPositions(): boolean {

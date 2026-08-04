@@ -1,4 +1,7 @@
-import { canonicalizeSecret, Password } from "../../domain/credential/secret.js";
+import {
+  canonicalizeSecret,
+  Password,
+} from "../../domain/credential/secret.js";
 import { SafeCombination } from "../../domain/credential/safe-combination.js";
 import { parseSealedPackage } from "../../domain/reader/sealed-package.js";
 import type {
@@ -42,7 +45,9 @@ export class UnsealPackage {
     readonly onProgress: (progress: ReaderProgress) => void;
   }): Promise<readonly ReaderFile[]> {
     const parsed = parseSealedPackage(input.packageBytes);
-    const combination = SafeCombination.create(input.credential.combination);
+    const combination = SafeCombination.createForDecoding(
+      input.credential.combination,
+    );
     const canonicalSecret = canonicalizeSecret(
       Password.create(input.credential.password),
       combination,
