@@ -208,10 +208,10 @@ Pure TS, no UI, no DOM.
 
 ### M7 — Hardening
 
-- [ ] Zero key buffers after use
-- [ ] Exponential reader-side backoff, commented and labeled as convenience only
-- [ ] Generic, non-discriminating failure messages
-- [ ] Reproducible builds so the reader stub is independently auditable
+- [x] Zero key buffers after use
+- [x] Exponential reader-side backoff, commented and labeled as convenience only
+- [x] Generic, non-discriminating failure messages
+- [x] Reproducible builds so the reader stub is independently auditable
 
 ### M8 — Test matrix & release
 
