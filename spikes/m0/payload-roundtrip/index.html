@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>M0 — 50 MB payload round-trip</title>
+    <style>
+      body { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 24px; color: #111; }
+      h1 { font-size: 16px; margin: 0 0 12px; }
+      section { border: 1px solid #ccc; padding: 12px; margin-bottom: 16px; border-radius: 4px; }
+      button { font: inherit; padding: 6px 10px; }
+      pre { background: #f6f6f6; padding: 8px; white-space: pre-wrap; word-break: break-all; }
+      .ok { color: #0a7a2f; }
+      .err { color: #b00020; }
+    </style>
+  </head>
+  <body>
+    <h1>M0 / Probe 3 — 50 MB payload round-trip</h1>
+    <p>
+      Allocates 50 MiB inside the worker, hashes it with SHA-256, transfers
+      a 16-byte sample back to the main thread. Confirms Worker allocation
+      and structured-clone messaging work at this scale under file://
+      without the browser's "large string" thresholds kicking in.
+    </p>
+    <section>
+      <div>size: 50 MiB (deterministic content)</div>
+      <button id="run">Run round-trip</button>
+    </section>
+    <section>
+      <div id="status" class="err">not run</div>
+      <pre id="result"></pre>
+    </section>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

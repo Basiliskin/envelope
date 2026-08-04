@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>M0 — vite-plugin-singlefile self-contained build</title>
+    <style>
+      body { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 24px; color: #111; }
+      h1 { font-size: 16px; margin: 0 0 12px; }
+      section { border: 1px solid #ccc; padding: 12px; margin-bottom: 16px; border-radius: 4px; }
+      button { font: inherit; padding: 6px 10px; }
+      pre { background: #f6f6f6; padding: 8px; white-space: pre-wrap; word-break: break-all; }
+      .ok { color: #0a7a2f; }
+      .err { color: #b00020; }
+      .step { margin: 4px 0; }
+      .step-ok { color: #0a7a2f; }
+      .step-err { color: #b00020; }
+    </style>
+  </head>
+  <body>
+    <h1>M0 / Probe 4 — vite-plugin-singlefile self-contained output</h1>
+    <p>
+      Confirms the single-file build produced by the spike's custom plugin
+      suite (used in place of vite-plugin-singlefile, which does not handle
+      worker chunks) actually works under file://. Runs the same three
+      probes back-to-back inside one Worker: Argon2id at floor params, a
+      1 GiB WASM memory allocation, and a 50 MiB SHA-256 round-trip.
+    </p>
+    <section id="protocol">
+      <div>protocol: <span id="proto">?</span></div>
+      <div>document.location: <span id="loc">?</span></div>
+      <div>build size: <span id="size">?</span></div>
+    </section>
+    <section>
+      <button id="run">Run all three probes</button>
+    </section>
+    <section>
+      <div id="status" class="err">not run</div>
+      <div id="steps"></div>
+      <pre id="result"></pre>
+    </section>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

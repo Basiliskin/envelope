@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>M0 — Argon2id WASM in a Worker (file:// probe)</title>
+    <style>
+      body {
+        font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        margin: 24px;
+        color: #111;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+      section {
+        border: 1px solid #ccc;
+        padding: 12px;
+        margin-bottom: 16px;
+        border-radius: 4px;
+      }
+      button {
+        font: inherit;
+        padding: 6px 10px;
+      }
+      pre {
+        background: #f6f6f6;
+        padding: 8px;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .ok {
+        color: #0a7a2f;
+      }
+      .err {
+        color: #b00020;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>M0 / Probe 1 — Argon2id WASM in a Worker</h1>
+    <p>
+      Loads a dedicated Worker bundled into this single HTML file and asks it
+      to run Argon2id with 256 MiB of memory and 3 iterations. The probe is
+      green only when (a) the Worker spawns under <code>file://</code>, (b)
+      the WASM module loads, and (c) a 32-byte hash is produced.
+    </p>
+    <section id="protocol">
+      <div>protocol: <span id="proto">?</span></div>
+      <div>SAB available: <span id="sab">?</span></div>
+    </section>
+    <section>
+      <div>password: <code>correct horse battery staple</code> (demo)</div>
+      <div>salt: 16 random bytes, regenerated per click</div>
+      <div>memory: 256 MiB, iterations: 3, parallelism: 1</div>
+      <button id="run">Run Argon2id</button>
+    </section>
+    <section>
+      <div id="status" class="err">not run</div>
+      <pre id="result"></pre>
+    </section>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

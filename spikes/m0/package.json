@@ -1,0 +1,30 @@
+{
+  "name": "envelope-spike-m0",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "M0 risk spike for Self-Sealing Encrypted Attachments — validates browser-side assumptions before product code is written.",
+  "scripts": {
+    "build:argon2": "vite build --config argon2-worker/vite.config.ts",
+    "build:memory": "vite build --config memory-probe/vite.config.ts",
+    "build:payload": "vite build --config payload-roundtrip/vite.config.ts",
+    "build:singlefile": "vite build --config singlefile-build/vite.config.ts",
+    "build:all": "npm run build:argon2 && npm run build:memory && npm run build:payload && npm run build:singlefile",
+    "typecheck:spike": "tsc --noEmit --project tsconfig.json",
+    "test:smoke": "tsx scripts/smoke.ts",
+    "test:browser-smoke": "tsx scripts/browser-smoke.ts",
+    "test:all": "npm run typecheck:spike && npm run test:smoke && npm run test:browser-smoke"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^26.1.2",
+    "jsdom": "^29.1.1",
+    "tsx": "^4.23.5",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vite-plugin-singlefile": "^2.3.3"
+  },
+  "dependencies": {
+    "hash-wasm": "^4.12.0"
+  }
+}
