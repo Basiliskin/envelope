@@ -13,6 +13,7 @@
     "check:tests": "node .claude/hooks/check-tests.mjs --changed",
     "check:dead-code": "./scripts/block-dead-code.sh --all",
     "build:composer": "vite build",
+    "build:reader": "vite build --config vite.reader.config.ts",
     "prepare": "husky"
   },
   "keywords": [],

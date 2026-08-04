@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { type Manifest, serializeManifest } from "../../domain/archive/manifest.js";
+import { createManifest, createManifestEntry } from "../../domain/archive/manifest.js";
 import { Envelope } from "../../application/envelope/envelope.js";
-import { FflateArchiveReader, FflateArchiveWriter } from "./fflate-adapter.js";
+import { zipSync } from "fflate";
+import {
+  FflateArchiveReader,
+  FflateArchiveWriter,
+  FflateReaderArchive,
+} from "./fflate-adapter.js";
 
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
 
@@ -68,6 +74,30 @@ describe("fflate archive adapter", () => {
     await expect(iter[Symbol.asyncIterator]().next()).rejects.toThrow(
       "Chunk size must be a positive integer.",
     );
+  });
+
+  it("extracts and verifies the embedded manifest", async () => {
+    const bytes = text("verified");
+    const digest = new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new Uint8Array(bytes).buffer),
+    );
+    const manifest = createManifest({
+      createdAt: "2026-08-04T00:00:00.000Z",
+      entries: [
+        createManifestEntry({ path: "verified.txt", size: bytes.byteLength, sha256: digest }),
+      ],
+    });
+    const archive = zipSync({
+      "manifest.json": serializeManifest(manifest),
+      "verified.txt": bytes,
+    });
+
+    const files = await new FflateReaderArchive().extract(
+      archive,
+      new AbortController().signal,
+    );
+
+    expect(new TextDecoder().decode(files[0]?.bytes)).toBe("verified");
   });
 
   it("manifest is parseable JSON and contains per-entry sha256", async () => {

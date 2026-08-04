@@ -1,8 +1,14 @@
 import { unzipSync, zipSync } from "fflate";
 
+import type { ReaderArchivePort } from "../../application/reader/reader-ports.js";
+import type { ReaderFile } from "../../domain/reader/types.js";
 import type { ArchiveEntry } from "../../domain/archive/archive.js";
-import { serializeManifest, type Manifest } from "../../domain/archive/manifest.js";
-import { MANIFEST_ENTRY_NAME } from "../../domain/archive/manifest.js";
+import {
+  MANIFEST_ENTRY_NAME,
+  parseManifest,
+  serializeManifest,
+} from "../../domain/archive/manifest.js";
+import type { Manifest } from "../../domain/archive/manifest.js";
 import type {
   ArchiveReaderPort,
   ArchiveWriterPort,
@@ -40,6 +46,60 @@ export class FflateArchiveWriter implements ArchiveWriterPort {
       yield { kind: "end" };
     })();
   }
+}
+
+export class FflateReaderArchive implements ReaderArchivePort {
+  async extract(
+    bytes: Uint8Array,
+    signal: AbortSignal,
+  ): Promise<readonly ReaderFile[]> {
+    if (signal.aborted) throw new Error("Aborted");
+    const decoded = unzipSync(bytes);
+    const manifestBytes = decoded[MANIFEST_ENTRY_NAME];
+    if (manifestBytes === undefined) {
+      throw new Error("Archive manifest is missing.");
+    }
+    const manifest = parseManifest(manifestBytes);
+    const allowed = new Set([
+      MANIFEST_ENTRY_NAME,
+      ...manifest.entries.map((entry) => entry.path),
+    ]);
+    for (const path of Object.keys(decoded)) {
+      if (!allowed.has(path)) {
+        throw new Error(`Archive contains unexpected entry: ${path}`);
+      }
+    }
+    const files: ReaderFile[] = [];
+    for (const entry of manifest.entries) {
+      if (signal.aborted) throw new Error("Aborted");
+      const data = decoded[entry.path];
+      if (data === undefined) {
+        throw new Error(`Archive missing expected entry: ${entry.path}`);
+      }
+      if (data.byteLength !== entry.size) {
+        throw new Error(`Archive entry size mismatch: ${entry.path}`);
+      }
+      if (!equalBytes(await sha256(data), entry.sha256)) {
+        throw new Error(`Archive entry digest mismatch: ${entry.path}`);
+      }
+      files.push({ path: entry.path, bytes: data, mode: entry.mode });
+    }
+    return files;
+  }
+}
+
+async function sha256(bytes: Uint8Array): Promise<Uint8Array> {
+  const copy = new Uint8Array(bytes);
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    copy.buffer.slice(copy.byteOffset, copy.byteOffset + copy.byteLength),
+  );
+  return new Uint8Array(digest);
+}
+
+function equalBytes(left: Uint8Array, right: Uint8Array): boolean {
+  if (left.byteLength !== right.byteLength) return false;
+  return left.every((byte, index) => byte === right[index]);
 }
 
 export class FflateArchiveReader implements ArchiveReaderPort {

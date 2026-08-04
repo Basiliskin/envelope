@@ -16,5 +16,5 @@
     "skipLibCheck": true,
     "outDir": "dist"
   },
-  "include": ["src"]
+  "include": ["src", "vite.reader.config.ts"]
 }
