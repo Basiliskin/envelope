@@ -12,6 +12,7 @@
     "test:int": "vitest run --fileParallelism=false --passWithNoTests src/infrastructure/**/*.int.test.ts",
     "check:tests": "node .claude/hooks/check-tests.mjs --changed",
     "check:dead-code": "./scripts/block-dead-code.sh --all",
+    "build:composer": "vite build",
     "prepare": "husky"
   },
   "keywords": [],
@@ -19,12 +20,24 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitest/browser": "^4.1.10",
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.39.5",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "happy-dom": "^20.11.1",
+    "mobx": "^6.16.1",
+    "mobx-react-lite": "^4.1.1",
     "prettier": "^3.9.6",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.66.0",
+    "vite": "^6.4.3",
+    "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^4.1.10"
   },
   "dependencies": {

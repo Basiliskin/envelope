@@ -35,10 +35,12 @@ export default [
     ignores: [
       'node_modules/**',
       'dist/**',
+      'dist-composer/**',
       'coverage/**',
       'fixtures/**',
       'eslint.config.*',
       'vitest.config.ts',
+      'vite.config.ts',
       '.claude/**',
       'scripts/**',
       // M0 risk-spike directory: standalone browser probes with their own

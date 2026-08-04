@@ -36,6 +36,7 @@ All commands are run from the repo root.
 | Integration tests | `npm run test:int` |
 | Test-coverage guard (changed files) | `npm run check:tests` |
 | Dead-export gate, whole `src/` | `npm run check:dead-code` |
+| Build composer SPA (single HTML) | `npm run build:composer` |
 | Install git hooks (idempotent) | `./scripts/install-hooks.sh` |
 | Remove git hooks | `./scripts/install-hooks.sh --uninstall` |
 | List pipeline stages | `./scripts/verify.sh --list` |
@@ -288,3 +289,28 @@ exports found, `1` internal error.
   CODEOWNERS.
 - No `.gitignore` at the repo root (only inside `.crush/`).
 - No README.md.
+
+## Composer SPA (M4)
+
+The composer SPA sources live outside the DDD layer rules so React, MobX,
+and JSX can coexist with NodeNext + `verbatimModuleSyntax` in one
+`tsconfig.json`. JSX is enabled on the base config (`jsx: "react-jsx"`,
+`lib: ["ES2022", "DOM", "DOM.Iterable"]`).
+
+| Path | Purpose |
+| --- | --- |
+| `src/composer.tsx` | Entry: `mountComposer(target)`, `autoMount()`, library exports |
+| `src/composer/*.tsx` | React components: `FileBasketView`, `PasswordField`, `SafeDial`, `CombinedEntropy`, `SealProgressView`, `ComposerApp` |
+| `src/composer.e2e.test.ts` | happy-dom e2e tests that mount the shell and walk selectors |
+| `composer.html` | Vite HTML entry that loads `src/composer.tsx` |
+| `vite.config.ts` | Vite + `vite-plugin-singlefile` config |
+| `dist-composer/composer.html` | Build artifact: single self-contained HTML, ~104 KB gzipped |
+
+`npm run build:composer` produces `dist-composer/composer.html` — one
+HTML file with React, MobX, and the composer baked in, no external assets.
+The build is intentionally separate from the tsc/eslint pipeline (run it
+manually before release; the pipeline does not invoke Vite).
+
+The composer is meant to be embedded into the M6 reader template; the
+file picker / diceware generator / argon2 calibration are wired through
+M4.2 stores (`src/infrastructure/composer/`).
