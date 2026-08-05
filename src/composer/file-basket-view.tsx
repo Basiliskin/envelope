@@ -1,4 +1,5 @@
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 import type { FileBasketStore } from "../infrastructure/composer/file-basket-store.js";
 
 export interface FileBasketViewProps {
@@ -62,8 +63,24 @@ interface FilePickerProps {
 }
 
 function FilePicker({ onSelectFiles }: FilePickerProps) {
+  const [isDragging, setIsDragging] = useState(false);
   return (
-    <label className="file-picker-label">
+    <label
+      className={`file-picker-label${isDragging ? " is-dragging" : ""}`}
+      data-testid="file-drop-zone"
+      onDragOver={(event) => {
+        event.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => {
+        setIsDragging(false);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        setIsDragging(false);
+        onSelectFiles(Array.from(event.dataTransfer.files));
+      }}
+    >
       Choose files or drop them here
       <input
         type="file"

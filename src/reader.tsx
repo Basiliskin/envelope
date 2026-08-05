@@ -3,6 +3,7 @@ import ReaderFactory from "./infrastructure/reader/reader-factory.js";
 import type { ReaderStore } from "./infrastructure/reader/reader-store.js";
 import { ReaderApp } from "./reader/reader-app.js";
 import { SEALED_PAYLOAD_ELEMENT_ID } from "./domain/packaging/package-template.js";
+import "./shared/app.css";
 
 export function readEmbeddedPackage(root: ParentNode = document): Uint8Array {
   const payload = root.querySelector<HTMLScriptElement>(
