@@ -1,4 +1,5 @@
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 import type { CredentialStore } from "../infrastructure/composer/credential-store.js";
 
 export interface PasswordFieldProps {
@@ -8,6 +9,10 @@ export interface PasswordFieldProps {
 
 export const PasswordField = observer(
   ({ store, onGeneratePassphrase }: PasswordFieldProps) => {
+    const [revealed, setRevealed] = useState(false);
+    const passwordIssues = store.credentialIssues.filter((issue) =>
+      issue.code.startsWith("password"),
+    );
     return (
       <section
         aria-label="Password"
@@ -17,14 +22,24 @@ export const PasswordField = observer(
         <h2>Password</h2>
         <div className="field-row">
           <input
-            type="password"
+            type={revealed ? "text" : "password"}
             className="field-input"
             value={store.password}
             data-testid="password-input"
             placeholder="Enter a password"
             onChange={(event) => store.setPassword(event.currentTarget.value)}
-            aria-invalid={store.credentialIssues.length > 0}
+            aria-invalid={passwordIssues.length > 0}
           />
+          <button
+            type="button"
+            className="btn"
+            data-testid="password-reveal"
+            aria-pressed={revealed}
+            aria-label={revealed ? "Hide password" : "Show password"}
+            onClick={() => setRevealed((current) => !current)}
+          >
+            {revealed ? "Hide" : "Show"}
+          </button>
           {onGeneratePassphrase !== undefined ? (
             <button
               type="button"
@@ -39,9 +54,9 @@ export const PasswordField = observer(
             </button>
           ) : null}
         </div>
-        {store.credentialIssues.length > 0 ? (
+        {passwordIssues.length > 0 ? (
           <ul className="issue-list" data-testid="credential-issues">
-            {store.credentialIssues.map((issue) => (
+            {passwordIssues.map((issue) => (
               <li
                 key={issue.code}
                 className="issue-item"

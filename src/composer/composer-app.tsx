@@ -74,7 +74,12 @@ const ComposerBody = observer(({ state }: ComposerBodyProps) => {
           generateDiceware(Math.random, 5, " ")
         }
       />
-      <SafeDial store={credential} />
+      <SafeDial
+        store={credential}
+        issues={credential.credentialIssues.filter((issue) =>
+          issue.code.startsWith("dial"),
+        )}
+      />
       <CombinedEntropy
         credential={credential}
         basket={basket}

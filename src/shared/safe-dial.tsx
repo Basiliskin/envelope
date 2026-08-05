@@ -13,11 +13,17 @@ export interface SafeDialStore {
   subscribe?(notify: () => void): () => void;
 }
 
-export interface SafeDialProps {
-  readonly store: SafeDialStore;
+export interface SafeDialIssue {
+  readonly code: string;
+  readonly message: string;
 }
 
-export function SafeDial({ store }: SafeDialProps) {
+export interface SafeDialProps {
+  readonly store: SafeDialStore;
+  readonly issues?: readonly SafeDialIssue[];
+}
+
+export function SafeDial({ store, issues }: SafeDialProps) {
   useOptionalStore(store);
   return (
     <section
@@ -29,6 +35,19 @@ export function SafeDial({ store }: SafeDialProps) {
       <DialRound round={1} direction="CW" value={store.firstPosition} store={store} />
       <DialRound round={2} direction="CCW" value={store.secondPosition} store={store} />
       <DialRound round={3} direction="CW" value={store.thirdPosition} store={store} />
+      {issues !== undefined && issues.length > 0 ? (
+        <ul className="issue-list" data-testid="dial-issues">
+          {issues.map((issue) => (
+            <li
+              key={issue.code}
+              className="issue-item"
+              data-testid={`issue-${issue.code}`}
+            >
+              {issue.message}
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <div className="btn-row">
         <button
           type="button"
