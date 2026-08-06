@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-Fend Solutions - Senior Backend Engineer Prep Guide</title>
+    <style>
+        :root {
+            --dfend-blue: #0056b3;
+            --dfend-dark: #0f172a;
+            --dfend-light: #f1f5f9;
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dfend-dark);
+            color: var(--dfend-light);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--accent);
+            padding: 3rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--dfend-blue);
+        }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        header p { color: #94a3b8; margin-top: 1rem; font-size: 1.2rem; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .walkthrough {
+            background-color: #1e293b;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            border-left: 5px solid var(--accent);
+        }
+        .walkthrough h2 { color: var(--accent); margin-top: 0; }
+        .walkthrough ol { padding-left: 20px; }
+        .walkthrough li { margin-bottom: 0.8rem; }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            height: 420px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card-front {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+        }
+        .card-back {
+            background-color: #0f172a;
+            border: 1px solid var(--dfend-blue);
+            transform: rotateY(180deg);
+            overflow-y: auto;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+        }
+        .card-desc {
+            color: #cbd5e1;
+            flex-grow: 1;
+        }
+        .flip-hint {
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: #64748b;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .do { color: var(--success); }
+        .dont { color: var(--danger); }
+        .example { color: var(--warning); }
+        
+        .section-content {
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: var(--dfend-blue); border-radius: 3px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>D-Fend Solutions Prep Guide</h1>
+        <p>Senior Software Engineer (Cloud/Backend) - Technical Anchor</p>
+    </header>
+
+    <div class="container">
+        <!-- Walkthrough Guide -->
+        <div class="walkthrough">
+            <h2>Preparation Walkthrough Strategy</h2>
+            <p>As a Lead Technical Anchor for a massive 3-tier SaaS ecosystem (Cloud, On-Prem, Edge), you need to prove "battle scars" in architecture while remaining "hot on code." Follow this strategy:</p>
+            <ol>
+                <li><strong>Master the Node.js Core:</strong> Expect deep questions on the JS Event Loop, asynchronous programming, and how NestJS handles Dependency Injection and lifecycle. Be ready to code complex async flows.</li>
+                <li><strong>Draw the 3-Tier Architecture:</strong> Be prepared to whiteboard how telemetry data moves from an Edge SDR sensor, through an On-Prem Gateway (MSC2), to the Cloud SaaS. Discuss bottlenecks and network constraints.</li>
+                <li><strong>Event-Driven Design:</strong> Know when to use Kafka vs. RabbitMQ vs. Redis Streams. You will be asked how to handle high-throughput telemetry without dropping messages or blocking the system.</li>
+                <li><strong>Security & Multi-Tenancy:</strong> Understand how to isolate tenant data securely. Brush up on Zero Trust Architecture (ZTA) and how to implement mTLS between microservices.</li>
+                <li><strong>"You Build It, You Run It":</strong> Showcase your IaC skills (Terraform/CDK) and observability mindset (Prometheus, Datadog). They want engineers who own their production environments.</li>
+                <li><strong>AI & Efficiency:</strong> Mention your experience with AI tools (Cursor, Copilot) to show you are a modern, high-velocity developer.</li>
+            </ol>
+        </div>
+
+        <!-- Training Cards -->
+        <div class="cards-grid" id="cardsGrid">
+            <!-- Cards will be injected by JS -->
+        </div>
+    </div>
+
+    <script>
+        const cardData = [
+            {
+                title: "Distributed Systems & 3-Tier Arch",
+                desc: "Designing the Cloud, On-Prem (Gateways), and Edge (SDR/IoT) layers. Focus on high-throughput data ingestion and inference.",
+                do: "Design for fault tolerance, data consistency across tiers, and use BFF (Backend-for-Frontend) patterns to aggregate data.",
+                dont: "Create tight coupling between Edge sensors and Cloud databases. Don't assume perfect network connectivity between On-Prem and Cloud.",
+                example: "Edge sensors stream RF data via gRPC to an On-Prem Gateway, which batches and forwards telemetry to the Cloud SaaS via Kafka to handle network drops."
+            },
+            {
+                title: "Node.js & NestJS Mastery",
+                desc: "Deep backend coding using JS/TS. Mastering the Event Loop, async programming, and NestJS architecture.",
+                do: "Offload heavy CPU-bound tasks (like data parsing) to Worker Threads. Use NestJS Providers and Modules for clean DI.",
+                dont: "Block the main event loop with synchronous heavy computations. Don't overuse `setTimeout` for flow control.",
+                example: "Implementing a NestJS Guard for multi-tenant auth that validates JWTs asynchronously without blocking the Event Loop."
+            },
+            {
+                title: "Event-Driven & State Management",
+                desc: "Using Kafka/RabbitMQ for messaging. Managing high-speed state with Redis and durability with PostgreSQL.",
+                do: "Use Redis for fast, transient state (e.g., active drone tracking sessions). Use Postgres for long-term relational data.",
+                dont: "Use Postgres for high-speed, temporary state where data changes thousands of times per second.",
+                example: "Sensor telemetry flows into Kafka -> processed by a microservice -> active threat state cached in Redis -> historical logs persisted in Postgres."
+            },
+            {
+                title: "Cloud Native & Infrastructure",
+                desc: "Deploying on AWS/Azure/GCP using managed services (EKS/AKS), Docker, K8s, and IaC (Terraform/CDK).",
+                do: "Treat infrastructure as software. Write Terraform modules for EKS clusters and define autoscaling rules.",
+                dont: "Manually provision cloud resources via UI. Don't ignore auto-scaling limits which could crash the system during a drone swarm.",
+                example: "A Terraform script provisioning an EKS cluster with Horizontal Pod Autoscalers linked to Redis queue length metrics."
+            },
+            {
+                title: "SaaS Security & Multi-Tenancy",
+                desc: "Securing a multi-tenant environment. Implementing Zero Trust Architecture (ZTA) and mTLS.",
+                do: "Implement strict tenant isolation using Row Level Security (RLS) in Postgres or separate schemas. Use mTLS for all internal service-to-service calls.",
+                dont: "Rely solely on application-level checks for tenant isolation. Don't use plain HTTP for internal microservice communication.",
+                example: "Using NestJS interceptors to inject a `tenantId` into every DB query, combined with database-enforced RLS to prevent cross-tenant data leaks."
+            },
+            {
+                title: "Observability & DevOps Culture",
+                desc: "Owning the software lifecycle. Implementing Prometheus, Grafana, ELK, and Datadog for production monitoring.",
+                do: "Instrument code with metrics, logs, and traces (Red/Use metrics). Create runbooks for common alerts.",
+                dont: "Rely on `console.log` for debugging production issues. Don't create alerts without context (alert fatigue).",
+                example: "Setting up a Grafana dashboard tracking p99 latency of REST endpoints and configuring Datadog alerts when ingestion queue depth exceeds 80%."
+            }
+        ];
+
+        const grid = document.getElementById('cardsGrid');
+
+        cardData.forEach((data, index) => {
+            const cardContainer = document.createElement('div');
+            cardContainer.className = 'card-container';
+            
+            cardContainer.innerHTML = `
+                <div class="card" onclick="flipCard(this)">
+                    <div class="card-face card-front">
+                        <div class="card-title">${index + 1}. ${data.title}</div>
+                        <div class="card-desc">${data.desc}</div>
+                        <div class="flip-hint">Click to view Do's, Don'ts & Examples</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="card-title">${data.title}</div>
+                        
+                        <div class="section-title do">✓ Do</div>
+                        <div class="section-content">${data.do}</div>
+                        
+                        <div class="section-title dont">✗ Don't</div>
+                        <div class="section-content">${data.dont}</div>
+                        
+                        <div class="section-title example">💡 Example</div>
+                        <div class="section-content">${data.example}</div>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(cardContainer);
+        });
+
+        function flipCard(element) {
+            element.classList.toggle('flipped');
+        }
+    </script>
+</body>
+</html>

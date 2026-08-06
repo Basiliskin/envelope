@@ -1,14 +1,20 @@
 # CLAUDE.md — hooks
 
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-06
 **Mode:** Flat
 
 ## Overview
-Contains 1 source file(s) in `scripts/ts-pipeline/install/hooks`.
+
+Contains 2 source file(s) in `.claude/hooks`.
 
 ## File Map
 
 ### check-dead-exports.mjs
+
+- **Purpose:** Module with no detected exports.
+
+### check-tests.mjs
+
 - **Purpose:** Module with no detected exports.
 
 ## Notes / Patterns
