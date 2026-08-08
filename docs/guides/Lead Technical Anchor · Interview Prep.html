@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Technical Anchor · Interview Prep</title>
+    <style>
+        /* ===== CSS Variables & Reset ===== */
+        :root {
+            --bg: #f6f8fc;
+            --bg-card: #ffffff;
+            --bg-sidebar: #1a2332;
+            --bg-sidebar-hover: #243044;
+            --text: #1e2a3a;
+            --text-light: #5a6b7e;
+            --text-sidebar: #b0c4de;
+            --border: #e2e8f0;
+            --primary: #2d6df6;
+            --primary-dark: #1a4fc3;
+            --primary-light: #e8eeff;
+            --success: #0f973d;
+            --danger: #e53e3e;
+            --warning: #d69e2e;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: 0.25s ease;
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --code-bg: #f0f2f5;
+            --code-text: #1e2a3a;
+            --badge-bg: #e2e8f0;
+            --badge-text: #2d3748;
+            --quiz-option-hover: #f0f4ff;
+            --flashcard-bg: #f0f4ff;
+            --star-bg: #fef9e7;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0d1117;
+            --bg-card: #161b22;
+            --bg-sidebar: #0d1117;
+            --bg-sidebar-hover: #1c2333;
+            --text: #e6edf3;
+            --text-light: #8b949e;
+            --text-sidebar: #8b949e;
+            --border: #30363d;
+            --primary: #58a6ff;
+            --primary-dark: #1f6feb;
+            --primary-light: #1c2333;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --code-bg: #0d1117;
+            --code-text: #e6edf3;
+            --badge-bg: #21262d;
+            --badge-text: #c9d1d9;
+            --quiz-option-hover: #1c2333;
+            --flashcard-bg: #1c2333;
+            --star-bg: #1c1a0e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            transition: background var(--transition), color var(--transition);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-light);
+        }
+
+        /* ===== Sidebar ===== */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            color: var(--text-sidebar);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+            flex-shrink: 0;
+            padding: 20px 0 40px;
+            border-right: 1px solid var(--border);
+            transition: transform 0.3s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand {
+            padding: 0 20px 18px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 12px;
+        }
+        .sidebar-brand h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+        .sidebar-brand span {
+            color: var(--primary);
+        }
+        .sidebar-brand small {
+            display: block;
+            font-size: 12px;
+            color: var(--text-sidebar);
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 0 12px;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--text-sidebar);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.15s;
+            margin-bottom: 1px;
+            cursor: pointer;
+        }
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: var(--bg-sidebar-hover);
+            color: #fff;
+        }
+        .sidebar-nav a .icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .sidebar-nav a .badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: #fff;
+            font-size: 10px;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-sidebar);
+        }
+        .sidebar-footer .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-sidebar);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 0;
+            width: 100%;
+            font-family: var(--font);
+        }
+        .sidebar-footer .theme-toggle:hover {
+            color: #fff;
+        }
+        .sidebar-footer .progress-text {
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .sidebar-footer .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .sidebar-footer .progress-bar .fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        /* ===== Mobile toggle ===== */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            z-index: 200;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 99;
+        }
+
+        /* ===== Main content ===== */
+        .main {
+            flex: 1;
+            padding: 40px 48px 80px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section {
+            display: none;
+            animation: fadeUp 0.35s ease;
+        }
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-title .emoji {
+            font-size: 30px;
+        }
+        .section-sub {
+            color: var(--text-light);
+            font-size: 15px;
+            margin-bottom: 28px;
+            border-left: 3px solid var(--primary);
+            padding-left: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: background var(--transition), border var(--transition);
+        }
+        .card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 16px;
+            margin-bottom: 6px;
+        }
+        .card p,
+        .card li {
+            font-size: 14.5px;
+            line-height: 1.7;
+            color: var(--text);
+        }
+        .card ul,
+        .card ol {
+            padding-left: 22px;
+            margin: 6px 0 10px;
+        }
+        .card li {
+            margin-bottom: 4px;
+        }
+
+        .badge-tag {
+            display: inline-block;
+            background: var(--badge-bg);
+            color: var(--badge-text);
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-right: 4px;
+        }
+        .badge-tag.primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .badge-tag.success {
+            background: var(--success);
+            color: #fff;
+        }
+        .badge-tag.danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .badge-tag.warning {
+            background: var(--warning);
+            color: #fff;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ===== Code blocks ===== */
+        .code-block {
+            background: var(--code-bg);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13.5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid var(--border);
+            margin: 10px 0 14px;
+            color: var(--code-text);
+            position: relative;
+        }
+        .code-block .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-family: var(--font);
+            transition: 0.15s;
+        }
+        .code-block .copy-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* ===== Flashcards ===== */
+        .flashcard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .flashcard {
+            width: 100%;
+            max-width: 640px;
+            min-height: 200px;
+            background: var(--flashcard-bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: all 0.25s;
+            cursor: pointer;
+            position: relative;
+        }
+        .flashcard .front,
+        .flashcard .back {
+            width: 100%;
+        }
+        .flashcard .back {
+            display: none;
+        }
+        .flashcard.show-back .front {
+            display: none;
+        }
+        .flashcard.show-back .back {
+            display: block;
+        }
+        .flashcard .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .flashcard .question {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+        .flashcard .answer {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+        .flashcard-nav {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .flashcard-nav button {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text);
+            transition: 0.15s;
+            font-family: var(--font);
+        }
+        .flashcard-nav button:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .flashcard-nav .counter {
+            font-size: 14px;
+            color: var(--text-light);
+            min-width: 70px;
+            text-align: center;
+        }
+
+        /* ===== Quiz ===== */
+        .quiz-question {
+            margin-bottom: 18px;
+        }
+        .quiz-question .q-text {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .quiz-options label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 14px;
+            background: var(--bg-card);
+        }
+        .quiz-options label:hover {
+            background: var(--quiz-option-hover);
+        }
+        .quiz-options input[type="radio"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        .quiz-options label.correct {
+            border-color: var(--success);
+            background: #e6f7ed;
+        }
+        .quiz-options label.incorrect {
+            border-color: var(--danger);
+            background: #fde8e8;
+        }
+        .quiz-feedback {
+            margin-top: 10px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 14px;
+            display: none;
+        }
+        .quiz-feedback.show {
+            display: block;
+        }
+        .quiz-feedback.correct {
+            background: #e6f7ed;
+            color: var(--success);
+        }
+        .quiz-feedback.incorrect {
+            background: #fde8e8;
+            color: var(--danger);
+        }
+        .quiz-score {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 12px;
+        }
+
+        /* ===== Difficulty ===== */
+        .difficulty {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 6px;
+        }
+        .difficulty .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+        .difficulty .dot.filled {
+            background: var(--primary);
+        }
+        .difficulty .dot.filled.hard {
+            background: var(--danger);
+        }
+        .difficulty .dot.filled.medium {
+            background: var(--warning);
+        }
+        .difficulty .dot.filled.easy {
+            background: var(--success);
+        }
+
+        /* ===== Do / Don't ===== */
+        .do-dont {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 8px 0 4px;
+        }
+        .do-dont .do {
+            border-left: 4px solid var(--success);
+            padding-left: 14px;
+        }
+        .do-dont .dont {
+            border-left: 4px solid var(--danger);
+            padding-left: 14px;
+        }
+        .do-dont .do strong,
+        .do-dont .dont strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        .do-dont ul {
+            padding-left: 18px;
+            margin: 4px 0;
+        }
+        .do-dont ul li {
+            font-size: 13.5px;
+        }
+
+        /* ===== Red flag ===== */
+        .red-flag {
+            background: #fde8e8;
+            border-left: 4px solid var(--danger);
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            margin-top: 8px;
+            font-size: 14px;
+            color: #9b2c2c;
+        }
+        [data-theme="dark"] .red-flag {
+            background: #2d1a1a;
+            color: #f5a3a3;
+        }
+
+        /* ===== STAR ===== */
+        .star-example {
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin: 6px 0 10px;
+            border-left: 4px solid var(--primary);
+        }
+        .star-example strong {
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        /* ===== Study plan ===== */
+        .study-day {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+        .study-day .day {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .study-day .topics {
+            font-size: 14px;
+        }
+        .study-day .time {
+            font-size: 13px;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        /* ===== Mock interview ===== */
+        .mock-question {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .mock-answer {
+            display: none;
+            margin-top: 12px;
+            padding: 14px 18px;
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--primary);
+        }
+        .mock-answer.show {
+            display: block;
+        }
+        .mock-nav {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .mock-nav button {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text);
+            font-family: var(--font);
+            transition: 0.15s;
+        }
+        .mock-nav button:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* ===== Cheat sheet printable ===== */
+        .cheat-sheet {
+            columns: 2 240px;
+            column-gap: 28px;
+        }
+        .cheat-sheet .cs-item {
+            break-inside: avoid;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        .cheat-sheet .cs-item h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+        .cheat-sheet .cs-item p,
+        .cheat-sheet .cs-item li {
+            font-size: 13.5px;
+        }
+        .cheat-sheet .cs-item ul {
+            padding-left: 18px;
+            margin: 2px 0;
+        }
+
+        @media print {
+            .sidebar,
+            .mobile-toggle,
+            .mobile-overlay,
+            .flashcard-nav,
+            .mock-nav,
+            .copy-btn {
+                display: none !important;
+            }
+            .main {
+                padding: 20px !important;
+                max-width: 100% !important;
+            }
+            .section {
+                display: block !important;
+            }
+            .card {
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+            .cheat-sheet {
+                columns: 2 200px;
+            }
+            body {
+                background: #fff !important;
+                color: #000 !important;
+            }
+            .code-block {
+                background: #f4f4f4 !important;
+                color: #000 !important;
+            }
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 992px) {
+            .main {
+                padding: 28px 24px 60px;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .do-dont {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                width: 280px;
+                height: 100vh;
+                top: 0;
+                left: 0;
+                z-index: 150;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .mobile-toggle {
+                display: block;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+            .cheat-sheet {
+                columns: 1;
+            }
+            .study-day {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+            .study-day .time {
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main {
+                padding: 20px 14px 50px;
+            }
+            .card {
+                padding: 16px 18px;
+            }
+            .section-title {
+                font-size: 22px;
+            }
+            .flashcard {
+                padding: 24px 20px;
+                min-height: 160px;
+            }
+            .flashcard .question {
+                font-size: 16px;
+            }
+            .flashcard .answer {
+                font-size: 14px;
+            }
+            .code-block {
+                font-size: 12px;
+                padding: 12px 14px;
+            }
+        }
+
+        /* ===== Misc utilities ===== */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .text-sm {
+            font-size: 13px;
+        }
+        .text-muted {
+            color: var(--text-light);
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        .collapse-toggle {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .collapse-toggle .arrow {
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+        .collapse-toggle .arrow.open {
+            transform: rotate(90deg);
+        }
+        .collapse-content {
+            overflow: hidden;
+            transition: max-height 0.35s ease, opacity 0.25s ease;
+            max-height: 0;
+            opacity: 0;
+        }
+        .collapse-content.open {
+            max-height: 6000px;
+            opacity: 1;
+        }
+
+        /* search */
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 14px;
+            font-family: var(--font);
+            min-width: 180px;
+            transition: border 0.15s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .search-box input::placeholder {
+            color: var(--text-light);
+        }
+        .search-box .clear-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-light);
+            font-family: var(--font);
+        }
+        .search-box .clear-btn:hover {
+            background: var(--border);
+        }
+
+        /* progress indicator on cards */
+        .progress-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            margin-right: 4px;
+        }
+        .progress-dot.done {
+            background: var(--success);
+        }
+        .progress-dot.partial {
+            background: var(--warning);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Mobile Toggle ===== -->
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">☰</button>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar" id="sidebar" role="navigation">
+        <div class="sidebar-brand">
+            <h1>Lead <span>Anchor</span></h1>
+            <small>Interview Prep · Platform Group</small>
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav">
+            <a href="#" data-section="executive" class="active"><span class="icon">📋</span> Executive Summary</a>
+            <a href="#" data-section="skills"><span class="icon">🧠</span> Skills Breakdown</a>
+            <a href="#" data-section="cards"><span class="icon">🃏</span> Training Cards</a>
+            <a href="#" data-section="deepdive"><span class="icon">🔬</span> Technical Deep Dive</a>
+            <a href="#" data-section="behavioral"><span class="icon">💬</span> Behavioral STAR</a>
+            <a href="#" data-section="coding"><span class="icon">⌨️</span> Coding Interview</a>
+            <a href="#" data-section="systemdesign"><span class="icon">🏗️</span> System Design</a>
+            <a href="#" data-section="company"><span class="icon">🏢</span> Company Prep</a>
+            <a href="#" data-section="flashcards"><span class="icon">🃏</span> Flashcards</a>
+            <a href="#" data-section="knowledge"><span class="icon">📝</span> Knowledge Check</a>
+            <a href="#" data-section="cheatsheet"><span class="icon">📄</span> Cheat Sheet</a>
+            <a href="#" data-section="studyplan"><span class="icon">📅</span> 7-Day Study Plan</a>
+            <a href="#" data-section="mock"><span class="icon">🎤</span> Mock Interview</a>
+            <a href="#" data-section="bonus"><span class="icon">⭐</span> Bonus</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="theme-toggle" id="themeToggle">🌓 Dark / Light</button>
+            <div class="progress-text">Progress: <span id="progressPercent">0</span>%</div>
+            <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+    </aside>
+
+    <!-- ===== Main Content ===== -->
+    <main class="main" id="mainContent">
+
+        <!-- ==================== SECTION: Executive Summary ==================== -->
+        <section class="section active" id="section-executive">
+            <h2 class="section-title"><span class="emoji">📋</span> Executive Summary</h2>
+            <div class="section-sub">Company overview, role summary, and what success looks like.</div>
+
+            <div class="card">
+                <h3>🏢 Company Overview</h3>
+                <p>We are building a brand-new <strong>Platform group</strong> with a strong foundational team already in place. The company operates a mission-critical platform across three tiers:</p>
+                <ul>
+                    <li><strong>Cloud:</strong> Worldwide SaaS deployment</li>
+                    <li><strong>On-Premise:</strong> Gateways / MSC2</li>
+                    <li><strong>Edge Device Sensors:</strong> SDR / IoT tactical devices</li>
+                </ul>
+                <p>The platform handles real-time sensor data ingestion and inference at massive scale, with a strict <strong>"You Build It, You Run It"</strong> culture.</p>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Role Summary</h3>
+                <p><strong>Lead Technical Anchor</strong> — Key Technical Partner to the Principal Architect. You will be one of the main players in the group, driving ideation, design, implementation, maintenance, and monitoring of the distributed ecosystem.</p>
+                <p>We need a <strong>heavyweight engineer</strong> with battle scars from planning and designing distributed systems from scratch, who is still <strong>"hot on code"</strong> and deeply hands-on.</p>
+            </div>
+
+            <div class="card">
+                <h3>⚡ Key Responsibilities</h3>
+                <ul>
+                    <li><strong>Key Technical Partner:</strong> Work with the Principal and Software Architect to translate vision into production reality.</li>
+                    <li><strong>Architect Distributed Systems:</strong> Lead design, planning, and implementation of high-throughput distributed systems across Edge, On-Prem, and Cloud.</li>
+                    <li><strong>Lead by Example in Code:</strong> Write sharp, scalable, maintainable code using Node.js, Express, and NestJS. Set engineering standards.</li>
+                    <li><strong>End-to-End Ownership:</strong> Full lifecycle from architectural design to deployment and monitoring. Ensure high availability and observability.</li>
+                    <li><strong>Backend &amp; Infrastructure:</strong> Design high-performance backend tasks, infrastructure, and BFF layers with REST and gRPC for real-time sensor data.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>✅ What Success Looks Like</h3>
+                <ul>
+                    <li>You've shipped a production-ready, multi-tenant distributed system that ingests and processes sensor data across all three tiers.</li>
+                    <li>The platform is highly available, observable, and scales elastically.</li>
+                    <li>You've set the engineering standard for the team — code quality, testing, and operational excellence.</li>
+                    <li>You're the go-to person for architectural decisions and technical mentorship.</li>
+                    <li>You've built strong partnership with the Principal Architect and the broader platform team.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: Skills Breakdown ==================== -->
+        <section class="section" id="section-skills">
+            <h2 class="section-title"><span class="emoji">🧠</span> Skills Breakdown</h2>
+            <div class="section-sub">Deep dive into every required and preferred skill.</div>
+
+            <!-- search -->
+            <div class="search-box">
+                <input type="text" id="skillSearch" placeholder="Filter skills…" aria-label="Search skills">
+                <button class="clear-btn" id="skillClear">✕</button>
+            </div>
+
+            <div id="skillContainer">
+                <!-- skills injected by JS -->
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: Training Cards ==================== -->
+        <section class="section" id="section-cards">
+            <h2 class="section-title"><span class="emoji">🃏</span> Interactive Training Cards</h2>
+            <div class="section-sub">Core concepts with real-world examples, best practices, and mini quizzes.</div>
+            <div id="cardsContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Technical Deep Dive ==================== -->
+        <section class="section" id="section-deepdive">
+            <h2 class="section-title"><span class="emoji">🔬</span> Technical Deep Dive</h2>
+            <div class="section-sub">Architecture, core concepts, APIs, and interview questions for each technology.</div>
+            <div id="deepdiveContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Behavioral STAR ==================== -->
+        <section class="section" id="section-behavioral">
+            <h2 class="section-title"><span class="emoji">💬</span> Behavioral STAR Examples</h2>
+            <div class="section-sub">Situation · Task · Action · Result — for key behavioral topics.</div>
+            <div id="behavioralContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Coding Interview ==================== -->
+        <section class="section" id="section-coding">
+            <h2 class="section-title"><span class="emoji">⌨️</span> Coding Interview Preparation</h2>
+            <div class="section-sub">Likely coding problems, step-by-step solutions, and complexity analysis.</div>
+            <div id="codingContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: System Design ==================== -->
+        <section class="section" id="section-systemdesign">
+            <h2 class="section-title"><span class="emoji">🏗️</span> System Design</h2>
+            <div class="section-sub">Walkthroughs for system design questions related to the role.</div>
+            <div id="systemdesignContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Company Prep ==================== -->
+        <section class="section" id="section-company">
+            <h2 class="section-title"><span class="emoji">🏢</span> Company-Specific Preparation</h2>
+            <div class="section-sub">Products, customers, business model, competitors, and questions to ask.</div>
+            <div id="companyContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Flashcards ==================== -->
+        <section class="section" id="section-flashcards">
+            <h2 class="section-title"><span class="emoji">🃏</span> Interactive Flashcards</h2>
+            <div class="section-sub">Review key concepts with a spaced-repetition style flashcard deck.</div>
+            <div class="flashcard-container" id="flashcardContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Knowledge Check ==================== -->
+        <section class="section" id="section-knowledge">
+            <h2 class="section-title"><span class="emoji">📝</span> Knowledge Check</h2>
+            <div class="section-sub">Interactive quizzes with immediate feedback and score tracking.</div>
+            <div id="quizContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Cheat Sheet ==================== -->
+        <section class="section" id="section-cheatsheet">
+            <h2 class="section-title"><span class="emoji">📄</span> Interview Cheat Sheet</h2>
+            <div class="section-sub">Printable summary of key technologies, concepts, and tips.</div>
+            <div class="cheat-sheet" id="cheatSheetContainer"></div>
+            <div style="margin-top:16px;">
+                <button onclick="window.print()" style="background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 24px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);">🖨️ Print / Save as PDF</button>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: Study Plan ==================== -->
+        <section class="section" id="section-studyplan">
+            <h2 class="section-title"><span class="emoji">📅</span> 7-Day Study Plan</h2>
+            <div class="section-sub">Daily schedule with topics, exercises, and estimated time.</div>
+            <div id="studyplanContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Mock Interview ==================== -->
+        <section class="section" id="section-mock">
+            <h2 class="section-title"><span class="emoji">🎤</span> Mock Interview</h2>
+            <div class="section-sub">Interactive mock interview with technical and behavioral questions.</div>
+            <div id="mockContainer"></div>
+        </section>
+
+        <!-- ==================== SECTION: Bonus ==================== -->
+        <section class="section" id="section-bonus">
+            <h2 class="section-title"><span class="emoji">⭐</span> Bonus Section</h2>
+            <div class="section-sub">Advanced topics, traps, senior-level discussion points, and questions to ask.</div>
+            <div id="bonusContainer"></div>
+        </section>
+
+    </main>
+
+    <script>
+        // ========================================================================
+        // DATA
+        // ========================================================================
+
+        const SKILLS = [{
+            id: 'nodejs',
+            name: 'Node.js & TypeScript',
+            explanation: 'Expert-level knowledge of JavaScript and TypeScript, with deep expertise in Node.js runtime, Express, and NestJS frameworks.',
+            why: 'Node.js is the core backend runtime. TypeScript adds type safety. Express/NestJS provide the framework layer for building REST and gRPC services.',
+            evaluating: 'Deep understanding of the event loop, async patterns, streams, performance tuning, and production debugging.',
+            questions: [
+                'How does the Node.js event loop work?',
+                'Explain the difference between setImmediate, process.nextTick, and setTimeout.',
+                'How do you handle memory leaks in Node.js?',
+                'What are streams and when would you use them?',
+                'How does clustering work in Node.js?'
+            ],
+            answers: [
+                'The event loop handles async operations in phases: timers, pending callbacks, idle, poll, check, close callbacks.',
+                'process.nextTick runs before the event loop continues; setImmediate runs in the check phase; setTimeout runs in the timers phase.',
+                'Use heap snapshots, monitor memory usage, look for global variables, closures, and event listeners not cleaned up.',
+                'Streams process data piece by piece (readable, writable, duplex, transform) — ideal for large files or network data.',
+                'Clustering creates child processes that share server ports, using the built-in cluster module for load balancing.'
+            ],
+            beginnerMistakes: [
+                'Blocking the event loop with synchronous CPU-heavy tasks.',
+                'Not handling errors in async code (unhandled rejections).',
+                'Overusing callbacks instead of promises/async-await.',
+                'Not using TypeScript effectively (any types everywhere).'
+            ],
+            doDont: {
+                do: ['Use async/await over raw callbacks.', 'Use TypeScript for type safety.', 'Use streams for large data.', 'Monitor memory and event loop lag.'],
+                dont: ['Block the event loop.', 'Ignore unhandled rejections.', 'Use synchronous file/network ops in handlers.', 'Leak memory via closures.']
+            },
+            redFlags: [
+                'Cannot explain the event loop phases.',
+                'Unaware of clustering or worker threads.',
+                'No experience with production debugging.',
+                'TypeScript is "just JavaScript with types" — no advanced types.'
+            ]
+        }, {
+            id: 'distributed',
+            name: 'Distributed Systems',
+            explanation: 'Battle-tested experience designing and implementing high-throughput distributed systems from scratch, with event-driven architecture and microservices.',
+            why: 'The platform spans cloud, on-prem, and edge. Distributed systems knowledge is essential for scalability, resilience, and data consistency.',
+            evaluating: 'Ability to reason about CAP theorem, consistency models, partitioning, replication, and failure handling at scale.',
+            questions: [
+                'Explain the CAP theorem and how it applies to your design.',
+                'How do you handle eventual consistency in a distributed system?',
+                'What is a saga pattern and when would you use it?',
+                'How do you implement distributed tracing?',
+                'How do you handle network partitions?'
+            ],
+            answers: [
+                'CAP: Consistency, Availability, Partition tolerance — you can only have two. In practice, CP or AP depending on the use case.',
+                'Use idempotent operations, versioning, conflict resolution (CRDTs, last-write-wins), and compensating transactions.',
+                'Saga pattern manages distributed transactions via a sequence of local transactions with compensating actions.',
+                'Use OpenTelemetry with trace context propagation across services, and a collector like Jaeger or Zipkin.',
+                'Design for partition tolerance: retry with exponential backoff, circuit breakers, and graceful degradation.'
+            ],
+            beginnerMistakes: [
+                'Assuming network is reliable.',
+                'Not designing for idempotency.',
+                'Overlooking observability and monitoring.',
+                'Ignoring the impact of latency.'
+            ],
+            doDont: {
+                do: ['Design for failure.', 'Implement retries with backoff.', 'Use circuit breakers.', 'Ensure idempotency.'],
+                dont: ['Assume low latency.', 'Ignore network partitions.', 'Use two-phase commit (2PC) in microservices.', 'Skip distributed tracing.']
+            },
+            redFlags: [
+                'Cannot explain the CAP theorem.',
+                'No experience with distributed transactions or sagas.',
+                'Unaware of eventual consistency tradeoffs.',
+                'No production experience with distributed systems.'
+            ]
+        }, {
+            id: 'cloud',
+            name: 'Cloud Native (AWS/Azure/GCP)',
+            explanation: '5+ years of experience with cloud providers, focusing on managed services — Serverless, EKS/AKS/GKE, auto-scaling, and multi-tenant SaaS.',
+            why: 'The platform runs on cloud infrastructure with elastic scaling and managed services to reduce operational overhead.',
+            evaluating: 'Knowledge of cloud services, IAM, networking, cost optimization, and operational excellence.',
+            questions: [
+                'How do you design a multi-tenant SaaS on AWS?',
+                'Explain how you would secure a Kubernetes cluster.',
+                'What auto-scaling strategies have you used?',
+                'How do you handle cloud cost optimization?',
+                'What is the difference between ECS and EKS?'
+            ],
+            answers: [
+                'Use separate databases or schema per tenant, with tenant-aware routing. Use IAM roles and resource isolation.',
+                'Use RBAC, network policies, pod security policies, and regular updates. Use service meshes for mTLS.',
+                'Horizontal Pod Autoscaling (HPA), cluster autoscaling, and custom metrics for auto-scaling.',
+                'Use reserved instances, spot instances, right-sizing, and monitoring tools like AWS Cost Explorer.',
+                'ECS is AWS\'s container orchestration; EKS is managed Kubernetes. EKS offers more flexibility and ecosystem.'
+            ],
+            beginnerMistakes: [
+                'Overprovisioning resources.',
+                'Not using auto-scaling.',
+                'Ignoring IAM best practices.',
+                'Not using infrastructure as code.'
+            ],
+            doDont: {
+                do: ['Use IaC (Terraform/CDK).', 'Implement auto-scaling.', 'Use least-privilege IAM.', 'Monitor costs.'],
+                dont: ['Over-provision.', 'Use root credentials.', 'Ignore security groups.', 'Skip observability.']
+            },
+            redFlags: [
+                'No experience with managed Kubernetes.',
+                'Unaware of IAM best practices.',
+                'Cannot explain auto-scaling strategies.',
+                'No cost optimization experience.'
+            ]
+        }, {
+            id: 'eventdriven',
+            name: 'Event-Driven Design (Kafka/RabbitMQ/Redis Stream)',
+            explanation: 'Proven experience with event-driven architecture using message brokers like Kafka, RabbitMQ, or Redis Streams for asynchronous communication.',
+            why: 'Event-driven design decouples services, enables scalability, and supports real-time data processing across tiers.',
+            evaluating: 'Understanding of message brokers, partitioning, consumer groups, exactly-once semantics, and stream processing.',
+            questions: [
+                'What is the difference between Kafka and RabbitMQ?',
+                'How do you guarantee exactly-once delivery?',
+                'What is a consumer group?',
+                'How do you handle message ordering?',
+                'What is a dead letter queue?'
+            ],
+            answers: [
+                'Kafka is a distributed log with high throughput; RabbitMQ is a message broker with complex routing. Kafka is better for stream processing.',
+                'Use idempotent producers, transactional consumers, and idempotent processing. Kafka supports exactly-once with the right configuration.',
+                'Consumer groups allow multiple consumers to share a topic, with each partition assigned to one consumer.',
+                'Use partitioning keys to ensure messages with the same key go to the same partition, preserving order.',
+                'A dead letter queue (DLQ) stores messages that cannot be processed, for later analysis and retry.'
+            ],
+            beginnerMistakes: [
+                'Not handling message failures.',
+                'Ignoring partition rebalancing.',
+                'Using synchronous patterns where async would work.',
+                'Not monitoring consumer lag.'
+            ],
+            doDont: {
+                do: ['Use partitioning for scalability.', 'Monitor consumer lag.', 'Implement DLQs.', 'Use idempotent processing.'],
+                dont: ['Ignore partition rebalancing.', 'Use sync over async when possible.', 'Forget to handle failures.', 'Overlook message size limits.']
+            },
+            redFlags: [
+                'Cannot explain consumer groups.',
+                'No experience with exactly-once semantics.',
+                'Unaware of DLQs.',
+                'No production experience with a message broker.'
+            ]
+        }, {
+            id: 'state',
+            name: 'State Management (Redis & PostgreSQL)',
+            explanation: 'High-speed in-memory state with Redis, and relational data stores with PostgreSQL. Expertise in caching, session management, and data persistence.',
+            why: 'Redis provides low-latency state management; PostgreSQL ensures durability and relational integrity.',
+            evaluating: 'Knowledge of Redis data structures, caching strategies, PostgreSQL indexing, query optimization, and transaction isolation.',
+            questions: [
+                'What Redis data structures have you used and why?',
+                'How do you implement caching with Redis?',
+                'Explain PostgreSQL indexing strategies.',
+                'How do you handle transactions in PostgreSQL?',
+                'What is the difference between Redis and Memcached?'
+            ],
+            answers: [
+                'Strings, hashes, lists, sets, sorted sets, streams. Use strings for simple values, hashes for objects, streams for event logs.',
+                'Cache-aside pattern: check cache first, if miss, read from DB and populate cache. Use TTLs and invalidation.',
+                'Use B-tree indexes for equality and range, GIN for full-text, and partial indexes for conditional queries.',
+                'Use BEGIN/COMMIT with appropriate isolation levels (READ COMMITTED, REPEATABLE READ, SERIALIZABLE).',
+                'Redis is more feature-rich (data structures, persistence, replication) than Memcached, which is a simple key-value cache.'
+            ],
+            beginnerMistakes: [
+                'Not using connection pooling.',
+                'Ignoring cache invalidation.',
+                'Not using indexes in PostgreSQL.',
+                'Overusing Redis for large data.'
+            ],
+            doDont: {
+                do: ['Use connection pooling.', 'Implement cache invalidation strategies.', 'Use proper indexes.', 'Monitor memory usage.'],
+                dont: ['Store large objects in Redis.', 'Ignore query performance.', 'Forget to use transactions.', 'Use Redis as a primary DB.']
+            },
+            redFlags: [
+                'Cannot explain Redis data structures.',
+                'No experience with query optimization.',
+                'Unaware of transaction isolation levels.',
+                'No production experience with Redis or PostgreSQL.'
+            ]
+        }, {
+            id: 'security',
+            name: 'SaaS Security (ZTA & mTLS)',
+            explanation: 'Expertise in secure multi-tenant SaaS, with knowledge of Zero Trust Architecture (ZTA) and mTLS for secure service-to-service communication.',
+            why: 'Security is critical for a multi-tenant platform handling sensitive sensor data across cloud, on-prem, and edge.',
+            evaluating: 'Understanding of ZTA principles, mTLS implementation, identity management, and secure design patterns.',
+            questions: [
+                'What are the principles of Zero Trust Architecture?',
+                'How do you implement mTLS in a microservices environment?',
+                'What is the difference between authentication and authorization?',
+                'How do you secure a multi-tenant system?',
+                'What is a service mesh and how does it help with security?'
+            ],
+            answers: [
+                'ZTA: never trust, always verify. Least privilege, micro-segmentation, continuous monitoring, and assume breach.',
+                'Use a service mesh (Istio, Linkerd) or sidecar proxies to handle mTLS between services. Use certificates from a CA.',
+                'Authentication verifies identity; authorization determines permissions. Both are needed for secure access.',
+                'Use tenant isolation (database/schema), tenant-aware routing, IAM policies, and encryption at rest and in transit.',
+                'A service mesh provides a dedicated infrastructure layer for service-to-service communication, including mTLS, observability, and traffic control.'
+            ],
+            beginnerMistakes: [
+                'Trusting network boundaries.',
+                'Not using mTLS in production.',
+                'Overlooking tenant isolation.',
+                'Using weak authentication.'
+            ],
+            doDont: {
+                do: ['Implement mTLS.', 'Use least privilege IAM.', 'Encrypt data at rest and in transit.', 'Audit access logs.'],
+                dont: ['Trust internal networks.', 'Use hardcoded credentials.', 'Ignore tenant isolation.', 'Skip security reviews.']
+            },
+            redFlags: [
+                'Cannot explain Zero Trust principles.',
+                'No experience with mTLS.',
+                'Unaware of tenant isolation.',
+                'No security-conscious design.'
+            ]
+        }, {
+            id: 'containers',
+            name: 'Containers (Docker & Kubernetes)',
+            explanation: 'Hands-on experience with Docker for containerization and basic Kubernetes for orchestration.',
+            why: 'Containers enable consistent deployment across environments and simplify scaling and management.',
+            evaluating: 'Knowledge of Dockerfiles, container best practices, Kubernetes primitives (pods, services, deployments, configmaps).',
+            questions: [
+                'What is the difference between a Docker image and a container?',
+                'How do you optimize Docker images?',
+                'What are Kubernetes pods and how do they work?',
+                'Explain the difference between a Deployment and a StatefulSet.',
+                'How do you handle secrets in Kubernetes?'
+            ],
+            answers: [
+                'An image is a blueprint; a container is a running instance of an image. Images are stored in a registry.',
+                'Use multi-stage builds, minimal base images (Alpine), and reduce layers. Use .dockerignore to exclude unnecessary files.',
+                'Pods are the smallest deployable units in K8s, containing one or more containers sharing network and storage.',
+                'Deployments are for stateless apps; StatefulSets are for stateful apps with stable network identities and persistent storage.',
+                'Use Kubernetes Secrets, mounted as environment variables or volumes. Use external secret management (HashiCorp Vault).'
+            ],
+            beginnerMistakes: [
+                'Using large base images.',
+                'Not using .dockerignore.',
+                'Running as root in containers.',
+                'Not using liveness/readiness probes.'
+            ],
+            doDont: {
+                do: ['Use minimal base images.', 'Use .dockerignore.', 'Run as non-root.', 'Use liveness/readiness probes.'],
+                dont: ['Run as root.', 'Use large images.', 'Ignore security contexts.', 'Skip health checks.']
+            },
+            redFlags: [
+                'Cannot explain container vs image.',
+                'No experience with Kubernetes pods or deployments.',
+                'Unaware of security contexts.',
+                'No production container experience.'
+            ]
+        }, {
+            id: 'frontend',
+            name: 'React (Frontend Willingness)',
+            explanation: 'Practical experience with React and a strong willingness to touch client-side code when necessary to deliver end-to-end features.',
+            why: 'End-to-end ownership means occasionally diving into the frontend to deliver complete features.',
+            evaluating: 'Understanding of React components, state management, hooks, and the component lifecycle.',
+            questions: [
+                'What is the difference between state and props?',
+                'Explain the useEffect hook.',
+                'What is the virtual DOM and how does it work?',
+                'How do you manage state in a React application?',
+                'What are React hooks and why were they introduced?'
+            ],
+            answers: [
+                'State is internal to a component; props are passed from parent to child. State can be mutated; props are read-only.',
+                'useEffect runs side effects after render. It can be used for data fetching, subscriptions, and manual DOM updates.',
+                'The virtual DOM is a lightweight copy of the real DOM. React compares it with the previous version and applies only the changes.',
+                'Use useState for local state, useContext for global state, and Redux/Zustand for complex state management.',
+                'Hooks allow state and side effects in functional components, making code more reusable and easier to test.'
+            ],
+            beginnerMistakes: [
+                'Mutating state directly.',
+                'Not using keys in lists.',
+                'Overusing useEffect.',
+                'Not cleaning up side effects.'
+            ],
+            doDont: {
+                do: ['Use functional components and hooks.', 'Use keys for lists.', 'Clean up side effects.', 'Use proper state management.'],
+                dont: ['Mutate state directly.', 'Use class components unnecessarily.', 'Ignore performance optimization.', 'Skip testing.']
+            },
+            redFlags: [
+                'Cannot explain state vs props.',
+                'No experience with hooks.',
+                'Unaware of the virtual DOM.',
+                'No React production experience.'
+            ]
+        }];
+
+        // Training Cards
+        const TRAINING_CARDS = [{
+            concept: 'Event Loop & Async Programming',
+            description: 'The Node.js event loop enables non-blocking I/O by offloading operations to the system kernel when possible. Understanding its phases is critical for performance.',
+            example: 'Handling thousands of concurrent WebSocket connections while processing sensor data without blocking.',
+            best: 'Use async/await, avoid CPU-intensive tasks in the main thread, use worker threads for heavy computation.',
+            doList: ['Use async/await', 'Handle errors in promises', 'Use setImmediate for breaking long loops'],
+            dontList: ['Block the event loop', 'Use sync fs/network calls', 'Ignore unhandled rejections'],
+            pitfalls: ['Callback hell', 'Memory leaks from closures', 'Event loop starvation'],
+            quiz: { q: 'Which phase of the event loop handles I/O callbacks?', options: ['Timers', 'Poll', 'Check',
+                    'Close'], answer: 1 },
+            difficulty: 3
+        }, {
+            concept: 'Microservices & API Gateway',
+            description: 'Microservices decompose a system into independently deployable services. An API Gateway provides a single entry point, handling routing, authentication, and rate limiting.',
+            example: 'A sensor data ingestion service, a processing service, and a results service, all behind a gateway.',
+            best: 'Design for resilience (circuit breakers, retries), use service discovery, and implement observability.',
+            doList: ['Use API Gateway', 'Implement circuit breakers', 'Use service discovery'],
+            dontList: ['Create chatty APIs', 'Ignore distributed tracing', 'Skip health checks'],
+            pitfalls: ['Network latency', 'Distributed transactions', 'Service discovery failure'],
+            quiz: { q: 'What pattern is used to manage distributed transactions in microservices?', options: ['2PC',
+                    'Saga', 'TCC', 'Event Sourcing'
+                ], answer: 1 },
+            difficulty: 4
+        }, {
+            concept: 'Caching Strategies',
+            description: 'Caching reduces latency and database load. Common patterns: cache-aside, read-through, write-through, and write-behind.',
+            example: 'Using Redis to cache frequently accessed sensor configuration data, reducing PostgreSQL load by 80%.',
+            best: 'Use cache-aside for most reads, set appropriate TTLs, and implement invalidation strategies.',
+            doList: ['Use TTLs', 'Implement invalidation', 'Monitor hit rates'],
+            dontList: ['Cache everything', 'Ignore invalidation', 'Use cache for large data'],
+            pitfalls: ['Stale data', 'Cache stampede', 'Memory exhaustion'],
+            quiz: { q: 'Which caching pattern checks the cache first, then the database on miss?', options: [
+                    'Read-through', 'Cache-aside', 'Write-through', 'Write-behind'
+                ], answer: 1 },
+            difficulty: 2
+        }, {
+            concept: 'Event Sourcing & CQRS',
+            description: 'Event Sourcing stores the state as a sequence of events. CQRS separates read and write models. Together, they enable scalability and auditability.',
+            example: 'A sensor event log that can be replayed to rebuild state, with separate read models for dashboards.',
+            best: 'Use Event Sourcing for audit trails and complex business logic; use CQRS for high-read workloads.',
+            doList: ['Store events immutably', 'Use projections for read models', 'Implement event versioning'],
+            dontList: ['Use for simple CRUD', 'Ignore event versioning', 'Mix read and write models'],
+            pitfalls: ['Event schema evolution', 'Replay performance', 'Eventual consistency'],
+            quiz: { q: 'CQRS stands for:', options: ['Command Query Responsibility Segregation',
+                    'Command Queue Response System', 'Central Query Response Service',
+                    'Concurrent Query Resolution System'
+                ], answer: 0 },
+            difficulty: 4
+        }, {
+            concept: 'Circuit Breaker Pattern',
+            description: 'Circuit breakers prevent cascading failures by stopping calls to a failing service. States: Closed (calls allowed), Open (calls fail fast), Half-Open (test call allowed).',
+            example: 'A downstream ML inference service that occasionally times out. The circuit breaker opens after 3 failures, preventing thread exhaustion.',
+            best: 'Configure appropriate failure thresholds, timeouts, and retry policies.',
+            doList: ['Set thresholds based on your SLOs', 'Implement fallbacks', 'Monitor circuit states'],
+            dontList: ['Set too low thresholds', 'Ignore half-open state', 'Skip fallbacks'],
+            pitfalls: ['Flapping (rapid state changes)', 'Setting wrong thresholds', 'Not having fallbacks'],
+            quiz: { q: 'What state does a circuit breaker enter after a successful test call?', options: ['Open',
+                    'Closed', 'Half-Open', 'Idle'
+                ], answer: 1 },
+            difficulty: 3
+        }];
+
+        // Technical Deep Dive topics
+        const DEEP_DIVE = [{
+            tech: 'Node.js',
+            architecture: 'Event-driven, non-blocking I/O with a single-threaded event loop. Uses libuv for async I/O. Cluster module for multi-core scaling.',
+            core: 'Event loop, streams, buffers, modules (CommonJS/ESM), child processes, worker threads, and the V8 engine.',
+            apis: 'fs, http, net, crypto, stream, cluster, worker_threads, and the Node.js runtime API.',
+            questions: ['Explain the event loop with phases.', 'What is the difference between setImmediate and setTimeout?',
+                'How does Node.js handle concurrency?', 'What are streams and when to use them?'
+            ],
+            coding: ['Write a simple HTTP server.', 'Implement a stream that transforms data.', 'Use worker threads for CPU-bound tasks.',
+                'Write a clustering example.'
+            ],
+            system: ['Design a high-throughput API gateway.', 'Handle memory leaks in production.', 'Scale Node.js across multiple cores.',
+                'Implement graceful shutdown.'
+            ],
+            performance: ['Use async I/O, avoid blocking the loop, use worker threads for CPU, use streams for large data, optimize V8 memory.',
+                'Use --inspect for profiling, monitor event loop lag with a module like `blocked`.'
+            ],
+            security: ['Use helmet for security headers, validate input, use rate limiting, use HTTPS, keep dependencies updated.',
+                'Avoid `eval` and `vm` modules, use `--permission` flags, sanitize user input.'
+            ],
+            production: ['Use PM2 or cluster for process management, implement logging (winston/pino), use APM tools, implement health checks.',
+                'Use environment configs, implement retries with backoff, use circuit breakers.'
+            ]
+        }, {
+            tech: 'TypeScript',
+            architecture: 'A typed superset of JavaScript that compiles to plain JS. Provides static type checking, interfaces, generics, and advanced type inference.',
+            core: 'Types, interfaces, classes, generics, decorators, type guards, utility types, and module resolution.',
+            apis: 'tsc compiler, type declaration files, module resolution (Node/Classic), and the TypeScript language service.',
+            questions: ['What is the difference between `interface` and `type`?', 'How do generics work?',
+                'Explain utility types like Partial, Pick, Omit.', 'What are decorators and how are they used?'
+            ],
+            coding: ['Write a generic function to fetch data from an API.', 'Create a type-safe event emitter.',
+                'Implement a decorator for logging.', 'Use mapped types to create a type from an interface.'
+            ],
+            system: ['Design a type-safe API client.', 'Manage type definitions across a monorepo.', 'Use declaration files for third-party libraries.',
+                'Implement type-safe configuration.'
+            ],
+            performance: ['TypeScript compilation can be slow; use incremental builds, project references, and skipLibCheck.',
+                'Use `transpileOnly` for faster builds in development.'
+            ],
+            security: ['TypeScript helps prevent many runtime errors but doesn\'t guarantee security — still validate input and sanitize output.',
+                'Use `unknown` over `any` for better type safety.'
+            ],
+            production: ['Compile to ES2020 for modern V8, use source maps for debugging, and use `ts-node` for development only.',
+                'Use `tsc --noEmit` for type checking in CI.'
+            ]
+        }, {
+            tech: 'Express & NestJS',
+            architecture: 'Express is a minimal web framework; NestJS is a full-featured framework with dependency injection, modules, and decorators, built on top of Express/Fastify.',
+            core: 'Express: middleware, routing, request/response. NestJS: modules, controllers, providers, middleware, guards, interceptors, pipes, and filters.',
+            apis: 'Express: app.get/post, use, next. NestJS: @Controller, @Get, @Injectable, @Module, @UseGuards, @UsePipes.',
+            questions: ['What is middleware and how does it work?', 'How does NestJS dependency injection work?',
+                'What is the difference between a guard and an interceptor?', 'How do you handle errors in NestJS?'
+            ],
+            coding: ['Build a REST API with Express and TypeScript.', 'Create a NestJS module with a controller and a service.',
+                'Implement authentication middleware in Express.', 'Use an interceptor to log requests in NestJS.'
+            ],
+            system: ['Design a modular API with versioning.', 'Implement rate limiting and throttling.', 'Use global exception filters.',
+                'Implement request validation with class-validator.'
+            ],
+            performance: ['Use compression, enable gzip, use caching headers, and optimize database queries.',
+                'Use Fastify instead of Express for better performance in NestJS.'
+            ],
+            security: ['Use helmet, cors, rate limiting, CSRF protection, and input validation.', 'Use JWT or OAuth for authentication.',
+                'Implement RBAC with guards.'
+            ],
+            production: ['Use structured logging (pino), implement health checks, use environment variables, and monitor metrics.',
+                'Implement graceful shutdown and readiness probes.'
+            ]
+        }, {
+            tech: 'Distributed Systems (General)',
+            architecture: 'A system of multiple independent components that coordinate through network communication. Includes patterns like client-server, peer-to-peer, and microservices.',
+            core: 'CAP theorem, consistency models (strong, eventual), partitioning, replication, fault tolerance, consensus algorithms (Paxos, Raft).',
+            apis: 'gRPC, REST, message queues (Kafka, RabbitMQ), and distributed tracing (OpenTelemetry).',
+            questions: ['Explain the CAP theorem.', 'What is the difference between consistency and availability?',
+                'How does Raft achieve consensus?', 'What is a distributed transaction?'
+            ],
+            coding: ['Implement a distributed counter with strong consistency.', 'Build a distributed key-value store.',
+                'Implement a leader election algorithm.', 'Design a distributed logging system.'
+            ],
+            system: ['Design a distributed cache with consistent hashing.', 'Build a distributed message queue.',
+                'Design a distributed file system.', 'Implement a distributed lock service.'
+            ],
+            performance: ['Minimize network calls, use batching, use compression, and optimize serialization (protobuf).',
+                'Use asynchronous communication where possible, and implement backpressure handling.'
+            ],
+            security: ['Use mTLS for service-to-service communication, encrypt data in transit, implement zero-trust architecture.',
+                'Use service mesh for security and observability.'
+            ],
+            production: ['Implement distributed tracing, metrics, and structured logging.', 'Use chaos engineering to test resilience.',
+                'Implement graceful degradation and circuit breakers.'
+            ]
+        }, {
+            tech: 'Kafka / RabbitMQ / Redis Streams',
+            architecture: 'Kafka: distributed log with partitions, replication, and consumer groups. RabbitMQ: broker with exchanges, queues, and bindings. Redis Streams: append-only log with consumer groups.',
+            core: 'Topics/partitions, producers/consumers, offset tracking, exactly-once semantics, and stream processing.',
+            apis: 'Kafka: Producer/Consumer API, Admin API. RabbitMQ: AMQP, Exchange/Queue/Binding. Redis: XADD, XREAD, XGROUP, XACK.',
+            questions: ['What is the difference between Kafka and RabbitMQ?', 'How do you ensure exactly-once delivery?',
+                'What is a consumer group?', 'How do you handle message ordering?'
+            ],
+            coding: ['Produce and consume messages with Kafka.', 'Implement a fanout exchange with RabbitMQ.',
+                'Use Redis Streams for a simple event log.', 'Implement a dead-letter queue.'
+            ],
+            system: ['Design a high-throughput event ingestion pipeline.', 'Build a stream processing application.',
+                'Design a message replay system.', 'Implement a distributed tracing system with Kafka.'
+            ],
+            performance: ['Batch messages, use compression (snappy, lz4), increase partitions for parallelism, and use asynchronous producers.',
+                'Monitor consumer lag and adjust partition count.'
+            ],
+            security: ['Use SSL/TLS for encryption, use SASL for authentication, and implement ACLs for authorization.',
+                'Secure the broker and client configurations.'
+            ],
+            production: ['Use monitoring tools (Prometheus/Grafana) for broker and consumer metrics.', 'Implement alerts for consumer lag.',
+                'Use circuit breakers and retries with exponential backoff.'
+            ]
+        }];
+
+        // Behavioral STAR data
+        const BEHAVIORAL_DATA = [{
+            topic: 'Leadership',
+            situation: 'Our team was tasked with delivering a new distributed tracing system in 3 months, but we lost our tech lead unexpectedly.',
+            task: 'I needed to step up and lead the team, set the technical direction, and ensure we met the deadline.',
+            action: 'I re-architected the system into smaller, independent modules, assigned clear owners, and set up daily stand-ups. I also mentored junior engineers through code reviews.',
+            result: 'We delivered on time with high test coverage and the system has been stable in production for over a year.'
+        }, {
+            topic: 'Difficult Bug',
+            situation: 'A memory leak in the Node.js service was causing OOM kills in production every 2-3 days, affecting thousands of users.',
+            task: 'Find and fix the root cause of the memory leak without causing downtime.',
+            action: 'I used heap snapshots and flamegraphs to identify a global Map that was not being cleared. I rewrote the caching logic to use TTLs and LRU eviction.',
+            result: 'Memory usage stabilized and we saw a 90% reduction in memory growth. The fix was deployed with zero downtime using blue-green deployment.'
+        }, {
+            topic: 'Conflict',
+            situation: 'Two senior engineers disagreed on whether to use Kafka or RabbitMQ for our event bus.',
+            task: 'Help the team reach consensus and make the right architectural decision.',
+            action: 'I facilitated a design document review, created a decision matrix with tradeoffs, and ran a small POC with both systems to gather data.',
+            result: 'The team chose Kafka based on the POC results. The decision was supported by all, and the system has handled 1M+ events/min since.'
+        }, {
+            topic: 'Deadline Pressure',
+            situation: 'A critical customer feature was needed in 4 weeks, but the team estimated 8 weeks.',
+            task: 'Accelerate delivery without sacrificing quality.',
+            action: 'I worked with the PM to cut non-critical scope, parallelized work across the team, and automated testing and deployment pipelines.',
+            result: 'We delivered the MVP in 3.5 weeks with 95% test coverage. The customer was delighted and we iterated on feedback in subsequent releases.'
+        }, {
+            topic: 'Ownership',
+            situation: 'A legacy monolithic service with no tests and frequent outages was assigned to my team.',
+            task: 'Take ownership and turn it into a reliable, maintainable system.',
+            action: 'I proposed a strangler pattern — incrementally replacing pieces with microservices. I added integration tests, set up monitoring, and documented the system.',
+            result: 'Within 6 months, we had reduced incidents by 80% and the team was confident making changes. The service now runs at 99.99% availability.'
+        }, {
+            topic: 'Learning New Technology',
+            situation: 'We needed to adopt Kubernetes for the new platform, but no one on the team had production experience with it.',
+            task: 'Ramp up quickly and operationalize Kubernetes for the team.',
+            action: 'I took a K8s certification course, built a staging cluster, and created a runbook with common commands and troubleshooting guides.',
+            result: 'We deployed our first K8s service in 2 weeks. I now mentor others and have become the K8s subject matter expert.'
+        }, {
+            topic: 'Failure',
+            situation: 'A deployment introduced a regression that broke our main API, causing a 30-minute outage.',
+            task: 'Own the recovery and prevent it from happening again.',
+            action: 'I led the rollback, wrote a post-mortem with root cause analysis, and implemented canary deployments with automated rollback.',
+            result: 'We now have a robust deployment pipeline. We haven\'t had a major regression in 6 months.'
+        }, {
+            topic: 'Teamwork',
+            situation: 'The frontend team was blocked because our API was missing a critical endpoint.',
+            task: 'Collaborate to unblock them and deliver the feature together.',
+            action: 'I paired with the frontend lead to design the API, built and deployed the endpoint in a day, and documented it thoroughly.',
+            result: 'The feature shipped on schedule and the cross-team collaboration has since become a model for other teams.'
+        }, {
+            topic: 'Customer Impact',
+            situation: 'A customer reported that our platform was ingesting their sensor data with high latency, affecting their real-time monitoring.',
+            task: 'Identify the bottleneck and fix it quickly.',
+            action: 'I analyzed the pipeline and found a slow Kafka consumer. I increased partitions, optimized the consumer logic, and added auto-scaling.',
+            result: 'Latency dropped from 15 seconds to under 1 second. The customer renewed their contract and gave us a testimonial.'
+        }];
+
+        // Coding problems
+        const CODING_PROBLEMS = [{
+            title: 'Design a Rate Limiter',
+            description: 'Implement a rate limiter for an API that allows N requests per minute per user. Use a sliding window or token bucket algorithm.',
+            solution: 'Use a sliding window with Redis sorted sets. Store timestamps per user, count them in the last 60 seconds, and allow if count < N.',
+            complexity: 'O(log M) per request with Redis sorted sets, where M is the number of requests in the window.',
+            mistakes: ['Not handling concurrency', 'Using fixed windows that cause spikes', 'Not evicting old data'],
+            followup: ['How would you scale this across multiple regions?', 'What if Redis is unavailable?', 'How do you handle different rate limits per user tier?']
+        }, {
+            title: 'Event Loop Blocking Detection',
+            description: 'Write a function that detects if the Node.js event loop is blocked for more than a specified threshold.',
+            solution: 'Use process.hrtime() or performance.now() to measure the time between setInterval ticks. If the delay exceeds the threshold, log a warning.',
+            complexity: 'O(1) per tick. Minimal overhead.',
+            mistakes: ['Using setTimeout for detection (it can be delayed)', 'Not running in a separate thread', 'Creating too much overhead'],
+            followup: ['How would you automatically recover from a blocked loop?', 'What causes blocking?', 'How do you profile event loop lag?']
+        }, {
+            title: 'Distributed Counter with Consistency',
+            description: 'Design a distributed counter that supports increment and get operations with strong consistency across multiple nodes.',
+            solution: 'Use a consensus algorithm like Raft, or use a distributed lock (Redis Redlock) to coordinate increments. Or use a CRDT for eventual consistency.',
+            complexity: 'O(1) for increment, O(1) for get with a lock. Network latency is the main cost.',
+            mistakes: ['Not handling network partitions', 'Using a single node as the source of truth', 'Not considering split-brain'],
+            followup: ['How do you handle network partitions?', 'What if the leader fails?', 'How do you scale this?']
+        }, {
+            title: 'Implement a Circuit Breaker',
+            description: 'Implement a circuit breaker in JavaScript/TypeScript that tracks failures and opens after a threshold.',
+            solution: 'Maintain a state (CLOSED, OPEN, HALF_OPEN). Track failure count and timeouts. Transition based on thresholds and time.',
+            complexity: 'O(1) per call. State is maintained in memory.',
+            mistakes: ['Not resetting the failure count on success', 'Not using a timeout for the open state', 'Not having a fallback'],
+            followup: ['How do you share circuit breaker state across multiple instances?', 'What metrics do you track?', 'How do you handle different error types?']
+        }];
+
+        // System Design walkthrough
+        const SYSTEM_DESIGN = [{
+            title: 'Real-Time Sensor Data Ingestion & Inference Platform',
+            requirements: 'Ingest data from thousands of edge devices (SDR/IoT), process in real-time, run inference models, and deliver results to cloud and on-prem consumers. Requirements: high throughput, low latency, multi-tenancy, security, and observability.',
+            highlevel: 'Edge devices → Gateway → Ingestion Service (Kafka) → Stream Processing (Flink/Kafka Streams) → Inference Service → Results Service → Consumers. API Gateway for external access.',
+            components: ['Device Gateway (gRPC/REST)', 'Ingestion Service (Kafka producers)', 'Stream Processing (Kafka Streams)',
+                'Inference Service (ML models)', 'Results Service (Redis + PostgreSQL)', 'API Gateway (Express/NestJS)',
+                'Monitoring & Alerting (Prometheus/Grafana)'
+            ],
+            database: 'PostgreSQL for metadata and configuration; Redis for high-speed state and caching; TimescaleDB for time-series sensor data.',
+            scaling: 'Horizontal scaling via Kubernetes (EKS/AKS/GKE). Auto-scaling based on CPU, memory, and custom metrics (Kafka lag).',
+            caching: 'Redis for caching sensor configuration, inference results, and session state. Cache-aside pattern with TTLs.',
+            messaging: 'Kafka for event ingestion and stream processing. Dead-letter queues for failed messages. Exactly-once semantics with idempotent consumers.',
+            monitoring: 'Prometheus for metrics, Grafana for dashboards, OpenTelemetry for tracing, ELK for logs. Alerts on consumer lag, error rates, and latency.',
+            security: 'Zero Trust Architecture (ZTA) with mTLS for service-to-service communication. IAM with least privilege. Tenant isolation via schema or database.',
+            tradeoffs: 'Eventual consistency vs strong consistency; latency vs throughput; cost vs performance; complexity vs maintainability.'
+        }];
+
+        // Company data
+        const COMPANY_DATA = {
+            products: 'Multi-tenant SaaS distributed ecosystem and inference platform for real-time sensor data processing across cloud, on-premise, and edge devices.',
+            customers: 'Likely government, defense, or industrial IoT customers requiring secure, low-latency sensor data processing and intelligence.',
+            businessModel: 'B2B SaaS with multi-tenant pricing, likely based on data volume, number of devices, or inference requests.',
+            competitors: 'Similar IoT/edge platforms from AWS (IoT Core), Azure IoT, Google Cloud IoT, and specialized defense/IoT startups.',
+            recentNews: 'Building a new Platform group from scratch with a strong foundational team already hired. This indicates investment in the platform and growth.',
+            questions: [
+                'What are the top 3 priorities for the Platform group in the next 12 months?',
+                'How do you measure success for the platform? (SLOs, adoption, revenue?)',
+                'What is the current state of the platform? Is this a greenfield project or a rewrite?',
+                'How does the team balance feature development with platform reliability?',
+                'What is the career growth path for a Lead Technical Anchor?',
+                'How does the team handle on-call rotations?',
+                'What is the biggest technical challenge the platform team is currently facing?',
+                'How does the company approach security and compliance (e.g., FedRAMP, SOC2)?'
+            ]
+        };
+
+        // Flashcards
+        const FLASHCARDS = [
+            { q: 'What is the CAP theorem?', a: 'Consistency, Availability, Partition tolerance — you can only have two at a time in a distributed system.' },
+            { q: 'Explain the Node.js event loop phases.', a: 'Timers, pending callbacks, idle/prepare, poll, check, close callbacks — in that order.' },
+            { q: 'What is the difference between Kafka and RabbitMQ?', a: 'Kafka is a distributed log for high-throughput streaming; RabbitMQ is a message broker with complex routing.' },
+            { q: 'What is a circuit breaker pattern?', a: 'Stops calls to a failing service, with states: CLOSED, OPEN, HALF-OPEN. Prevents cascading failures.' },
+            { q: 'What is the saga pattern?', a: 'Manages distributed transactions via a sequence of local transactions with compensating actions.' },
+            { q: 'How does mTLS work?', a: 'Mutual TLS where both client and server present certificates to authenticate each other, establishing trust.' },
+            { q: 'What is the difference between StatefulSet and Deployment?', a: 'StatefulSet is for stateful apps with stable network IDs and persistent storage; Deployment is for stateless apps.' },
+            { q: 'What are the principles of Zero Trust Architecture?', a: 'Never trust, always verify. Least privilege, micro-segmentation, continuous monitoring, assume breach.' },
+            { q: 'What is the difference between setImmediate and process.nextTick?', a: 'nextTick runs before the event loop continues; setImmediate runs in the check phase.' },
+            { q: 'How do you achieve exactly-once delivery in Kafka?', a: 'Use idempotent producers, transactional consumers, and idempotent processing with proper configuration.' }
+        ];
+
+        // Quizzes
+        const QUIZZES = [{
+            question: 'Which phase of the Node.js event loop handles I/O callbacks?',
+            options: ['Timers', 'Poll', 'Check', 'Close'],
+            correct: 1
+        }, {
+            question: 'What pattern is used to manage distributed transactions in microservices?',
+            options: ['2PC', 'Saga', 'TCC', 'Event Sourcing'],
+            correct: 1
+        }, {
+            question: 'Which caching pattern checks the cache first, then the database on a miss?',
+            options: ['Read-through', 'Cache-aside', 'Write-through', 'Write-behind'],
+            correct: 1
+        }, {
+            question: 'CQRS stands for:',
+            options: ['Command Query Responsibility Segregation', 'Command Queue Response System',
+                'Central Query Response Service', 'Concurrent Query Resolution System'
+            ],
+            correct: 0
+        }, {
+            question: 'What state does a circuit breaker enter after a successful test call?',
+            options: ['Open', 'Closed', 'Half-Open', 'Idle'],
+            correct: 1
+        }, {
+            question: 'Which of the following is NOT a principle of Zero Trust Architecture?',
+            options: ['Never trust, always verify', 'Least privilege', 'Trust internal networks',
+                'Micro-segmentation'
+            ],
+            correct: 2
+        }, {
+            question: 'What is the difference between a Docker image and a container?',
+            options: ['No difference', 'Image is a blueprint, container is a running instance',
+                'Container is a blueprint, image is running', 'Both are the same thing'
+            ],
+            correct: 1
+        }, {
+            question: 'What is the purpose of the poll phase in the Node.js event loop?',
+            options: ['Execute timers', 'Retrieve I/O events', 'Execute setImmediate callbacks',
+                'Run process.nextTick'
+            ],
+            correct: 1
+        }];
+
+        // Cheat sheet data
+        const CHEAT_SHEET = {
+            tech: ['Node.js', 'TypeScript', 'Express', 'NestJS', 'Kafka', 'Redis', 'PostgreSQL', 'Docker', 'Kubernetes',
+                'AWS/Azure/GCP', 'gRPC', 'REST'
+            ],
+            concepts: ['Event Loop', 'Async/Await', 'Streams', 'CAP Theorem', 'Event-Driven Architecture',
+                'Microservices', 'CQRS', 'Event Sourcing', 'Circuit Breaker', 'Rate Limiting', 'Distributed Tracing',
+                'Zero Trust', 'mTLS'
+            ],
+            bestPractices: ['Write idempotent APIs', 'Use circuit breakers', 'Implement retries with backoff',
+                'Use connection pooling', 'Use TTLs for caching', 'Implement health checks', 'Use structured logging',
+                'Use environment configs', 'Implement graceful shutdown', 'Use canary deployments'
+            ],
+            numbers: ['Node.js: ~1M concurrent connections (with cluster)', 'Kafka: 1M+ messages/sec per partition',
+                'Redis: 100k+ ops/sec', 'PostgreSQL: 10k+ read ops/sec with proper indexing',
+                'Kubernetes: 5k+ nodes per cluster'
+            ],
+            tips: ['Be specific with examples', 'Show system thinking', 'Discuss tradeoffs openly',
+                'Ask clarifying questions', 'Write clean code with proper error handling', 'Talk about monitoring and observability',
+                'Discuss security early in design', 'Mention automation (CI/CD, IaC)'
+            ],
+            mistakes: ['Blocking the event loop', 'Not handling errors', 'Ignoring security', 'Over-engineering',
+                'Not asking questions', 'Assuming network reliability', 'Not considering cost', 'Not discussing tradeoffs'
+            ]
+        };
+
+        // Study plan
+        const STUDY_PLAN = [{
+            day: 'Day 1',
+            topics: 'Node.js Event Loop, Async Patterns, TypeScript Fundamentals',
+            exercises: 'Write a small HTTP server with Express; implement a stream; review TypeScript types.',
+            reading: 'Node.js docs on event loop, TypeScript handbook, "You Don\'t Know JS" (Async & Performance).',
+            questions: 'Event loop phases, setImmediate vs setTimeout, async/await vs promises, TypeScript generics.',
+            time: '3-4 hours'
+        }, {
+            day: 'Day 2',
+            topics: 'Distributed Systems: CAP, Consistency, Partitions, Replication',
+            exercises: 'Design a distributed counter; implement a simple leader election (conceptually).',
+            reading: 'CAP theorem paper, "Designing Data-Intensive Applications" (Ch. 5-6), Raft paper summary.',
+            questions: 'CAP theorem, eventual consistency, quorum reads/writes, partitioning strategies.',
+            time: '3-4 hours'
+        }, {
+            day: 'Day 3',
+            topics: 'Event-Driven Architecture: Kafka, RabbitMQ, Redis Streams',
+            exercises: 'Write a Kafka producer/consumer; design a dead-letter queue implementation.',
+            reading: 'Kafka documentation (consumer groups, partitions), RabbitMQ tutorial, Redis Streams intro.',
+            questions: 'Consumer groups, exactly-once semantics, partition rebalancing, DLQs.',
+            time: '3-4 hours'
+        }, {
+            day: 'Day 4',
+            topics: 'Cloud Native: Kubernetes, AWS/Azure/GCP, Auto-scaling, Multi-tenant SaaS',
+            exercises: 'Design a multi-tenant SaaS on AWS with tenant isolation; write a Kubernetes deployment manifest.',
+            reading: 'Kubernetes docs (Deployment, StatefulSet, Service), AWS Well-Architected Framework.',
+            questions: 'Auto-scaling strategies, IAM best practices, multi-tenancy isolation, cost optimization.',
+            time: '3-4 hours'
+        }, {
+            day: 'Day 5',
+            topics: 'Security: ZTA, mTLS, SaaS Security, OAuth/JWT, Service Mesh',
+            exercises: 'Design a zero-trust architecture for a microservices platform; implement a simple mTLS flow.',
+            reading: 'Zero Trust Architecture (NIST SP 800-207), mTLS documentation, OAuth 2.0 spec.',
+            questions: 'ZTA principles, mTLS implementation, tenant isolation, RBAC vs ABAC.',
+            time: '3-4 hours'
+        }, {
+            day: 'Day 6',
+            topics: 'System Design & Architecture: Full Platform Walkthrough',
+            exercises: 'Whiteboard the full system design from edge to cloud; practice explaining tradeoffs.',
+            reading: 'Review your system design notes, practice with mock interviews.',
+            questions: 'How would you design the sensor ingestion pipeline? How do you handle scale?',
+            time: '3-4 hours'
+        }, {
+            day: 'Day 7',
+            topics: 'Mock Interviews & Review: Behavioral, Coding, System Design',
+            exercises: 'Run through mock interview questions; practice STAR responses; solve a coding problem under time.',
+            reading: 'Review all notes, flashcard deck, and cheat sheet.',
+            questions: 'All topics — practice articulating your thought process clearly.',
+            time: '4-5 hours'
+        }];
+
+        // Mock interview questions
+        const MOCK_QUESTIONS = [{
+            type: 'Technical',
+            question: 'Walk me through the Node.js event loop. What are the phases and how does it handle asynchronous I/O?',
+            ideal: 'Start with the libuv, then list the phases: timers, pending callbacks, idle/prepare, poll, check, close callbacks. Explain that I/O is handled in the poll phase and callbacks are queued. Mention that setImmediate runs in the check phase and process.nextTick runs before the loop continues.',
+            evaluation: 'Depth of understanding, clarity of explanation, real-world examples.',
+            followup: 'How would you diagnose event loop blocking? What tools would you use?'
+        }, {
+            type: 'Technical',
+            question: 'How would you design a distributed system that processes 1 million sensor events per second with sub-second latency?',
+            ideal: 'Start with requirements gathering (throughput, latency, durability). Then propose a high-level architecture: edge devices → gateways → Kafka (partitioned by device ID) → stream processing (Flink/Kafka Streams) → inference service → results. Discuss scaling, partitioning, and redundancy.',
+            evaluation: 'System thinking, tradeoff analysis, scalability design, and practical experience.',
+            followup: 'What would you do if Kafka becomes the bottleneck? How would you handle hot partitions?'
+        }, {
+            type: 'Behavioral',
+            question: 'Tell me about a time when you had to make a difficult architectural decision with significant tradeoffs. What was the decision and how did you approach it?',
+            ideal: 'Use STAR: Situation (e.g., choosing between monolith and microservices), Task (evaluate options), Action (created a decision matrix, ran a POC, consulted the team), Result (made the right decision for the context).',
+            evaluation: 'Decision-making process, stakeholder management, technical judgment.',
+            followup: 'What would you have done differently in retrospect?'
+        }, {
+            type: 'Technical',
+            question: 'What is a circuit breaker pattern and how would you implement it in a Node.js microservices architecture?',
+            ideal: 'Explain the circuit breaker states (CLOSED, OPEN, HALF-OPEN). Describe how to track failures and timeouts. In Node.js, you can implement it with a simple state machine or use a library like `opossum`. Discuss fallbacks and monitoring.',
+            evaluation: 'Pattern knowledge, implementation details, production considerations.',
+            followup: 'How would you share circuit breaker state across multiple service instances?'
+        }, {
+            type: 'Behavioral',
+            question: 'Describe a situation where you had to mentor a junior engineer or help a team member grow. What was your approach?',
+            ideal: 'Use STAR: Situation (a junior engineer struggling with async code), Task (help them understand and write better code), Action (paired programming, code reviews, created a learning plan), Result (they became proficient and confident).',
+            evaluation: 'Leadership, empathy, communication skills.',
+            followup: 'How do you balance mentoring with your own delivery responsibilities?'
+        }, {
+            type: 'Technical',
+            question: 'How do you ensure the security of a multi-tenant SaaS platform? Specifically, how do you handle tenant isolation and secure service-to-service communication?',
+            ideal: 'Discuss tenant isolation at the database or schema level, tenant-aware routing, IAM with least privilege, mTLS for internal communication, encryption at rest and in transit, and auditing. Mention Zero Trust Architecture.',
+            evaluation: 'Security awareness, practical experience, depth of knowledge.',
+            followup: 'How would you handle a security incident involving tenant data?'
+        }, {
+            type: 'Behavioral',
+            question: 'Tell me about a time when you took ownership of a system or feature that was failing. What did you do?',
+            ideal: 'Use STAR: Situation (a legacy system with frequent outages), Task (stabilize and improve it), Action (added tests, monitoring, documentation, and incremental improvements), Result (reduced incidents by 80%, team confidence increased).',
+            evaluation: 'Ownership mindset, problem-solving, resilience.',
+            followup: 'What was the hardest part of that process?'
+        }, {
+            type: 'Technical',
+            question: 'Design an API that ingests sensor data from edge devices and provides real-time analytics. Consider throughput, latency, and security.',
+            ideal: 'Start with gRPC for efficient binary communication. Use an API Gateway with JWT authentication. Data flows into Kafka, processed with stream processing, and stored in TimescaleDB. Provide a REST API for queries with Redis caching.',
+            evaluation: 'End-to-end design thinking, practical experience, attention to details.',
+            followup: 'How would you handle backpressure from the edge devices?'
+        }];
+
+        // Bonus data
+        const BONUS_DATA = {
+            advanced: [
+                'Service Mesh (Istio/Linkerd) for mTLS, observability, and traffic control',
+                'Event Sourcing & CQRS for auditability and scalability',
+                'Distributed consensus algorithms (Raft, Paxos) for leader election and state replication',
+                'High-performance gRPC with protobuf for efficient inter-service communication',
+                'Machine Learning inference at the edge with model quantization',
+                'Fault-tolerant streaming with exactly-once semantics (Kafka + Flink)'
+            ],
+            traps: [
+                'Over-architecting: building for scale you don\'t need yet',
+                'Underestimating the complexity of distributed transactions',
+                'Not planning for observability from day 1',
+                'Ignoring security until the end',
+                'Assuming the network is reliable',
+                'Not involving the team in architectural decisions'
+            ],
+            seniorPoints: [
+                'How do you balance technical debt with feature delivery?',
+                'How do you foster a culture of engineering excellence?',
+                'How do you handle technical disagreements with the Principal Architect?',
+                'How do you measure the success of the platform? (DORA metrics, SLOs)',
+                'How do you ensure the platform is cost-optimized without sacrificing performance?',
+                'How do you handle compliance and regulatory requirements (GDPR, FedRAMP)?'
+            ],
+            askInterviewer: [
+                'What are the biggest technical challenges the team is currently facing?',
+                'How does the team approach technical debt and refactoring?',
+                'What is the on-call rotation like?',
+                'How does the company support professional growth and learning?',
+                'What is the culture like in terms of work-life balance?',
+                'How do you measure the success of the Platform group?',
+                'What is the relationship like between the Platform group and other teams?'
+            ]
+        };
+
+        // ========================================================================
+        // RENDER FUNCTIONS
+        // ========================================================================
+
+        function renderSkills() {
+            const container = document.getElementById('skillContainer');
+            container.innerHTML = SKILLS.map(s => `
+                <div class="card skill-card" data-name="${s.name.toLowerCase()}">
+                    <h3>${s.name}</h3>
+                    <p><strong>Explanation:</strong> ${s.explanation}</p>
+                    <p><strong>Why it matters:</strong> ${s.why}</p>
+                    <p><strong>What interviewers are evaluating:</strong> ${s.evaluating}</p>
+                    <div class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▶</span> Common Questions &amp; Answers</div>
+                    <div class="collapse-content">
+                        <ul>
+                            ${s.questions.map((q,i) => `<li><strong>Q:</strong> ${q}<br><strong>A:</strong> ${s.answers[i]}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <p><strong>Beginner mistakes:</strong> ${s.beginnerMistakes.join('; ')}</p>
+                    <div class="do-dont">
+                        <div class="do"><strong>✅ Do</strong><ul>${s.doDont.do.map(d => `<li>${d}</li>`).join('')}</ul></div>
+                        <div class="dont"><strong>❌ Don't</strong><ul>${s.doDont.dont.map(d => `<li>${d}</li>`).join('')}</ul></div>
+                    </div>
+                    <div class="red-flag">🚩 Red flags: ${s.redFlags.join('; ')}</div>
+                </div>
+            `).join('');
+
+            // Search
+            document.getElementById('skillSearch').addEventListener('input', function() {
+                const q = this.value.toLowerCase();
+                document.querySelectorAll('.skill-card').forEach(c => {
+                    c.style.display = c.dataset.name.includes(q) ? '' : 'none';
+                });
+            });
+            document.getElementById('skillClear').addEventListener('click', function() {
+                document.getElementById('skillSearch').value = '';
+                document.querySelectorAll('.skill-card').forEach(c => c.style.display = '');
+            });
+        }
+
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = TRAINING_CARDS.map((c, idx) => `
+                <div class="card">
+                    <h3>${c.concept} <span class="badge-tag ${c.difficulty > 3 ? 'danger' : c.difficulty > 2 ? 'warning' : 'success'}">${c.difficulty > 3 ? 'Hard' : c.difficulty > 2 ? 'Medium' : 'Easy'}</span></h3>
+                    <p>${c.description}</p>
+                    <p><strong>Real-world example:</strong> ${c.example}</p>
+                    <p><strong>Best practices:</strong> ${c.best}</p>
+                    <div class="do-dont">
+                        <div class="do"><strong>✅ Do</strong><ul>${c.doList.map(d => `<li>${d}</li>`).join('')}</ul></div>
+                        <div class="dont"><strong>❌ Don't</strong><ul>${c.dontList.map(d => `<li>${d}</li>`).join('')}</ul></div>
+                    </div>
+                    <p><strong>Common pitfalls:</strong> ${c.pitfalls.join('; ')}</p>
+                    <div class="difficulty">
+                        <span>Difficulty:</span>
+                        ${[1,2,3,4,5].map(i => `<span class="dot ${i <= c.difficulty ? 'filled ' + (c.difficulty > 3 ? 'hard' : c.difficulty > 2 ? 'medium' : 'easy') : ''}"></span>`).join('')}
+                    </div>
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+                        <p><strong>📝 Mini Quiz:</strong> ${c.quiz.q}</p>
+                        <div class="quiz-options" data-quiz="${idx}">
+                            ${c.quiz.options.map((opt, oi) => `
+                                <label>
+                                    <input type="radio" name="cardquiz_${idx}" value="${oi}">
+                                    ${opt}
+                                </label>
+                            `).join('')}
+                        </div>
+                        <button onclick="checkCardQuiz(${idx})" style="margin-top:8px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 16px;cursor:pointer;font-family:var(--font);">Check Answer</button>
+                        <div id="cardQuizFeedback_${idx}" class="quiz-feedback" style="margin-top:6px;"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDeepDive() {
+            const container = document.getElementById('deepdiveContainer');
+            container.innerHTML = DEEP_DIVE.map(d => `
+                <div class="card">
+                    <h3>${d.tech}</h3>
+                    <p><strong>Architecture:</strong> ${d.architecture}</p>
+                    <p><strong>Core concepts:</strong> ${d.core}</p>
+                    <p><strong>Important APIs/features:</strong> ${d.apis}</p>
+                    <div class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▶</span> Interview Questions &amp; Coding</div>
+                    <div class="collapse-content">
+                        <p><strong>Common questions:</strong></p>
+                        <ul>${d.questions.map(q => `<li>${q}</li>`).join('')}</ul>
+                        <p><strong>Coding questions:</strong></p>
+                        <ul>${d.coding.map(q => `<li>${q}</li>`).join('')}</ul>
+                    </div>
+                    <div class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▶</span> System Design &amp; Production</div>
+                    <div class="collapse-content">
+                        <p><strong>System design considerations:</strong></p>
+                        <ul>${d.system.map(s => `<li>${s}</li>`).join('')}</ul>
+                        <p><strong>Performance:</strong> ${d.performance}</p>
+                        <p><strong>Security:</strong> ${d.security}</p>
+                        <p><strong>Production best practices:</strong> ${d.production}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBehavioral() {
+            const container = document.getElementById('behavioralContainer');
+            container.innerHTML = BEHAVIORAL_DATA.map(b => `
+                <div class="card">
+                    <h3>${b.topic}</h3>
+                    <div class="star-example">
+                        <p><strong>Situation:</strong> ${b.situation}</p>
+                        <p><strong>Task:</strong> ${b.task}</p>
+                        <p><strong>Action:</strong> ${b.action}</p>
+                        <p><strong>Result:</strong> ${b.result}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCoding() {
+            const container = document.getElementById('codingContainer');
+            container.innerHTML = CODING_PROBLEMS.map(p => `
+                <div class="card">
+                    <h3>${p.title}</h3>
+                    <p><strong>Problem:</strong> ${p.description}</p>
+                    <div class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▶</span> Solution &amp; Analysis</div>
+                    <div class="collapse-content">
+                        <p><strong>Solution:</strong> ${p.solution}</p>
+                        <p><strong>Complexity:</strong> ${p.complexity}</p>
+                        <p><strong>Common mistakes:</strong> ${p.mistakes.join('; ')}</p>
+                        <p><strong>Follow-up questions:</strong></p>
+                        <ul>${p.followup.map(f => `<li>${f}</li>`).join('')}</ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderSystemDesign() {
+            const container = document.getElementById('systemdesignContainer');
+            container.innerHTML = SYSTEM_DESIGN.map(s => `
+                <div class="card">
+                    <h3>${s.title}</h3>
+                    <p><strong>Requirements:</strong> ${s.requirements}</p>
+                    <p><strong>High-level architecture:</strong> ${s.highlevel}</p>
+                    <p><strong>Component breakdown:</strong></p>
+                    <ul>${s.components.map(c => `<li>${c}</li>`).join('')}</ul>
+                    <p><strong>Database design:</strong> ${s.database}</p>
+                    <p><strong>Scaling:</strong> ${s.scaling}</p>
+                    <p><strong>Caching:</strong> ${s.caching}</p>
+                    <p><strong>Messaging:</strong> ${s.messaging}</p>
+                    <p><strong>Monitoring:</strong> ${s.monitoring}</p>
+                    <p><strong>Security:</strong> ${s.security}</p>
+                    <p><strong>Tradeoffs:</strong> ${s.tradeoffs}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderCompany() {
+            const container = document.getElementById('companyContainer');
+            container.innerHTML = `
+                <div class="card"><h3>📦 Products</h3><p>${COMPANY_DATA.products}</p></div>
+                <div class="card"><h3>👥 Customers</h3><p>${COMPANY_DATA.customers}</p></div>
+                <div class="card"><h3>💰 Business Model</h3><p>${COMPANY_DATA.businessModel}</p></div>
+                <div class="card"><h3>⚔️ Competitors</h3><p>${COMPANY_DATA.competitors}</p></div>
+                <div class="card"><h3>📰 Recent News</h3><p>${COMPANY_DATA.recentNews}</p></div>
+                <div class="card"><h3>❓ Intelligent Questions to Ask</h3><ul>${COMPANY_DATA.questions.map(q => `<li>${q}</li>`).join('')}</ul></div>
+            `;
+        }
+
+        function renderFlashcards() {
+            const container = document.getElementById('flashcardContainer');
+            let currentCard = 0;
+            const total = FLASHCARDS.length;
+
+            function renderCard() {
+                const c = FLASHCARDS[currentCard];
+                container.innerHTML = `
+                    <div class="flashcard" id="flashcardEl" onclick="toggleFlashcard()">
+                        <div class="front">
+                            <div class="label">❓ Question</div>
+                            <div class="question">${c.q}</div>
+                            <div style="margin-top:12px;font-size:13px;color:var(--text-light);">Click to reveal answer</div>
+                        </div>
+                        <div class="back">
+                            <div class="label">💡 Answer</div>
+                            <div class="answer">${c.a}</div>
+                        </div>
+                    </div>
+                    <div class="flashcard-nav">
+                        <button onclick="flashcardNav(-1)">◀ Prev</button>
+                        <span class="counter">${currentCard+1} / ${total}</span>
+                        <button onclick="flashcardNav(1)">Next ▶</button>
+                    </div>
+                `;
+                // ensure front is visible
+                const el = document.getElementById('flashcardEl');
+                if (el) el.classList.remove('show-back');
+                updateProgress();
+            }
+            window.flashcardNav = function(dir) {
+                currentCard = (currentCard + dir + total) % total;
+                renderCard();
+            };
+            window.toggleFlashcard = function() {
+                const el = document.getElementById('flashcardEl');
+                if (el) el.classList.toggle('show-back');
+            };
+            renderCard();
+        }
+
+        function renderQuizzes() {
+            const container = document.getElementById('quizContainer');
+            let quizState = QUIZZES.map(() => ({ selected: null, answered: false }));
+            let score = 0;
+
+            function renderQuiz() {
+                container.innerHTML = QUIZZES.map((q, idx) => `
+                    <div class="card quiz-card" data-idx="${idx}">
+                        <p class="q-text">${idx+1}. ${q.question}</p>
+                        <div class="quiz-options" data-quiz="${idx}">
+                            ${q.options.map((opt, oi) => `
+                                <label data-optidx="${oi}" class="${quizState[idx].answered ? (oi === q.correct ? 'correct' : (quizState[idx].selected === oi ? 'incorrect' : '')) : ''}">
+                                    <input type="radio" name="quiz_${idx}" value="${oi}" ${quizState[idx].answered ? 'disabled' : ''}>
+                                    ${opt}
+                                </label>
+                            `).join('')}
+                        </div>
+                        <button onclick="submitQuiz(${idx})" ${quizState[idx].answered ? 'disabled style="opacity:0.5;"' : ''} style="margin-top:8px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 18px;cursor:pointer;font-family:var(--font);">Submit</button>
+                        <div id="quizFeedback_${idx}" class="quiz-feedback ${quizState[idx].answered ? 'show' : ''} ${quizState[idx].selected === q.correct ? 'correct' : 'incorrect'}">
+                            ${quizState[idx].answered ? (quizState[idx].selected === q.correct ? '✅ Correct!' : '❌ Incorrect. The correct answer is: ' + q.options[q.correct]) : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                // update score
+                const totalAnswered = quizState.filter(s => s.answered).length;
+                const correctCount = quizState.filter(s => s.answered && s.selected === QUIZZES[quizState.indexOf(s)].correct)
+                .length;
+                document.querySelector('.quiz-score')?.remove();
+                const scoreEl = document.createElement('div');
+                scoreEl.className = 'quiz-score';
+                scoreEl.textContent = `📊 Score: ${correctCount}/${totalAnswered} (${totalAnswered > 0 ? Math.round(correctCount/totalAnswered*100) : 0}%)`;
+                container.appendChild(scoreEl);
+                updateProgress();
+            }
+
+            window.submitQuiz = function(idx) {
+                const q = QUIZZES[idx];
+                const state = quizState[idx];
+                if (state.answered) return;
+                const selected = document.querySelector(`.quiz-card[data-idx="${idx}"] input[name="quiz_${idx}"]:checked`);
+                if (!selected) { alert('Please select an answer.'); return; }
+                const val = parseInt(selected.value);
+                state.selected = val;
+                state.answered = true;
+                if (val === q.correct) score++;
+                renderQuiz();
+                updateProgress();
+            };
+
+            renderQuiz();
+        }
+
+        function renderCheatSheet() {
+            const container = document.getElementById('cheatSheetContainer');
+            const data = CHEAT_SHEET;
+            container.innerHTML = `
+                <div class="cs-item"><h4>🔧 Key Technologies</h4><ul>${data.tech.map(t => `<li>${t}</li>`).join('')}</ul></div>
+                <div class="cs-item"><h4>🧠 Important Concepts</h4><ul>${data.concepts.map(c => `<li>${c}</li>`).join('')}</ul></div>
+                <div class="cs-item"><h4>✅ Best Practices</h4><ul>${data.bestPractices.map(b => `<li>${b}</li>`).join('')}</ul></div>
+                <div class="cs-item"><h4>🔢 Numbers to Remember</h4><ul>${data.numbers.map(n => `<li>${n}</li>`).join('')}</ul></div>
+                <div class="cs-item"><h4>💡 Interview Tips</h4><ul>${data.tips.map(t => `<li>${t}</li>`).join('')}</ul></div>
+                <div class="cs-item"><h4>🚫 Common Mistakes</h4><ul>${data.mistakes.map(m => `<li>${m}</li>`).join('')}</ul></div>
+            `;
+        }
+
+        function renderStudyPlan() {
+            const container = document.getElementById('studyplanContainer');
+            container.innerHTML = STUDY_PLAN.map(s => `
+                <div class="study-day">
+                    <div class="day">${s.day}</div>
+                    <div class="topics">
+                        <strong>${s.topics}</strong><br>
+                        <span class="text-sm text-muted">📘 ${s.reading}</span><br>
+                        <span class="text-sm">✏️ ${s.exercises}</span><br>
+                        <span class="text-sm text-muted">❓ ${s.questions}</span>
+                    </div>
+                    <div class="time">⏱️ ${s.time}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderMock() {
+            const container = document.getElementById('mockContainer');
+            let idx = 0;
+            const total = MOCK_QUESTIONS.length;
+
+            function renderMockQuestion() {
+                const q = MOCK_QUESTIONS[idx];
+                container.innerHTML = `
+                    <div class="card">
+                        <span class="badge-tag ${q.type === 'Technical' ? 'primary' : 'warning'}">${q.type}</span>
+                        <p class="mock-question">${q.question}</p>
+                        <button onclick="toggleMockAnswer()" style="background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 16px;cursor:pointer;font-family:var(--font);">Show Ideal Answer</button>
+                        <div id="mockAnswer" class="mock-answer">
+                            <p><strong>💡 Ideal answer:</strong> ${q.ideal}</p>
+                            <p><strong>🔍 Evaluation criteria:</strong> ${q.evaluation}</p>
+                            <p><strong>🔁 Follow-up:</strong> ${q.followup}</p>
+                        </div>
+                        <div class="mock-nav">
+                            <button onclick="mockNav(-1)">◀ Prev</button>
+                            <span>${idx+1} / ${total}</span>
+                            <button onclick="mockNav(1)">Next ▶</button>
+                        </div>
+                    </div>
+                `;
+                updateProgress();
+            }
+
+            window.mockNav = function(dir) {
+                idx = (idx + dir + total) % total;
+                renderMockQuestion();
+            };
+            window.toggleMockAnswer = function() {
+                const el = document.getElementById('mockAnswer');
+                if (el) el.classList.toggle('show');
+            };
+            renderMockQuestion();
+        }
+
+        function renderBonus() {
+            const container = document.getElementById('bonusContainer');
+            container.innerHTML = `
+                <div class="card"><h3>🚀 Advanced Topics That Impress</h3><ul>${BONUS_DATA.advanced.map(a => `<li>${a}</li>`).join('')}</ul></div>
+                <div class="card"><h3>⚠️ Common Traps</h3><ul>${BONUS_DATA.traps.map(t => `<li>${t}</li>`).join('')}</ul></div>
+                <div class="card"><h3>💬 Senior-Level Discussion Points</h3><ul>${BONUS_DATA.seniorPoints.map(s => `<li>${s}</li>`).join('')}</ul></div>
+                <div class="card"><h3>❓ Questions to Ask the Interviewer</h3><ul>${BONUS_DATA.askInterviewer.map(a => `<li>${a}</li>`).join('')}</ul></div>
+            `;
+        }
+
+        // ========================================================================
+        // UTILITY FUNCTIONS
+        // ========================================================================
+
+        function toggleCollapse(el) {
+            const content = el.nextElementSibling;
+            const arrow = el.querySelector('.arrow');
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                arrow.classList.remove('open');
+            } else {
+                content.classList.add('open');
+                arrow.classList.add('open');
+            }
+        }
+
+        function checkCardQuiz(idx) {
+            const c = TRAINING_CARDS[idx];
+            const sel = document.querySelector(`.quiz-options[data-quiz="${idx}"] input:checked`);
+            const fb = document.getElementById(`cardQuizFeedback_${idx}`);
+            if (!sel) { fb.textContent = 'Please select an answer.'; fb.className = 'quiz-feedback show'; return; }
+            const val = parseInt(sel.value);
+            if (val === c.quiz.answer) {
+                fb.textContent = '✅ Correct! Well done.';
+                fb.className = 'quiz-feedback show correct';
+            } else {
+                fb.textContent = `❌ Incorrect. The correct answer is: ${c.quiz.options[c.quiz.answer]}`;
+                fb.className = 'quiz-feedback show incorrect';
+            }
+        }
+
+        // ========================================================================
+        // NAVIGATION & THEME
+        // ========================================================================
+
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.sidebar-nav a');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        const toggleBtn = document.getElementById('mobileToggle');
+
+        function navigateTo(sectionId) {
+            sections.forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(`section-${sectionId}`);
+            if (target) target.classList.add('active');
+            navLinks.forEach(a => a.classList.toggle('active', a.dataset.section === sectionId));
+            // close mobile sidebar
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            // update progress
+            updateProgress();
+            // scroll top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                navigateTo(a.dataset.section);
+            });
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+            themeToggle.textContent = current === 'dark' ? '🌓 Dark / Light' : '☀️ Dark / Light';
+        });
+
+        // ========================================================================
+        // PROGRESS TRACKING
+        // ========================================================================
+
+        function updateProgress() {
+            // Count how many sections have been "visited" — we consider a section visited if it has been rendered
+            // We'll use a simple metric: viewed sections count
+            const total = document.querySelectorAll('.section').length;
+            let viewed = 0;
+            document.querySelectorAll('.section').forEach(s => {
+                // if the section has any card or content, consider it viewed
+                if (s.querySelector('.card') || s.querySelector('#flashcardContainer')?.children.length > 0 || s
+                    .querySelector('.quiz-card')) {
+                    viewed++;
+                }
+            });
+            const pct = Math.min(100, Math.round((viewed / total) * 100));
+            document.getElementById('progressPercent').textContent = pct;
+            document.getElementById('progressFill').style.width = pct + '%';
+        }
+
+        // ========================================================================
+        // INITIALIZATION
+        // ========================================================================
+
+        function init() {
+            renderSkills();
+            renderCards();
+            renderDeepDive();
+            renderBehavioral();
+            renderCoding();
+            renderSystemDesign();
+            renderCompany();
+            renderFlashcards();
+            renderQuizzes();
+            renderCheatSheet();
+            renderStudyPlan();
+            renderMock();
+            renderBonus();
+
+            // Set default theme to light
+            document.documentElement.setAttribute('data-theme', 'light');
+            themeToggle.textContent = '🌓 Dark / Light';
+
+            // Progress after render
+            setTimeout(updateProgress, 300);
+
+            // keyboard shortcut: escape to close sidebar
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            });
+        }
+
+        // Override window.print to include a small note
+        const origPrint = window.print;
+        window.print = function() {
+            // Add a small note before printing
+            const note = document.createElement('div');
+            note.style.cssText =
+                'position:fixed;bottom:20px;right:20px;background:var(--bg-card);padding:12px 20px;border-radius:8px;border:1px solid var(--border);font-size:13px;z-index:9999;box-shadow:var(--shadow);';
+            note.textContent = '🖨️ Printing cheat sheet…';
+            document.body.appendChild(note);
+            setTimeout(() => {
+                origPrint();
+                note.remove();
+            }, 300);
+        };
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+</body>
+</html>

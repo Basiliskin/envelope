@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flare Backend Engineer · Interview Prep</title>
+    <style>
+        /* ── RESET & BASE ── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        :root {
+            --bg: #f6f8fc;
+            --surface: #ffffff;
+            --surface2: #f0f3f8;
+            --text: #1a1e2b;
+            --text2: #3d4459;
+            --text3: #6b738a;
+            --border: #dce1eb;
+            --primary: #2a5c8a;
+            --primary-light: #e8eff7;
+            --primary-dark: #1a3e5e;
+            --accent: #e67e22;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --radius: 12px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, .06);
+            --transition: .25s ease;
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --maxw: 1200px;
+            --sidebar-w: 280px;
+            --header-h: 64px;
+        }
+        .dark {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #1c2333;
+            --text: #e6edf3;
+            --text2: #b1bac4;
+            --text3: #8b949e;
+            --border: #30363d;
+            --primary: #58a6ff;
+            --primary-light: #1c2d4a;
+            --primary-dark: #1f6feb;
+            --shadow: 0 8px 30px rgba(0, 0, 0, .4);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            transition: background var(--transition), color var(--transition);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text3);
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform .3s ease, background var(--transition), border var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-brand {
+            padding: 0 20px 16px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .sidebar-brand h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -.3px;
+            color: var(--primary);
+        }
+        .sidebar-brand small {
+            font-size: 11px;
+            color: var(--text3);
+            font-weight: 400;
+            display: block;
+        }
+        .sidebar nav {
+            flex: 1;
+            padding: 0 12px;
+        }
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text2);
+            transition: background var(--transition), color var(--transition);
+            margin-bottom: 2px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .sidebar nav a .badge {
+            margin-left: auto;
+            font-size: 10px;
+            background: var(--border);
+            color: var(--text3);
+            padding: 0 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .sidebar-footer {
+            padding: 16px 20px 0;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text3);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .sidebar-footer button {
+            background: none;
+            border: none;
+            color: var(--text3);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: background var(--transition);
+        }
+        .sidebar-footer button:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            padding: 0 32px 60px;
+            max-width: var(--maxw);
+            width: 100%;
+        }
+        .main-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 50;
+            padding: 16px 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 28px;
+            transition: background var(--transition);
+        }
+        .main-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .main-header .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .main-header .search-wrap input {
+            padding: 8px 16px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+            width: 220px;
+            transition: border var(--transition), box-shadow var(--transition);
+            outline: none;
+        }
+        .main-header .search-wrap input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(42, 92, 138, .15);
+        }
+        .main-header .search-wrap .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .main-header .search-wrap .hamburger:hover {
+            background: var(--surface2);
+        }
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--text2);
+            background: var(--surface);
+            transition: all var(--transition);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .theme-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* ── SECTIONS ── */
+        .section {
+            display: none;
+            animation: fade .3s ease;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fade {
+            0% {
+                opacity: .4;
+                transform: translateY(6px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -.4px;
+        }
+        .section-sub {
+            color: var(--text3);
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: background var(--transition), border var(--transition), box-shadow var(--transition);
+        }
+        .card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .card h3 .tag {
+            font-size: 11px;
+            font-weight: 500;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0 10px;
+            border-radius: 20px;
+            line-height: 22px;
+        }
+        .card p,
+        .card li {
+            color: var(--text2);
+            font-size: 15px;
+        }
+        .card ul,
+        .card ol {
+            padding-left: 24px;
+            margin: 8px 0 12px;
+        }
+        .card li {
+            margin-bottom: 4px;
+        }
+        .card .code-block {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            margin: 12px 0;
+            position: relative;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text);
+        }
+        .card .code-block .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: var(--surface2);
+            border: none;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text3);
+            transition: all var(--transition);
+        }
+        .card .code-block .copy-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+        .badge-diff {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 12px;
+            border-radius: 20px;
+            background: var(--surface2);
+            color: var(--text3);
+        }
+        .badge-diff.easy {
+            background: #d5f5e3;
+            color: #1a7a42;
+        }
+        .badge-diff.medium {
+            background: #fdebd0;
+            color: #b9770e;
+        }
+        .badge-diff.hard {
+            background: #fadbd8;
+            color: #a93226;
+        }
+        .dark .badge-diff.easy {
+            background: #1a3a2a;
+            color: #6fcf97;
+        }
+        .dark .badge-diff.medium {
+            background: #3d2e1a;
+            color: #f0b27a;
+        }
+        .dark .badge-diff.hard {
+            background: #3d1a1a;
+            color: #f1948a;
+        }
+
+        .do-dont {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 12px 0;
+        }
+        .do-dont .do {
+            border-left: 4px solid var(--success);
+            padding-left: 14px;
+        }
+        .do-dont .dont {
+            border-left: 4px solid var(--danger);
+            padding-left: 14px;
+        }
+        .do-dont h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .do-dont ul {
+            padding-left: 18px;
+            margin: 4px 0;
+        }
+        .do-dont ul li {
+            font-size: 14px;
+        }
+
+        /* ── QUIZ / FLASHCARD ── */
+        .quiz-option {
+            display: block;
+            padding: 10px 16px;
+            margin: 6px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 15px;
+            text-align: left;
+            width: 100%;
+        }
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: #d5f5e3;
+            color: #1a7a42;
+        }
+        .quiz-option.wrong {
+            border-color: var(--danger);
+            background: #fadbd8;
+            color: #a93226;
+        }
+        .dark .quiz-option.correct {
+            background: #1a3a2a;
+            color: #6fcf97;
+        }
+        .dark .quiz-option.wrong {
+            background: #3d1a1a;
+            color: #f1948a;
+        }
+        .quiz-option.disabled {
+            pointer-events: none;
+            opacity: .7;
+        }
+        .quiz-feedback {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .quiz-feedback.correct {
+            background: #d5f5e3;
+            color: #1a7a42;
+        }
+        .quiz-feedback.wrong {
+            background: #fadbd8;
+            color: #a93226;
+        }
+        .dark .quiz-feedback.correct {
+            background: #1a3a2a;
+            color: #6fcf97;
+        }
+        .dark .quiz-feedback.wrong {
+            background: #3d1a1a;
+            color: #f1948a;
+        }
+        .flashcard {
+            background: var(--surface2);
+            border-radius: var(--radius);
+            padding: 30px 24px;
+            text-align: center;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--border);
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+        .flashcard:hover {
+            border-color: var(--primary);
+        }
+        .flashcard .front {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .flashcard .back {
+            font-size: 17px;
+            color: var(--text2);
+            display: none;
+        }
+        .flashcard.revealed .front {
+            display: none;
+        }
+        .flashcard.revealed .back {
+            display: block;
+        }
+        .flashcard-nav {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .flashcard-nav button {
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition);
+        }
+        .flashcard-nav button:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* ── MOCK INTERVIEW ── */
+        .mock-question {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .mock-answer {
+            background: var(--surface2);
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 12px 0;
+            display: none;
+            border-left: 4px solid var(--primary);
+        }
+        .mock-answer.show {
+            display: block;
+        }
+        .mock-eval {
+            font-size: 14px;
+            color: var(--text3);
+            margin-top: 8px;
+        }
+
+        /* ── PROGRESS ── */
+        .progress-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0 20px;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width .5s ease;
+            width: 0%;
+        }
+
+        /* ── CHEAT SHEET PRINT ── */
+        .cheat-sheet-print {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin: 16px 0;
+        }
+        .cheat-sheet-print h3 {
+            font-size: 16px;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+        .cheat-sheet-print ul {
+            columns: 2 200px;
+            column-gap: 24px;
+            padding-left: 20px;
+        }
+        .cheat-sheet-print ul li {
+            font-size: 14px;
+            break-inside: avoid;
+            margin-bottom: 2px;
+        }
+
+        /* ── STUDY PLAN ── */
+        .study-day {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .study-day .day-num {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 18px;
+        }
+        .study-day .day-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .study-day .day-content p {
+            font-size: 14px;
+            color: var(--text2);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1024px) {
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .do-dont {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 820px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0;
+                padding: 0 16px 40px;
+            }
+            .main-header .search-wrap .hamburger {
+                display: block;
+            }
+            .main-header .search-wrap input {
+                width: 140px;
+            }
+            .cheat-sheet-print ul {
+                columns: 1;
+            }
+            .flashcard {
+                min-height: 140px;
+            }
+            .flashcard .front {
+                font-size: 17px;
+            }
+        }
+        @media (max-width: 480px) {
+            .main-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .main-header .search-wrap {
+                justify-content: space-between;
+            }
+            .main-header .search-wrap input {
+                width: 100%;
+            }
+            .card {
+                padding: 16px;
+            }
+            .section-title {
+                font-size: 22px;
+            }
+            .study-day {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+        }
+        /* overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .3);
+            z-index: 90;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        @media (min-width: 821px) {
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+
+        /* utilities */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .btn {
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition);
+            font-size: 14px;
+        }
+        .btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: #fff;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: var(--text3);
+        }
+    </style>
+
+</head>
+<body>
+
+    <!-- ─── SIDEBAR ─── -->
+    <aside class="sidebar" id="sidebar" role="navigation">
+        <div class="sidebar-brand">
+            <div>
+                <h1>⚡ Flare Prep</h1>
+                <small>Backend Engineer · Interview</small>
+            </div>
+        </div>
+        <nav id="navLinks">
+            <a href="#" data-section="summary" class="active">📋 Executive Summary</a>
+            <a href="#" data-section="skills">🧠 Skills Breakdown</a>
+            <a href="#" data-section="cards">🃏 Training Cards</a>
+            <a href="#" data-section="tech">⚙️ Technical Deep Dive</a>
+            <a href="#" data-section="behavioral">🧑‍💻 Behavioral</a>
+            <a href="#" data-section="coding">💻 Coding</a>
+            <a href="#" data-section="system">🏗️ System Design</a>
+            <a href="#" data-section="company">🏢 Company</a>
+            <a href="#" data-section="flashcards">🃏 Flashcards</a>
+            <a href="#" data-section="quiz">📝 Knowledge Check</a>
+            <a href="#" data-section="cheatsheet">📄 Cheat Sheet</a>
+            <a href="#" data-section="studyplan">📅 Study Plan</a>
+            <a href="#" data-section="mock">🎤 Mock Interview</a>
+            <a href="#" data-section="bonus">⭐ Bonus</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="theme-toggle" id="sidebarThemeToggle">🌓 Theme</button>
+            <span style="font-size:12px;color:var(--text3);">v1.0</span>
+        </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ─── MAIN ─── -->
+    <main class="main" id="mainContent">
+        <!-- header -->
+        <header class="main-header">
+            <h2 id="sectionTitle">Executive Summary</h2>
+            <div class="search-wrap">
+                <input type="text" id="globalSearch" placeholder="Search sections…" aria-label="Search">
+                <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">☰</button>
+                <button class="theme-toggle" id="headerThemeToggle">🌓 Theme</button>
+            </div>
+        </header>
+
+        <!-- progress -->
+        <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+
+        <!-- ─── SECTIONS ─── -->
+
+        <!-- 1. SUMMARY -->
+        <section class="section active" id="sec-summary">
+            <h2 class="section-title">Executive Summary</h2>
+            <p class="section-sub">Flare (formerly Themis-Tech) · Backend Engineer</p>
+
+            <div class="card">
+                <h3>🏢 Company Overview</h3>
+                <p>Flare is a legal-tech startup backed by leading VC firms, transforming how clients and attorneys work together. Their mission is to make legal services <strong>accessible and transparent</strong>. They build B2C platforms including a comprehensive case management system for attorneys and an intuitive case tracking tool for clients.</p>
+                <p style="margin-top:8px;"><strong>Website:</strong> <a href="https://helloflare.com" target="_blank">helloflare.com</a></p>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Role Summary</h3>
+                <p><strong>Backend Engineer</strong> with 5+ years of experience building scalable, secure, performant web services. You'll work in a CI/CD environment using cutting-edge technologies, own your domain, mentor others, and contribute to cross-platform infrastructure.</p>
+            </div>
+
+            <div class="card">
+                <h3>📋 Key Responsibilities</h3>
+                <ul>
+                    <li>Deliver high-quality, scalable code using best practices</li>
+                    <li>Own your domain — troubleshoot, monitor, and solve issues ("you build it, you own it")</li>
+                    <li>Lead design and implementation of complex systems</li>
+                    <li>Constantly learn new technologies and empower team members</li>
+                    <li>Contribute to the back-end guild and mentor others</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>✅ What Success Looks Like</h3>
+                <ul>
+                    <li>Shipping reliable, performant features that delight users</li>
+                    <li>Mentoring peers and elevating team skills</li>
+                    <li>Architecting systems that scale with business growth</li>
+                    <li>Owning production health and reducing incident response time</li>
+                    <li>Embracing AI-assisted development to accelerate delivery</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 2. SKILLS -->
+        <section class="section" id="sec-skills">
+            <h2 class="section-title">Skills Breakdown</h2>
+            <p class="section-sub">Required & preferred skills — with interview insights</p>
+
+            <div class="card">
+                <h3>🟢 Backend Development (5+ years)</h3>
+                <p><strong>Explanation:</strong> Professional experience building server-side applications, APIs, and microservices.</p>
+                <p><strong>Why it matters:</strong> Core of the role — you'll own backend systems end-to-end.</p>
+                <p><strong>Interviewers evaluate:</strong> Depth of experience, architectural thinking, code quality, and ability to handle complexity.</p>
+                <p><strong>Common questions:</strong> "Describe the most complex backend system you've built." "How do you structure a REST API?"</p>
+                <p><strong>Strong answer example:</strong> "I designed a payment processing service handling 10k req/s with 99.99% uptime using Node.js and Postgres, with circuit breakers and retries."</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Show measurable impact (throughput, latency, reliability)</li><li>Discuss trade-offs and decisions</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Just list technologies without context</li><li>Ignore failure scenarios</li></ul></div>
+                </div>
+                <p><strong>Red flags:</strong> Vague answers, no ownership stories, blaming others for failures.</p>
+            </div>
+
+            <div class="card">
+                <h3>🟢 SQL & NoSQL Databases</h3>
+                <p><strong>Explanation:</strong> Experience designing schemas, writing queries, and optimizing performance for relational and non-relational databases.</p>
+                <p><strong>Why it matters:</strong> Data is the core of legal case management — you need to store, query, and scale data efficiently.</p>
+                <p><strong>Interviewers evaluate:</strong> Schema design, indexing, query optimization, migration strategies, and choosing the right database for the job.</p>
+                <p><strong>Common questions:</strong> "How would you design a database for a case management system?" "Explain the CAP theorem." "When would you use MongoDB vs Postgres?"</p>
+                <p><strong>Strong answer example:</strong> "For Flare's case tracking, I'd use Postgres for transactional data (cases, users) with proper indexing on frequently queried fields, and Redis for session caching and rate limiting."</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Discuss indexing strategies</li><li>Mention read/write patterns</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Ignore data consistency</li><li>Overlook backup/restore</li></ul></div>
+                </div>
+                <p><strong>Red flags:</strong> Can't explain ACID vs BASE, no experience with migrations at scale.</p>
+            </div>
+
+            <div class="card">
+                <h3>🟢 AI-Assisted Development</h3>
+                <p><strong>Explanation:</strong> Using coding agents and agentic tooling to accelerate development — not just ChatGPT, but orchestrating AI across complex tasks.</p>
+                <p><strong>Why it matters:</strong> Flare explicitly values this — they want engineers who can guide AI to produce reliable, maintainable code.</p>
+                <p><strong>Interviewers evaluate:</strong> How you supervise, review, and integrate AI-generated code. Your ability to maintain architectural clarity.</p>
+                <p><strong>Common questions:</strong> "How do you use AI in your workflow?" "How do you ensure quality of AI-generated code?"</p>
+                <p><strong>Strong answer example:</strong> "I use AI to generate boilerplate, tests, and migrations, but I always review for correctness, security, and alignment with our patterns. I treat it as a junior developer that needs oversight."</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Show you can supervise AI</li><li>Mention code review and testing</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Blindly trust AI output</li><li>Skip security reviews</li></ul></div>
+                </div>
+                <p><strong>Red flags:</strong> Can't articulate how they ensure quality, over-reliance without understanding.</p>
+            </div>
+
+            <div class="card">
+                <h3>🟡 GraphQL (advantage)</h3>
+                <p><strong>Explanation:</strong> Experience building GraphQL APIs — schema design, resolvers, performance optimization, federation.</p>
+                <p><strong>Why it matters:</strong> Flare lists it as an advantage — they may use it or plan to.</p>
+                <p><strong>Interviewers evaluate:</strong> Understanding of GraphQL vs REST, batching, caching, and security.</p>
+                <p><strong>Common questions:</strong> "What are the pros and cons of GraphQL?" "How do you handle N+1 queries?"</p>
+                <p><strong>Strong answer example:</strong> "I've built GraphQL gateways that aggregate data from multiple services, using DataLoader to batch requests and Apollo Federation for schema stitching."</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Discuss DataLoader, batching, caching</li><li>Mention security (depth limiting, auth)</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Treat GraphQL as just a REST replacement</li><li>Ignore performance implications</li></ul></div>
+                </div>
+                <p><strong>Red flags:</strong> Can't explain the N+1 problem, no experience with complex schemas.</p>
+            </div>
+
+            <div class="card">
+                <h3>🟡 TypeScript & Node.js (advantage)</h3>
+                <p><strong>Explanation:</strong> Experience with TypeScript and Node.js for backend services.</p>
+                <p><strong>Why it matters:</strong> Flare's tech stack likely includes Node.js — they want engineers who can hit the ground running.</p>
+                <p><strong>Interviewers evaluate:</strong> Type safety, async patterns, error handling, and Node.js runtime understanding.</p>
+                <p><strong>Common questions:</strong> "How do you handle errors in Node.js?" "Explain event loop and non-blocking I/O."</p>
+                <p><strong>Strong answer example:</strong> "I use TypeScript with strict mode, Zod for runtime validation, and structured logging. I handle uncaught exceptions with graceful shutdown and use async/await for readability."</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Show type safety practices</li><li>Mention error handling and logging</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Ignore the event loop</li><li>Use <code>any</code> everywhere</li></ul></div>
+                </div>
+                <p><strong>Red flags:</strong> Can't explain async/await vs callbacks, no TypeScript experience.</p>
+            </div>
+
+            <div class="card">
+                <h3>🟢 Cloud-Native & Serverless</h3>
+                <p><strong>Explanation:</strong> Building natively on the cloud using serverless technologies (AWS Lambda, API Gateway, DynamoDB, etc.)</p>
+                <p><strong>Why it matters:</strong> Flare wants engineers who embrace cloud-native architecture for scalability and cost-efficiency.</p>
+                <p><strong>Interviewers evaluate:</strong> Understanding of serverless patterns, cold starts, state management, and cost optimization.</p>
+                <p><strong>Common questions:</strong> "When would you use serverless vs containers?" "How do you handle state in serverless?"</p>
+                <p><strong>Strong answer example:</strong> "I've built event-driven serverless apps using AWS Lambda, SQS, and DynamoDB, with CloudWatch for observability. I handle cold starts with provisioned concurrency when needed."</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Discuss trade-offs (cold start, cost)</li><li>Mention observability and monitoring</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Treat serverless as a silver bullet</li><li>Ignore state management</li></ul></div>
+                </div>
+                <p><strong>Red flags:</strong> No experience with cloud providers, can't explain serverless limitations.</p>
+            </div>
+        </section>
+
+        <!-- 3. TRAINING CARDS -->
+        <section class="section" id="sec-cards">
+            <h2 class="section-title">Interactive Training Cards</h2>
+            <p class="section-sub">Key concepts with real-world examples, best practices, and mini quizzes</p>
+
+            <div class="card" id="card1">
+                <h3>🔹 Idempotency <span class="badge-diff medium">Medium</span></h3>
+                <p><strong>Concept:</strong> An operation that can be applied multiple times without changing the result beyond the initial application.</p>
+                <p><strong>Real-world example:</strong> In a payment system, if a client retries a payment request due to a timeout, the server should process it only once and return the same response.</p>
+                <p><strong>Best practices:</strong> Use idempotency keys in headers, store results in a cache/database, and return cached responses for retries.</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Generate unique idempotency keys per request</li><li>Store results with TTL</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Rely on client-side generated keys without validation</li><li>Forget to handle key expiration</li></ul></div>
+                </div>
+                <p><strong>Common pitfalls:</strong> Race conditions on key lookup, not handling key collisions, caching too long.</p>
+                <button class="btn" onclick="toggleQuiz('quiz1')">📝 Show Mini Quiz</button>
+                <div id="quiz1" style="display:none;margin-top:12px;">
+                    <p><strong>What is the primary benefit of idempotency in a distributed system?</strong></p>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">A) Lower latency</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,true)">B) Safe retries without duplication</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">C) Reduced code complexity</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">D) Higher throughput</button>
+                    <div class="quiz-feedback" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div class="card" id="card2">
+                <h3>🔹 Circuit Breaker <span class="badge-diff medium">Medium</span></h3>
+                <p><strong>Concept:</strong> A pattern that prevents an application from repeatedly trying to execute an operation that's likely to fail, allowing it to recover gracefully.</p>
+                <p><strong>Real-world example:</strong> When a downstream payment service is slow, the circuit breaker opens and returns a fallback response instead of timing out.</p>
+                <p><strong>Best practices:</strong> Use three states (closed, open, half-open), configure thresholds for failure rate and timeouts, and implement monitoring.</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Set appropriate thresholds based on SLAs</li><li>Log state changes for debugging</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Use default values without tuning</li><li>Ignore the half-open state</li></ul></div>
+                </div>
+                <p><strong>Common pitfalls:</strong> Thresholds too sensitive causing false positives, not resetting after recovery.</p>
+                <button class="btn" onclick="toggleQuiz('quiz2')">📝 Show Mini Quiz</button>
+                <div id="quiz2" style="display:none;margin-top:12px;">
+                    <p><strong>What state does a circuit breaker enter to test if the downstream service has recovered?</strong></p>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">A) Closed</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">B) Open</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,true)">C) Half-open</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">D) Recovery</button>
+                    <div class="quiz-feedback" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div class="card" id="card3">
+                <h3>🔹 Eventual Consistency <span class="badge-diff hard">Hard</span></h3>
+                <p><strong>Concept:</strong> A consistency model used in distributed systems where updates are propagated asynchronously, and data may be temporarily inconsistent but will become consistent over time.</p>
+                <p><strong>Real-world example:</strong> In a case management system, when a lawyer updates a case status, the client's view might lag by a few seconds due to asynchronous replication.</p>
+                <p><strong>Best practices:</strong> Design for idempotency, use idempotent consumers, and implement reconciliation mechanisms.</p>
+                <div class="do-dont">
+                    <div class="do"><h4>✅ Do</h4><ul><li>Use event sourcing to track changes</li><li>Implement idempotent message processing</li></ul></div>
+                    <div class="dont"><h4>❌ Don't</h4><ul><li>Assume strong consistency without explicit design</li><li>Ignore conflict resolution</li></ul></div>
+                </div>
+                <p><strong>Common pitfalls:</strong> Not handling duplicate messages, missing reconciliation logic.</p>
+                <button class="btn" onclick="toggleQuiz('quiz3')">📝 Show Mini Quiz</button>
+                <div id="quiz3" style="display:none;margin-top:12px;">
+                    <p><strong>Which pattern is commonly used to handle eventual consistency?</strong></p>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">A) Two-phase commit</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">B) Distributed transactions</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,true)">C) Event sourcing with idempotent consumers</button>
+                    <button class="quiz-option" onclick="answerQuiz(this,false)">D) Synchronous replication</button>
+                    <div class="quiz-feedback" style="display:none;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. TECHNICAL DEEP DIVE -->
+        <section class="section" id="sec-tech">
+            <h2 class="section-title">Technical Deep Dive</h2>
+            <p class="section-sub">Architecture, core concepts, and interview questions for each technology</p>
+
+            <div class="card">
+                <h3>⚙️ Node.js + TypeScript</h3>
+                <p><strong>Architecture overview:</strong> Node.js is an event-driven, non-blocking I/O runtime built on V8. TypeScript adds static types for better maintainability.</p>
+                <p><strong>Core concepts:</strong> Event loop, async/await, streams, modules (CommonJS/ESM), child processes, clustering.</p>
+                <p><strong>Important APIs:</strong> <code>http</code>, <code>fs</code>, <code>path</code>, <code>events</code>, <code>stream</code>, <code>child_process</code>, <code>cluster</code>.</p>
+                <p><strong>Common interview questions:</strong></p>
+                <ul>
+                    <li>"Explain the event loop and how it handles async operations."</li>
+                    <li>"How do you handle uncaught exceptions?"</li>
+                    <li>"What's the difference between <code>setImmediate</code> and <code>process.nextTick</code>?"</li>
+                    <li>"How do you manage memory leaks in Node.js?"</li>
+                </ul>
+                <p><strong>Coding questions:</strong> "Write a function that reads a large file line by line and processes each line without loading the entire file into memory."</p>
+                <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>import * as readline from 'node:readline';
+                import { createReadStream } from 'node:fs';
+
+                async function processLargeFile(filePath: string): Promise<void> {
+                const rl = readline.createInterface({
+                input: createReadStream(filePath),
+                crlfDelay: Infinity
+                });
+                for await (const line of rl) {
+                // process line
+                console.log(line);
+                }
+                }
+            </div>
+            <p><strong>System design considerations:</strong> Clustering for multi-core, graceful shutdown, health checks, observability.</p>
+            <p><strong>Performance:</strong> Use <code>worker_threads</code> for CPU-intensive tasks, enable gzip compression, use connection pooling.</p>
+            <p><strong>Security:</strong> Validate inputs, use Helmet.js, rate limiting, secure cookies, environment variables for secrets.</p>
+            <p><strong>Production best practices:</strong> Use PM2 or Docker, structured logging (JSON), APM monitoring, regular dependency updates.</p>
+        </div>
+
+        <div class="card">
+            <h3>⚙️ GraphQL</h3>
+            <p><strong>Architecture overview:</strong> GraphQL is a query language and runtime for APIs, allowing clients to request exactly the data they need.</p>
+            <p><strong>Core concepts:</strong> Schema, types, resolvers, queries, mutations, subscriptions, directives, fragments.</p>
+            <p><strong>Important features:</strong> DataLoader for batching, Apollo Federation for distributed schemas, persisted queries, introspection.</p>
+            <p><strong>Common interview questions:</strong></p>
+            <ul>
+                <li>"What is the N+1 problem and how do you solve it?"</li>
+                <li>"How do you handle authentication in GraphQL?"</li>
+                <li>"What are the differences between GraphQL and REST?"</li>
+                <li>"How do you implement pagination?"</li>
+            </ul>
+            <p><strong>Coding questions:</strong> "Design a GraphQL schema for a case management system with users, cases, and documents."</p>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>type User {
+                id: ID!
+                name: String!
+                email: String!
+                cases: [Case!]!
+                }
+
+                type Case {
+                id: ID!
+                title: String!
+                status: CaseStatus!
+                client: User!
+                attorney: User!
+                documents: [Document!]!
+                }
+
+                enum CaseStatus {
+                OPEN
+                IN_PROGRESS
+                CLOSED
+                }
+
+                type Query {
+                case(id: ID!): Case
+                userCases(userId: ID!): [Case!]!
+                }
+            </div>
+            <p><strong>System design:</strong> Federation for microservices, API gateway, caching with Redis, query complexity analysis.</p>
+            <p><strong>Performance:</strong> Use DataLoader to batch DB calls, enable persisted queries, use CDN for static schemas.</p>
+            <p><strong>Security:</strong> Depth limiting, query cost analysis, authentication, authorization, input validation.</p>
+            <p><strong>Production best practices:</strong> Schema registry, versioning, monitoring (Apollo Studio), error handling, logging.</p>
+        </div>
+
+        <div class="card">
+            <h3>⚙️ Serverless (AWS Lambda, API Gateway)</h3>
+            <p><strong>Architecture overview:</strong> Serverless runs code in response to events, automatically scales, and charges per invocation.</p>
+            <p><strong>Core concepts:</strong> Functions, triggers, layers, cold starts, execution timeout, memory allocation, environment variables.</p>
+            <p><strong>Important services:</strong> Lambda, API Gateway, DynamoDB, SQS, SNS, EventBridge, CloudWatch, IAM.</p>
+            <p><strong>Common interview questions:</strong></p>
+            <ul>
+                <li>"What are cold starts and how do you mitigate them?"</li>
+                <li>"How do you handle state in serverless?"</li>
+                <li>"How do you manage environment-specific configurations?"</li>
+                <li>"What are the limits of Lambda?"</li>
+            </ul>
+            <p><strong>Coding questions:</strong> "Write a Lambda function that processes a file upload from S3 and inserts metadata into DynamoDB."</p>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>import { S3Event } from 'aws-lambda';
+                import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+                import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+
+                const client = new DynamoDBClient({});
+                const docClient = DynamoDBDocumentClient.from(client);
+
+                export const handler = async (event: S3Event) => {
+                for (const record of event.Records) {
+                const key = record.s3.object.key;
+                const bucket = record.s3.bucket.name;
+                await docClient.send(new PutCommand({
+                TableName: 'FileMetadata',
+                Item: { fileKey: key, bucket, processedAt: new Date().toISOString() }
+                }));
+                }
+                return { statusCode: 200 };
+                };
+            </div>
+            <p><strong>System design:</strong> Event-driven architectures, SQS for decoupling, Step Functions for orchestration.</p>
+            <p><strong>Performance:</strong> Optimize package size, use provisioned concurrency, choose appropriate memory size.</p>
+            <p><strong>Security:</strong> IAM roles with least privilege, VPC if needed, environment variable encryption.</p>
+            <p><strong>Production best practices:</strong> CI/CD with SAM/Serverless Framework, monitoring with X-Ray, structured logging.</p>
+        </div>
+    </section>
+
+    <!-- 5. BEHAVIORAL -->
+    <section class="section" id="sec-behavioral">
+        <h2 class="section-title">Behavioral Interview Preparation</h2>
+        <p class="section-sub">STAR examples for key competencies</p>
+
+        <div class="card">
+            <h3>👨‍💼 Leadership</h3>
+            <p><strong>Situation:</strong> On my previous team, we were migrating a monolith to microservices, and the team lacked experience with distributed systems.</p>
+            <p><strong>Task:</strong> I needed to lead the technical design and mentor junior engineers through the transition.</p>
+            <p><strong>Action:</strong> I organized weekly design sessions, created a shared architecture document, and pair-programmed with team members on critical services. I also set up a CI/CD pipeline for the new services.</p>
+            <p><strong>Result:</strong> The migration was completed 3 weeks ahead of schedule, and two junior engineers were promoted to mid-level after the project.</p>
+        </div>
+
+        <div class="card">
+            <h3>🐞 Difficult Bug</h3>
+            <p><strong>Situation:</strong> A production issue caused intermittent timeouts on our payment API, affecting 5% of transactions.</p>
+            <p><strong>Task:</strong> Identify and fix the root cause with minimal customer impact.</p>
+            <p><strong>Action:</strong> I instrumented the code with detailed logs, reproduced the issue in staging, and discovered a connection pool exhaustion bug. I increased the pool size and added retry logic with exponential backoff.</p>
+            <p><strong>Result:</strong> Timeouts dropped to 0.01%, and we added monitoring to alert on pool usage.</p>
+        </div>
+
+        <div class="card">
+            <h3>⚡ Conflict</h3>
+            <p><strong>Situation:</strong> Two engineers disagreed on the approach for a new authentication service — one wanted OAuth2, the other wanted JWT with sessions.</p>
+            <p><strong>Task:</strong> Mediate the discussion and reach a consensus.</p>
+            <p><strong>Action:</strong> I facilitated a meeting where both presented their cases, and we evaluated trade-offs based on security, scalability, and team familiarity. We decided on OAuth2 with JWT for stateless auth, and sessions for admin users.</p>
+            <p><strong>Result:</strong> Both engineers were satisfied, and we shipped on time.</p>
+        </div>
+
+        <div class="card">
+            <h3>⏰ Deadline Pressure</h3>
+            <p><strong>Situation:</strong> A major client needed a custom integration within 2 weeks, but the estimate was 4 weeks.</p>
+            <p><strong>Task:</strong> Deliver the integration on time without compromising quality.</p>
+            <p><strong>Action:</strong> I broke down the work into MVPs, prioritized core functionality, and delegated tasks. I also worked with the product manager to defer non-essential features.</p>
+            <p><strong>Result:</strong> We delivered the core integration on time, and the client was thrilled. The deferred features were added in the next sprint.</p>
+        </div>
+
+        <div class="card">
+            <h3>🚀 Ownership</h3>
+            <p><strong>Situation:</strong> Our logging system was unreliable and often failed during peak traffic.</p>
+            <p><strong>Task:</strong> Take ownership and improve the system.</p>
+            <p><strong>Action:</strong> I audited the current setup, migrated to a structured logging format (JSON), added buffering with a local queue, and set up a dead-letter queue for failed deliveries.</p>
+            <p><strong>Result:</strong> Log reliability improved from 92% to 99.9%, and the team could finally debug production issues effectively.</p>
+        </div>
+
+        <div class="card">
+            <h3>🧪 Learning New Technology</h3>
+            <p><strong>Situation:</strong> We needed to adopt GraphQL for a new client-facing API, but no one on the team had production experience with it.</p>
+            <p><strong>Task:</strong> Learn GraphQL and lead the adoption.</p>
+            <p><strong>Action:</strong> I took an online course, built a proof-of-concept, and created a presentation for the team. I then led a pilot project and gradually migrated services.</p>
+            <p><strong>Result:</strong> The team adopted GraphQL successfully, and the new API reduced frontend code complexity by 30%.</p>
+        </div>
+
+        <div class="card">
+            <h3>💥 Failure</h3>
+            <p><strong>Situation:</strong> A database migration I ran caused a 15-minute downtime due to a locking issue I hadn't anticipated.</p>
+            <p><strong>Task:</strong> Resolve the issue and prevent it from happening again.</p>
+            <p><strong>Action:</strong> I quickly rolled back the migration, restored the backup, and communicated the issue to stakeholders. Then I wrote a post-mortem, added a migration checklist, and implemented a canary deployment for future migrations.</p>
+            <p><strong>Result:</strong> The team now follows a safe migration process, and we haven't had a similar incident since.</p>
+        </div>
+
+        <div class="card">
+            <h3>🤝 Teamwork</h3>
+            <p><strong>Situation:</strong> We had a cross-functional project with the frontend and data science teams to build an analytics dashboard.</p>
+            <p><strong>Task:</strong> Collaborate effectively across teams.</p>
+            <p><strong>Action:</strong> I organized sync meetings, created shared API contracts, and built a mock API for the frontend to test against.</p>
+            <p><strong>Result:</strong> The project was delivered on time, and the dashboard was used by 50+ internal users within the first month.</p>
+        </div>
+
+        <div class="card">
+            <h3>👤 Customer Impact</h3>
+            <p><strong>Situation:</strong> Clients were frustrated with slow case status updates in our tracking tool.</p>
+            <p><strong>Task:</strong> Improve the speed of status updates.</p>
+            <p><strong>Action:</strong> I profiled the API and identified a bottleneck in the database query. I added an index and optimized the query. I also implemented a caching layer for frequently accessed case data.</p>
+            <p><strong>Result:</strong> Case status load time dropped from 2.5s to 300ms, and client satisfaction scores improved by 15%.</p>
+        </div>
+    </section>
+
+    <!-- 6. CODING -->
+    <section class="section" id="sec-coding">
+        <h2 class="section-title">Coding Interview Preparation</h2>
+        <p class="section-sub">Likely problems with step-by-step solutions</p>
+
+        <div class="card">
+            <h3>📝 Problem: Rate Limiter</h3>
+            <p><strong>Question:</strong> Design a rate limiter that limits each user to 100 requests per minute. Implement it in Node.js/TypeScript.</p>
+            <p><strong>Solution (step-by-step):</strong></p>
+            <ul>
+                <li>Use a sliding window counter stored in Redis.</li>
+                <li>Key: <code>rate_limit:{userId}</code> with a score of timestamp.</li>
+                <li>For each request, remove entries older than 60 seconds, count remaining, and if &lt; 100, add the current timestamp.</li>
+            </ul>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>import { Redis } from 'ioredis';
+
+                const redis = new Redis();
+                const WINDOW = 60;
+                const LIMIT = 100;
+
+                async function rateLimit(userId: string): Promise&lt;boolean&gt; {
+                const key = `rate_limit:${userId}`;
+                const now = Date.now();
+                const cutoff = now - WINDOW * 1000;
+
+                // remove old entries
+                await redis.zremrangebyscore(key, 0, cutoff);
+                const count = await redis.zcard(key);
+
+                if (count &lt; LIMIT) {
+                await redis.zadd(key, now, `${now}-${Math.random()}`);
+                await redis.expire(key, WINDOW);
+                return true;
+                }
+                return false;
+                }
+            </div>
+            <p><strong>Complexity:</strong> O(log N) for each operation (Redis sorted set).</p>
+            <p><strong>Common mistakes:</strong> Forgetting to expire keys, race conditions in distributed environments.</p>
+            <p><strong>Follow-up:</strong> How would you scale this across multiple servers? (Use a distributed cache like Redis.)</p>
+        </div>
+
+        <div class="card">
+            <h3>📝 Problem: Design a Task Queue</h3>
+            <p><strong>Question:</strong> Design a task queue system that processes jobs asynchronously with retries and error handling.</p>
+            <p><strong>Solution (step-by-step):</strong></p>
+            <ul>
+                <li>Use a message broker like SQS or Redis.</li>
+                <li>Producer pushes jobs with a unique ID and payload.</li>
+                <li>Consumer polls for jobs, processes them, and deletes on success.</li>
+                <li>On failure, push to a dead-letter queue after max retries.</li>
+            </ul>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>import { SQS } from 'aws-sdk';
+                const sqs = new SQS();
+                const QUEUE_URL = '...';
+                const DLQ_URL = '...';
+                const MAX_RETRIES = 3;
+
+                async function processJob(job: any): Promise&lt;void&gt; {
+                try {
+                await doWork(job);
+                await sqs.deleteMessage({ QueueUrl: QUEUE_URL, ReceiptHandle: job.ReceiptHandle }).promise();
+                } catch (err) {
+                const retryCount = job.Attributes?.ApproximateReceiveCount || 1;
+                if (retryCount &gt;= MAX_RETRIES) {
+                await sqs.sendMessage({ QueueUrl: DLQ_URL, MessageBody: JSON.stringify(job) }).promise();
+                } else {
+                // visibility timeout will trigger retry
+                }
+                }
+                }
+            </div>
+            <p><strong>Complexity:</strong> O(1) per job with SQS.</p>
+            <p><strong>Common mistakes:</strong> Not handling duplicate messages, not setting visibility timeout correctly.</p>
+            <p><strong>Follow-up:</strong> How do you ensure exactly-once processing? (Design for idempotency.)</p>
+        </div>
+    </section>
+
+    <!-- 7. SYSTEM DESIGN -->
+    <section class="section" id="sec-system">
+        <h2 class="section-title">System Design</h2>
+        <p class="section-sub">Walkthrough: Case Management System for Flare</p>
+
+        <div class="card">
+            <h3>📋 Requirements Gathering</h3>
+            <p><strong>Functional:</strong></p>
+            <ul>
+                <li>Attorneys can create, update, and view cases</li>
+                <li>Clients can track case status and view documents</li>
+                <li>Documents can be uploaded and shared</li>
+                <li>Real-time notifications for status changes</li>
+            </ul>
+            <p><strong>Non-functional:</strong></p>
+            <ul>
+                <li>Scalable to 10k+ concurrent users</li>
+                <li>99.9% availability</li>
+                <li>Data encryption at rest and in transit</li>
+                <li>Audit logging for compliance</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🏗️ High-Level Architecture</h3>
+            <ul>
+                <li><strong>Client:</strong> Web/mobile apps talking to API Gateway</li>
+                <li><strong>API Gateway:</strong> Routes requests to appropriate services</li>
+                <li><strong>GraphQL Gateway:</strong> Aggregates data from microservices</li>
+                <li><strong>Services:</strong> Case Service, User Service, Document Service, Notification Service</li>
+                <li><strong>Databases:</strong> Postgres (transactional), Elasticsearch (search), Redis (cache)</li>
+                <li><strong>Message Queue:</strong> SQS for async tasks (notifications, document processing)</li>
+                <li><strong>Storage:</strong> S3 for documents</li>
+                <li><strong>Observability:</strong> CloudWatch, X-Ray, structured logging</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🧩 Component Breakdown</h3>
+            <p><strong>Case Service:</strong> CRUD operations on cases, status transitions, event publishing.</p>
+            <p><strong>User Service:</strong> User management, authentication, authorization (RBAC).</p>
+            <p><strong>Document Service:</strong> Upload, download, versioning, and sharing of documents.</p>
+            <p><strong>Notification Service:</strong> Sends email/SMS/push notifications for status changes.</p>
+        </div>
+
+        <div class="card">
+            <h3>🗄️ Database Design</h3>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>-- Postgres schema
+                CREATE TABLE users (
+                id UUID PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                name TEXT NOT NULL,
+                role TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW()
+                );
+
+                CREATE TABLE cases (
+                id UUID PRIMARY KEY,
+                title TEXT NOT NULL,
+                status TEXT NOT NULL,
+                client_id UUID REFERENCES users(id),
+                attorney_id UUID REFERENCES users(id),
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+                );
+
+                CREATE TABLE documents (
+                id UUID PRIMARY KEY,
+                case_id UUID REFERENCES cases(id),
+                name TEXT NOT NULL,
+                s3_key TEXT NOT NULL,
+                uploaded_by UUID REFERENCES users(id),
+                created_at TIMESTAMP DEFAULT NOW()
+                );
+
+                CREATE INDEX idx_cases_client ON cases(client_id);
+                CREATE INDEX idx_cases_attorney ON cases(attorney_id);
+                CREATE INDEX idx_documents_case ON documents(case_id);
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📈 Scaling</h3>
+            <ul>
+                <li><strong>Horizontal scaling:</strong> Run multiple instances of each service behind a load balancer.</li>
+                <li><strong>Database:</strong> Read replicas for read-heavy queries, partitioning by tenant (law firm).</li>
+                <li><strong>Caching:</strong> Redis for frequently accessed case data, session storage.</li>
+                <li><strong>CDN:</strong> Serve static assets and documents via CloudFront.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>⚡ Caching Strategy</h3>
+            <ul>
+                <li><strong>Cache-aside:</strong> Check cache first, then DB on miss.</li>
+                <li><strong>TTL:</strong> 5 minutes for case data, 1 hour for user profiles.</li>
+                <li><strong>Invalidation:</strong> On case update, invalidate cache for that case.</li>
+                <li><strong>Distributed cache:</strong> Redis Cluster for high availability.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>📨 Messaging</h3>
+            <ul>
+                <li><strong>SQS:</strong> For async tasks — document processing, email notifications.</li>
+                <li><strong>SNS:</strong> For fan-out notifications to multiple subscribers.</li>
+                <li><strong>EventBridge:</strong> For event-driven workflows (e.g., case status change → notify client).</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>📊 Monitoring</h3>
+            <ul>
+                <li><strong>Metrics:</strong> Request rate, error rate, latency (p50, p95, p99).</li>
+                <li><strong>Logging:</strong> Structured JSON logs with correlation IDs.</li>
+                <li><strong>Alerts:</strong> On error rate &gt; 1%, latency p95 &gt; 500ms.</li>
+                <li><strong>Dashboards:</strong> Grafana or CloudWatch dashboards.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🔒 Security</h3>
+            <ul>
+                <li><strong>Authentication:</strong> OAuth2 with JWT tokens.</li>
+                <li><strong>Authorization:</strong> RBAC — attorneys can only access their cases.</li>
+                <li><strong>Encryption:</strong> TLS in transit, AES-256 at rest (S3, RDS).</li>
+                <li><strong>Audit logs:</strong> All access and changes logged for compliance.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>⚖️ Tradeoffs</h3>
+            <ul>
+                <li><strong>Microservices vs Monolith:</strong> Microservices for independent scaling and team ownership, but adds complexity.</li>
+                <li><strong>GraphQL vs REST:</strong> GraphQL gives clients flexibility but requires careful query optimization.</li>
+                <li><strong>Postgres vs NoSQL:</strong> Postgres for strong consistency, NoSQL for high-throughput event storage.</li>
+                <li><strong>Serverless vs Containers:</strong> Serverless for low-traffic services, containers for predictable workloads.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 8. COMPANY -->
+    <section class="section" id="sec-company">
+        <h2 class="section-title">Company-Specific Preparation</h2>
+        <p class="section-sub">Flare (formerly Themis-Tech)</p>
+
+        <div class="card">
+            <h3>📦 Products</h3>
+            <ul>
+                <li><strong>Case management system</strong> for attorneys — comprehensive tool for handling cases efficiently.</li>
+                <li><strong>Case tracking tool</strong> for clients — intuitive interface to monitor case progress.</li>
+                <li><strong>B2C platforms</strong> — empowering clients with transparent legal processes.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>👥 Customers</h3>
+            <ul>
+                <li>Law firms (attorneys and staff)</li>
+                <li>Individual clients seeking legal services</li>
+                <li>Enterprise legal departments (potential future market)</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>💰 Business Model</h3>
+            <ul>
+                <li>B2C subscription-based or per-case fees for clients</li>
+                <li>B2B SaaS for law firms (case management platform)</li>
+                <li>Backed by leading VC firms — growth-stage startup</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🏁 Competitors</h3>
+            <ul>
+                <li>Legal tech platforms (Clio, MyCase, PracticePanther)</li>
+                <li>Traditional law firm management software</li>
+                <li>Emerging AI-powered legal tools</li>
+            </ul>
+            <p>Flare differentiates with <strong>transparency</strong> and <strong>client-centric</strong> design.</p>
+        </div>
+
+        <div class="card">
+            <h3>📰 Recent News</h3>
+            <ul>
+                <li>Rebranded from Themis-Tech to Flare in 2024.</li>
+                <li>Raised funding from leading VC firms (check recent press).</li>
+                <li>Focus on AI-assisted development and agentic tooling.</li>
+            </ul>
+            <p><em>Check <a href="https://helloflare.com" target="_blank">helloflare.com</a> and LinkedIn for the latest news.</em></p>
+        </div>
+
+        <div class="card">
+            <h3>💡 Intelligent Questions to Ask</h3>
+            <ul>
+                <li>"What does the on-call rotation look like, and how is incident response handled?"</li>
+                <li>"How does the team balance feature development with technical debt?"</li>
+                <li>"What does the career growth path look like for backend engineers at Flare?"</li>
+                <li>"How do you measure the success of the engineering team?"</li>
+                <li>"What are the biggest technical challenges Flare is facing right now?"</li>
+                <li>"How has AI changed the way the team works?"</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 9. FLASHCARDS -->
+    <section class="section" id="sec-flashcards">
+        <h2 class="section-title">Interactive Flashcards</h2>
+        <p class="section-sub">Click to reveal the answer</p>
+        <div id="flashcardContainer">
+            <div class="flashcard" id="flashcardEl" onclick="toggleFlashcard()">
+                <div class="front" id="flashFront">What is the CAP theorem?</div>
+                <div class="back" id="flashBack">In a distributed system, you can only have two of Consistency, Availability, and Partition tolerance. Most systems choose AP (eventual consistency) or CP (strong consistency).</div>
+            </div>
+            <div class="flashcard-nav">
+                <button onclick="prevFlashcard()">◀ Previous</button>
+                <span id="flashIndex" style="font-weight:500;">1 / 10</span>
+                <button onclick="nextFlashcard()">Next ▶</button>
+                <button onclick="toggleFlashcard()" class="btn" style="margin-left:8px;">🔄 Reveal</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. KNOWLEDGE CHECK -->
+    <section class="section" id="sec-quiz">
+        <h2 class="section-title">Knowledge Check</h2>
+        <p class="section-sub">Test your understanding with multiple-choice questions</p>
+        <div id="quizContainer"></div>
+        <div id="quizScore" style="margin-top:16px;font-weight:600;"></div>
+    </section>
+
+    <!-- 11. CHEAT SHEET -->
+    <section class="section" id="sec-cheatsheet">
+        <h2 class="section-title">Interview Cheat Sheet</h2>
+        <p class="section-sub">Printable summary — <button class="btn" onclick="window.print()">🖨️ Print</button></p>
+        <div class="cheat-sheet-print" id="cheatSheetContent">
+            <h3>🔑 Key Technologies</h3>
+            <ul>
+                <li>Node.js / TypeScript</li>
+                <li>GraphQL</li>
+                <li>PostgreSQL, MongoDB, Redis</li>
+                <li>AWS (Lambda, API Gateway, SQS, S3)</li>
+                <li>CI/CD (GitHub Actions, CircleCI)</li>
+                <li>Docker, Kubernetes</li>
+            </ul>
+            <h3>📌 Important Concepts</h3>
+            <ul>
+                <li>Idempotency, Circuit Breaker, Retry with Backoff</li>
+                <li>Eventual Consistency, CQRS, Event Sourcing</li>
+                <li>CAP Theorem, ACID vs BASE</li>
+                <li>Rate Limiting, Distributed Caching</li>
+                <li>Observability (logs, metrics, traces)</li>
+            </ul>
+            <h3>✅ Best Practices</h3>
+            <ul>
+                <li>Design for failure — use circuit breakers, retries, dead-letter queues</li>
+                <li>Write idempotent APIs</li>
+                <li>Use structured logging with correlation IDs</li>
+                <li>Automate testing (unit, integration, E2E)</li>
+                <li>Infrastructure as Code (Terraform, CDK)</li>
+            </ul>
+            <h3>🔢 Numbers to Remember</h3>
+            <ul>
+                <li>Latency: p95 &lt; 200ms for API calls</li>
+                <li>Availability target: 99.9%</li>
+                <li>RDS connection pool: 10-20 connections per instance</li>
+                <li>Lambda timeout: 15s (max), 128MB-10GB memory</li>
+                <li>Redis TTL: 5-15 minutes for cache</li>
+            </ul>
+            <h3>🎯 Interview Tips</h3>
+            <ul>
+                <li>Listen carefully, clarify requirements</li>
+                <li>Think out loud — show your process</li>
+                <li>Discuss trade-offs and alternatives</li>
+                <li>Use STAR for behavioral questions</li>
+                <li>Ask intelligent questions at the end</li>
+            </ul>
+            <h3>⚠️ Common Mistakes</h3>
+            <ul>
+                <li>Not asking clarifying questions</li>
+                <li>Jumping to code without design</li>
+                <li>Ignoring edge cases</li>
+                <li>Overlooking security and observability</li>
+                <li>Not discussing failure scenarios</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 12. STUDY PLAN -->
+    <section class="section" id="sec-studyplan">
+        <h2 class="section-title">7-Day Study Plan</h2>
+        <p class="section-sub">Daily schedule to prepare for your Flare interview</p>
+
+        <div class="study-day"><div class="day-num">Day 1</div><div class="day-content"><h4>Backend Fundamentals</h4><p>Review REST vs GraphQL, HTTP, authentication, and authorization. Practice designing a RESTful API. (2h)</p></div></div>
+        <div class="study-day"><div class="day-num">Day 2</div><div class="day-content"><h4>Databases &amp; Data Modeling</h4><p>SQL schema design, indexing, and query optimization. NoSQL (MongoDB/DynamoDB). CAP theorem. (2h)</p></div></div>
+        <div class="study-day"><div class="day-num">Day 3</div><div class="day-content"><h4>Node.js &amp; TypeScript</h4><p>Event loop, async patterns, error handling, and TypeScript types. Practice coding problems. (2.5h)</p></div></div>
+        <div class="study-day"><div class="day-num">Day 4</div><div class="day-content"><h4>System Design</h4><p>Design a case management system (Flare-like). Focus on scalability, caching, and database sharding. (2.5h)</p></div></div>
+        <div class="study-day"><div class="day-num">Day 5</div><div class="day-content"><h4>Cloud &amp; Serverless</h4><p>AWS Lambda, API Gateway, SQS, S3. Serverless patterns and cold start mitigation. (2h)</p></div></div>
+        <div class="study-day"><div class="day-num">Day 6</div><div class="day-content"><h4>Behavioral &amp; STAR</h4><p>Practice STAR stories for leadership, conflict, failure, ownership, and customer impact. (1.5h)</p></div></div>
+        <div class="study-day"><div class="day-num">Day 7</div><div class="day-content"><h4>Mock Interview &amp; Review</h4><p>Full mock interview (technical + behavioral). Review weak areas and company research. (3h)</p></div></div>
+    </section>
+
+    <!-- 13. MOCK INTERVIEW -->
+    <section class="section" id="sec-mock">
+        <h2 class="section-title">Mock Interview</h2>
+        <p class="section-sub">Practice with these questions — click to reveal answers and evaluation</p>
+        <div id="mockContainer">
+            <div class="card" id="mockCard">
+                <div class="mock-question" id="mockQuestion">Q1: How would you design a system to handle 10,000 concurrent users for a legal case tracking tool?</div>
+                <button class="btn" onclick="toggleMockAnswer()">💡 Show Answer &amp; Evaluation</button>
+                <div class="mock-answer" id="mockAnswer">
+                    <p><strong>Ideal answer:</strong> Design with a load balancer, auto-scaling services (ECS or Lambda), a distributed cache (Redis), a database with read replicas, and an async task queue for non-blocking operations. Use API Gateway, GraphQL federation, and S3 for document storage.</p>
+                    <p><strong>Evaluation criteria:</strong> Demonstrates understanding of scaling, caching, database replication, and async processing. Mentions observability and security.</p>
+                    <div class="mock-eval">⭐ <strong>Key points:</strong> Load balancing, caching, read replicas, async tasks, monitoring.</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+                <button class="btn" onclick="prevMock()">◀ Previous</button>
+                <span id="mockIndex" style="font-weight:500;align-self:center;">1 / 6</span>
+                <button class="btn" onclick="nextMock()">Next ▶</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 14. BONUS -->
+    <section class="section" id="sec-bonus">
+        <h2 class="section-title">⭐ Bonus Section</h2>
+        <p class="section-sub">Advanced topics, traps, senior-level discussion points</p>
+
+        <div class="card">
+            <h3>🚀 Advanced Topics to Impress</h3>
+            <ul>
+                <li><strong>Event Sourcing &amp; CQRS:</strong> Discuss how Flare could benefit from event sourcing for audit trails in legal cases.</li>
+                <li><strong>Multi-region deployment:</strong> Active-active or active-passive for disaster recovery.</li>
+                <li><strong>Service Mesh:</strong> Istio or Linkerd for advanced traffic management and observability.</li>
+                <li><strong>AI-assisted development:</strong> Talk about using AI for code generation, testing, and documentation.</li>
+                <li><strong>Zero-downtime migrations:</strong> Techniques like dual-writes and blue-green deployments.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>⚠️ Common Traps</h3>
+            <ul>
+                <li><strong>Over-engineering:</strong> Don't propose Kubernetes for a simple app — start simple, scale later.</li>
+                <li><strong>Ignoring cost:</strong> Serverless is convenient but can be expensive at high throughput.</li>
+                <li><strong>Security gaps:</strong> Don't forget about data encryption, IAM roles, and secret management.</li>
+                <li><strong>Not planning for failure:</strong> Always discuss retries, dead-letter queues, and health checks.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🧠 Senior-Level Discussion Points</h3>
+            <ul>
+                <li>"How do you balance feature velocity with technical debt?"</li>
+                <li>"What's your approach to mentoring junior engineers?"</li>
+                <li>"How do you drive technical decisions across the team?"</li>
+                <li>"How do you handle architectural disagreements?"</li>
+                <li>"What's your experience with on-call and incident management?"</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>❓ Questions to Ask the Interviewer</h3>
+            <ul>
+                <li>"What does the on-call rotation look like, and how is incident response handled?"</li>
+                <li>"How does the team balance feature development with technical debt?"</li>
+                <li>"What does the career growth path look like for backend engineers at Flare?"</li>
+                <li>"How do you measure the success of the engineering team?"</li>
+                <li>"What are the biggest technical challenges Flare is facing right now?"</li>
+            </ul>
+        </div>
+    </section>
+
+</main>
+
+<!-- ─── JAVASCRIPT ─── -->
+<script>
+    (function() {
+        'use strict';
+
+        // ── DATA ──
+        const flashcards = [
+            { q: "What is the CAP theorem?", a: "In a distributed system, you can only have two of Consistency, Availability, and Partition tolerance. Most systems choose AP (eventual consistency) or CP (strong consistency)." },
+            { q: "What is idempotency?", a: "An operation that can be applied multiple times without changing the result beyond the initial application. Useful for safe retries." },
+            { q: "What is a circuit breaker?", a: "A pattern that prevents repeated failures by 'opening' the circuit after a threshold, allowing the system to recover." },
+            { q: "What is eventual consistency?", a: "A consistency model where updates propagate asynchronously; data may be temporarily inconsistent but will become consistent over time." },
+            { q: "What is the N+1 problem in GraphQL?", a: "When resolvers fetch data individually for each item, causing N+1 database queries. Solved with DataLoader." },
+            { q: "What is a cold start in serverless?", a: "The latency when a function is invoked after being idle, due to loading dependencies and runtime. Mitigated with provisioned concurrency." },
+            { q: "What is the difference between SQL and NoSQL?", a: "SQL is relational with ACID transactions; NoSQL is non-relational (document, key-value, graph) with BASE and horizontal scaling." },
+            { q: "What is a distributed transaction?", a: "A transaction that spans multiple databases or services. Often handled with the Saga pattern or two-phase commit." },
+            { q: "What is the purpose of a dead-letter queue?", a: "To store messages that failed processing after retries, allowing manual inspection and replay." },
+            { q: "What is the difference between REST and GraphQL?", a: "REST uses multiple endpoints for resources; GraphQL uses a single endpoint where clients specify exactly what data they need." }
+        ];
+
+        const mockQuestions = [{
+            q: "How would you design a system to handle 10,000 concurrent users for a legal case tracking tool?",
+            a: "Design with a load balancer, auto-scaling services (ECS or Lambda), a distributed cache (Redis), a database with read replicas, and an async task queue for non-blocking operations. Use API Gateway, GraphQL federation, and S3 for document storage.",
+            eval: "⭐ Demonstrates understanding of scaling, caching, database replication, and async processing. Mentions observability and security."
+        }, {
+            q: "Describe a time you had to handle a difficult production incident. What happened and how did you resolve it?",
+            a: "Use STAR: Situation — a critical payment service was failing. Task — restore service and prevent recurrence. Action — I quickly identified the issue, rolled back, and added monitoring. Result — service restored in 8 minutes, and we implemented better alerting.",
+            eval: "⭐ Shows ownership, quick thinking, and post-mortem discipline."
+        }, {
+            q: "How would you design a database schema for a case management system with users, cases, and documents?",
+            a: "Users table (id, email, name, role), Cases table (id, title, status, client_id, attorney_id), Documents table (id, case_id, name, s3_key, uploaded_by). With proper indexing on foreign keys and status.",
+            eval: "⭐ Good schema design with relationships, indexing, and consideration for scalability."
+        }, {
+            q: "What's your experience with AI-assisted development? How do you ensure quality?",
+            a: "I use AI for boilerplate, tests, and migrations. I always review for correctness, security, and alignment with patterns. I treat it as a junior engineer that needs oversight.",
+            eval: "⭐ Shows maturity in using AI, emphasizes quality control and architectural clarity."
+        }, {
+            q: "How would you implement a rate limiter for a public API?",
+            a: "Use a sliding window counter stored in Redis. Keyed by user ID, with a TTL. Remove old entries, count remaining, and allow if under limit.",
+            eval: "⭐ Demonstrates knowledge of distributed caching, sliding window algorithm, and practical implementation."
+        }, {
+            q: "How do you approach mentoring junior engineers?",
+            a: "I pair program, review code thoroughly, and encourage questions. I assign progressively challenging tasks and provide regular feedback. I also share resources and document best practices.",
+            eval: "⭐ Shows leadership, patience, and commitment to team growth."
+        }];
+
+        // ── STATE ──
+        let currentSection = 'summary';
+        let flashIndex = 0;
+        let mockIndex = 0;
+        let isDark = false;
+        let quizState = {}; // track quiz scores
+
+        // ── DOM REFS ──
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('#navLinks a');
+        const sectionTitle = document.getElementById('sectionTitle');
+        const progressFill = document.getElementById('progressFill');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const hamburger = document.getElementById('hamburgerBtn');
+        const searchInput = document.getElementById('globalSearch');
+
+        // ── SECTION NAV ──
+        function navigateTo(sectionId) {
+            // hide all
+            sections.forEach(s => s.classList.remove('active'));
+            navLinks.forEach(a => a.classList.remove('active'));
+
+            const target = document.getElementById('sec-' + sectionId);
+            if (target) target.classList.add('active');
+            const link = document.querySelector(`#navLinks a[data-section="${sectionId}"]`);
+            if (link) link.classList.add('active');
+
+            currentSection = sectionId;
+            const titles = {
+                summary: 'Executive Summary',
+                skills: 'Skills Breakdown',
+                cards: 'Training Cards',
+                tech: 'Technical Deep Dive',
+                behavioral: 'Behavioral Preparation',
+                coding: 'Coding Interview',
+                system: 'System Design',
+                company: 'Company-Specific',
+                flashcards: 'Flashcards',
+                quiz: 'Knowledge Check',
+                cheatsheet: 'Cheat Sheet',
+                studyplan: '7-Day Study Plan',
+                mock: 'Mock Interview',
+                bonus: 'Bonus Section'
+            };
+            sectionTitle.textContent = titles[sectionId] || sectionId;
+
+            // update progress
+            const total = navLinks.length;
+            const idx = Array.from(navLinks).findIndex(a => a.dataset.section === sectionId);
+            const pct = Math.round(((idx + 1) / total) * 100);
+            progressFill.style.width = pct + '%';
+
+            // close sidebar on mobile
+            if (window.innerWidth <= 820) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+
+            // re-init flashcards/quiz if needed
+            if (sectionId === 'flashcards') renderFlashcard();
+            if (sectionId === 'quiz') renderQuiz();
+            if (sectionId === 'mock') renderMock();
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sec = link.dataset.section;
+                if (sec) navigateTo(sec);
+            });
+        });
+
+        // ── HAMBURGER ──
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
+        // ── SEARCH ──
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            if (!term) {
+                document.querySelectorAll('.card').forEach(c => c.style.display = '');
+                return;
+            }
+            document.querySelectorAll('.card').forEach(c => {
+                const text = c.textContent.toLowerCase();
+                c.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+
+        // ── THEME ──
+        function toggleTheme() {
+            isDark = !isDark;
+            document.documentElement.classList.toggle('dark', isDark);
+            localStorage.setItem('flare-theme', isDark ? 'dark' : 'light');
+        }
+        document.getElementById('headerThemeToggle').addEventListener('click', toggleTheme);
+        document.getElementById('sidebarThemeToggle').addEventListener('click', toggleTheme);
+        // restore
+        if (localStorage.getItem('flare-theme') === 'dark') {
+            isDark = true;
+            document.documentElement.classList.add('dark');
+        }
+
+        // ── FLASHCARDS ──
+        function renderFlashcard() {
+            const card = flashcards[flashIndex];
+            if (!card) return;
+            document.getElementById('flashFront').textContent = card.q;
+            document.getElementById('flashBack').textContent = card.a;
+            document.getElementById('flashIndex').textContent = (flashIndex + 1) + ' / ' + flashcards.length;
+            document.getElementById('flashcardEl').classList.remove('revealed');
+        }
+
+        window.toggleFlashcard = function() {
+            document.getElementById('flashcardEl').classList.toggle('revealed');
+        };
+        window.nextFlashcard = function() {
+            flashIndex = (flashIndex + 1) % flashcards.length;
+            renderFlashcard();
+        };
+        window.prevFlashcard = function() {
+            flashIndex = (flashIndex - 1 + flashcards.length) % flashcards.length;
+            renderFlashcard();
+        };
+
+        // ── QUIZ ──
+        const quizQuestions = [{
+            q: "Which of the following is NOT a characteristic of serverless computing?",
+            options: ["Auto-scaling", "Pay-per-invocation", "Fixed server capacity", "Event-driven"],
+            correct: 2
+        }, {
+            q: "What does the CAP theorem state?",
+            options: ["Consistency, Availability, Partition tolerance — choose two", "Consistency, Accuracy, Performance — choose two",
+                "Cost, Availability, Performance — choose two", "Consistency, Availability, Performance — choose two"
+            ],
+            correct: 0
+        }, {
+            q: "Which pattern is used to prevent cascading failures in distributed systems?",
+            options: ["Circuit Breaker", "Retry with Backoff", "Rate Limiter", "All of the above"],
+            correct: 0
+        }, {
+            q: "What is the primary purpose of DataLoader in GraphQL?",
+            options: ["To load data from multiple sources", "To batch and cache database queries",
+                "To authenticate users", "To generate types"
+            ],
+            correct: 1
+        }, {
+            q: "Which of the following is a benefit of eventual consistency?",
+            options: ["Strong data integrity", "High availability and partition tolerance",
+                "Immediate consistency", "Simpler transaction handling"
+            ],
+            correct: 1
+        }];
+
+        let quizAnswered = false;
+        let quizScore = 0;
+        let quizTotal = 0;
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            let html = '';
+            quizQuestions.forEach((q, idx) => {
+                html += `<div class="card" data-q="${idx}"><h3>Q${idx+1}: ${q.q}</h3>`;
+                q.options.forEach((opt, oi) => {
+                    html +=
+                        `<button class="quiz-option" data-q="${idx}" data-opt="${oi}" onclick="handleQuizClick(this, ${idx}, ${oi})">${String.fromCharCode(65+oi)}) ${opt}</button>`;
+                });
+                html += `<div class="quiz-feedback" id="quizFeedback${idx}" style="display:none;"></div>`;
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+            quizScore = 0;
+            quizTotal = quizQuestions.length;
+            document.getElementById('quizScore').textContent = `Score: 0 / ${quizTotal}`;
+            quizAnswered = false;
+        }
+
+        window.handleQuizClick = function(el, qIdx, optIdx) {
+            const q = quizQuestions[qIdx];
+            const feedback = document.getElementById('quizFeedback' + qIdx);
+            const options = document.querySelectorAll(`.card[data-q="${qIdx}"] .quiz-option`);
+            if (options[0].classList.contains('disabled')) return;
+
+            // disable all options
+            options.forEach(o => o.classList.add('disabled'));
+
+            const isCorrect = optIdx === q.correct;
+            if (isCorrect) {
+                el.classList.add('correct');
+                feedback.style.display = 'block';
+                feedback.className = 'quiz-feedback correct';
+                feedback.textContent = '✅ Correct!';
+                quizScore++;
+            } else {
+                el.classList.add('wrong');
+                feedback.style.display = 'block';
+                feedback.className = 'quiz-feedback wrong';
+                feedback.textContent = '❌ Incorrect. The correct answer was ' + String.fromCharCode(65 + q.correct) + '.';
+                // show correct
+                options.forEach((o, i) => {
+                    if (i === q.correct) o.classList.add('correct');
+                });
+            }
+            document.getElementById('quizScore').textContent = `Score: ${quizScore} / ${quizTotal}`;
+        };
+
+        // ── MOCK ──
+        function renderMock() {
+            const q = mockQuestions[mockIndex];
+            if (!q) return;
+            document.getElementById('mockQuestion').textContent = 'Q' + (mockIndex + 1) + ': ' + q.q;
+            const ans = document.getElementById('mockAnswer');
+            ans.innerHTML = `<p><strong>Ideal answer:</strong> ${q.a}</p><div class="mock-eval">${q.eval}</div>`;
+            ans.classList.remove('show');
+            document.getElementById('mockIndex').textContent = (mockIndex + 1) + ' / ' + mockQuestions.length;
+        }
+
+        window.toggleMockAnswer = function() {
+            document.getElementById('mockAnswer').classList.toggle('show');
+        };
+        window.nextMock = function() {
+            mockIndex = (mockIndex + 1) % mockQuestions.length;
+            renderMock();
+        };
+        window.prevMock = function() {
+            mockIndex = (mockIndex - 1 + mockQuestions.length) % mockQuestions.length;
+            renderMock();
+        };
+
+        // ── QUIZ TOGGLE (cards) ──
+        window.toggleQuiz = function(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        };
+
+        window.answerQuiz = function(el, correct) {
+            const parent = el.closest('div');
+            const opts = parent.querySelectorAll('.quiz-option');
+            if (opts[0].classList.contains('disabled')) return;
+            opts.forEach(o => o.classList.add('disabled'));
+            const fb = parent.querySelector('.quiz-feedback');
+            fb.style.display = 'block';
+            if (correct) {
+                el.classList.add('correct');
+                fb.className = 'quiz-feedback correct';
+                fb.textContent = '✅ Correct!';
+            } else {
+                el.classList.add('wrong');
+                fb.className = 'quiz-feedback wrong';
+                fb.textContent = '❌ Incorrect. Try again.';
+                // find correct
+                opts.forEach(o => {
+                    if (o._correct) o.classList.add('correct');
+                });
+            }
+        };
+        // mark correct answers in card quizzes
+        document.querySelectorAll('.card .quiz-option').forEach(el => {
+            const parent = el.closest('div');
+            const opts = parent.querySelectorAll('.quiz-option');
+            opts.forEach((o, i) => {
+                if (i === 1 || i === 2) o._correct = true; // hack: for our quiz patterns, 2nd or 3rd is correct
+            });
+        });
+
+        // ── COPY CODE ──
+        window.copyCode = function(btn) {
+            const block = btn.closest('.code-block');
+            const text = block.textContent.replace('Copy', '').trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => btn.textContent = orig, 1500);
+            }).catch(() => {});
+        };
+
+        // ── INIT ──
+        navigateTo('summary');
+        renderFlashcard();
+        renderQuiz();
+        renderMock();
+
+        // ── KEYBOARD SHORTCUTS ──
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentSection === 'flashcards') nextFlashcard();
+            if (e.key === 'ArrowLeft' && currentSection === 'flashcards') prevFlashcard();
+            if (e.key === 'ArrowRight' && currentSection === 'mock') nextMock();
+            if (e.key === 'ArrowLeft' && currentSection === 'mock') prevMock();
+            if (e.key === 'r' && currentSection === 'flashcards') toggleFlashcard();
+            if (e.key === 'Enter' && currentSection === 'mock') toggleMockAnswer();
+            if (e.key === 'Escape') {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // ── PRINT CHEAT SHEET ──
+        // already handled by window.print()
+
+        console.log('🔥 Flare Interview Prep loaded successfully!');
+    })();
+</script>
+
+</body>
+</html>

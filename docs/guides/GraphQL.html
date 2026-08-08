@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GraphQL × React × TypeScript — Interactive Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0b14;
+    --bg-2:#15121f;
+    --panel:#1a1626;
+    --panel-2:#221d31;
+    --border:#2a2440;
+    --text:#e9e6f5;
+    --muted:#9b94b8;
+    --pink:#e535ab;
+    --pink-soft:#ff5cc0;
+    --violet:#7b6cff;
+    --cyan:#5fe3c4;
+    --amber:#ffc66b;
+    --green:#7ee787;
+    --red:#ff7b72;
+    --shadow:0 20px 60px -20px rgba(229,53,171,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* Ambient background */
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    background:
+      radial-gradient(800px 500px at 10% -10%, rgba(229,53,171,.15), transparent 60%),
+      radial-gradient(700px 400px at 90% 10%, rgba(123,108,255,.12), transparent 60%),
+      radial-gradient(600px 400px at 50% 100%, rgba(95,227,196,.07), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+  /* Progress bar */
+  #progress{
+    position:fixed;top:0;left:0;height:3px;width:0%;
+    background:linear-gradient(90deg,var(--pink),var(--violet),var(--cyan));
+    z-index:1000;transition:width .1s ease;
+    box-shadow:0 0 10px var(--pink);
+  }
+  /* Layout */
+  .app{position:relative;z-index:1;display:grid;grid-template-columns:280px 1fr;max-width:1400px;margin:0 auto;}
+  /* Sidebar */
+  aside{
+    position:sticky;top:0;height:100vh;
+    padding:28px 20px;border-right:1px solid var(--border);
+    background:rgba(13,11,20,.7);backdrop-filter:blur(10px);
+    overflow-y:auto;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-bottom:8px}
+  .logo-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:conic-gradient(from 180deg,var(--pink),var(--violet),var(--cyan),var(--pink));
+    display:grid;place-items:center;color:#0d0b14;font-weight:800;
+    box-shadow:var(--shadow);
+  }
+  .logo small{display:block;font-size:11px;color:var(--muted);font-weight:400;letter-spacing:.5px}
+  nav{margin-top:24px;display:flex;flex-direction:column;gap:2px}
+  nav a{
+    color:var(--muted);text-decoration:none;font-size:14px;
+    padding:9px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;
+    transition:all .2s;border-left:2px solid transparent;
+  }
+  nav a .num{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--pink);opacity:.7;min-width:22px;
+  }
+  nav a:hover{color:var(--text);background:var(--panel)}
+  nav a.active{color:#fff;background:linear-gradient(90deg,rgba(229,53,171,.15),transparent);border-left-color:var(--pink)}
+  nav a.active .num{opacity:1}
+  .sidebar-foot{margin-top:auto;padding-top:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:24px}
+  /* Mobile toggle */
+  #menuToggle{
+    display:none;position:fixed;top:14px;right:14px;z-index:1001;
+    width:44px;height:44px;border-radius:10px;border:1px solid var(--border);
+    background:var(--panel);color:var(--text);cursor:pointer;font-size:20px;
+  }
+  /* Main */
+  main{padding:40px 6vw 120px;min-width:0}
+  header.hero{margin-bottom:48px}
+  .hero .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:6px 12px;border-radius:99px;
+    background:rgba(229,53,171,.1);border:1px solid rgba(229,53,171,.3);
+    font-size:12px;color:var(--pink-soft);font-weight:500;margin-bottom:18px;
+  }
+  .hero h1{
+    font-size:clamp(32px,5vw,56px);font-weight:700;line-height:1.05;
+    letter-spacing:-1.5px;margin-bottom:16px;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(120deg,var(--pink),var(--violet) 60%,var(--cyan));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{font-size:18px;color:var(--muted);max-width:680px}
+  .hero .stats{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
+  .stat{padding:12px 16px;background:var(--panel);border:1px solid var(--border);border-radius:12px}
+  .stat b{display:block;font-size:22px;color:var(--pink-soft);font-family:'JetBrains Mono',monospace}
+  .stat span{font-size:12px;color:var(--muted)}
+  /* Sections */
+  section{margin-bottom:72px;scroll-margin-top:24px}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .sec-head h2{font-size:clamp(24px,3.5vw,34px);font-weight:600;letter-spacing:-.5px}
+  .sec-head .tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid var(--border);border-radius:99px}
+  .lead{font-size:17px;color:var(--text);margin-bottom:14px}
+  p{margin-bottom:14px;color:#cdc8de}
+  /* Cards */
+  .grid{display:grid;gap:16px}
+  .grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border);border-radius:14px;padding:18px;
+    transition:transform .25s,border-color .25s;
+  }
+  .card:hover{transform:translateY(-3px);border-color:rgba(229,53,171,.4)}
+  .card h3{font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .card .icon{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-size:14px;background:rgba(229,53,171,.15)}
+  .card p{font-size:14px;color:var(--muted);margin:0}
+  /* Callout */
+  .callout{
+    border-left:3px solid var(--pink);background:rgba(229,53,171,.07);
+    padding:14px 18px;border-radius:0 10px 10px 0;margin:20px 0;font-size:14px;
+  }
+  .callout.tip{border-color:var(--cyan);background:rgba(95,227,196,.07)}
+  .callout.warn{border-color:var(--amber);background:rgba(255,198,107,.07)}
+  .callout strong{color:#fff}
+  .callout.tip strong{color:var(--cyan)}
+  .callout.warn strong{color:var(--amber)}
+  /* Code blocks */
+  .code{
+    position:relative;background:#0a0813;border:1px solid var(--border);
+    border-radius:12px;overflow:hidden;margin:16px 0;
+  }
+  .code-bar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--border);
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+  }
+  .code-bar .dots{display:flex;gap:6px}
+  .code-bar .dots span{width:10px;height:10px;border-radius:50%;background:#3a3350}
+  .code-bar .dots span:nth-child(1){background:#ff5f57}
+  .code-bar .dots span:nth-child(2){background:#febc2e}
+  .code-bar .dots span:nth-child(3){background:#28c840}
+  .copy-btn{
+    background:transparent;border:1px solid var(--border);color:var(--muted);
+    padding:3px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;
+    transition:all .2s;
+  }
+  .copy-btn:hover{color:#fff;border-color:var(--pink)}
+  .copy-btn.copied{color:var(--green);border-color:var(--green)}
+  pre{padding:16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.65}
+  /* Syntax */
+  .kw{color:var(--pink)}        /* keyword */
+  .ty{color:var(--violet)}      /* type */
+  .fn{color:var(--cyan)}        /* function/field */
+  .st{color:var(--green)}       /* string */
+  .nm{color:var(--amber)}       /* number */
+  .cm{color:#6b6488;font-style:italic} /* comment */
+  .pn{color:var(--muted)}       /* punct */
+  .vr{color:#ffd580}            /* variable */
+  .op{color:var(--pink-soft)}   /* operator */
+  /* Interactive query explorer */
+  .explorer{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:18px 0}
+  @media(max-width:760px){.explorer{grid-template-columns:1fr}}
+  .explorer .side{padding:18px;background:var(--panel)}
+  .explorer .side h4{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;font-family:'JetBrains Mono',monospace}
+  .field-row{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;
+    border-radius:8px;cursor:pointer;font-size:14px;
+    transition:background .15s;
+  }
+  .field-row:hover{background:rgba(255,255,255,.04)}
+  .field-row input{accent-color:var(--pink);width:16px;height:16px}
+  .field-row .ftype{color:var(--violet);font-family:'JetBrains Mono',monospace;font-size:12px;margin-left:auto}
+  .field-group{margin-left:14px;border-left:1px dashed var(--border);padding-left:8px}
+  .query-out{background:#0a0813;font-family:'JetBrains Mono',monospace;font-size:13px;padding:18px;min-height:100%;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+  .query-out .q-kw{color:var(--pink)}
+  .query-out .q-ty{color:var(--violet)}
+  .query-out .q-fn{color:var(--cyan)}
+  .query-out .q-str{color:var(--green)}
+  /* Steps */
+  .steps{counter-reset:step;display:flex;flex-direction:column;gap:0}
+  .step{position:relative;padding:0 0 28px 44px;border-left:2px solid var(--border);margin-left:14px}
+  .step::before{
+    counter-increment:step;content:counter(step);
+    position:absolute;left:-15px;top:0;width:28px;height:28px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--pink);color:var(--pink);
+    display:grid;place-items:center;font-weight:700;font-size:13px;font-family:'JetBrains Mono',monospace;
+  }
+  .step:last-child{border-left-color:transparent}
+  .step h3{font-size:17px;margin-bottom:6px}
+  .step p{font-size:14px;color:var(--muted)}
+  /* Comparison */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+  @media(max-width:720px){.compare{grid-template-columns:1fr}}
+  .compare > div{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .compare h4{font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace}
+  .compare .bad h4{color:var(--red)}
+  .compare .good h4{color:var(--green)}
+  /* Pills */
+  .pill{display:inline-block;padding:2px 8px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--panel-2);color:var(--cyan);border:1px solid var(--border);margin:0 2px}
+  /* Quiz */
+  .quiz{background:linear-gradient(180deg,rgba(123,108,255,.08),rgba(229,53,171,.05));border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:20px}
+  .quiz h4{font-size:16px;margin-bottom:14px;display:flex;gap:8px;align-items:center}
+  .quiz h4 .qmark{width:24px;height:24px;border-radius:6px;background:var(--pink);display:grid;place-items:center;color:#0d0b14;font-weight:800;font-size:13px}
+  .quiz-option{
+    display:block;width:100%;text-align:left;padding:12px 14px;margin-bottom:8px;
+    background:var(--panel);border:1px solid var(--border);border-radius:8px;
+    color:var(--text);cursor:pointer;font-family:inherit;font-size:14px;transition:all .2s;
+  }
+  .quiz-option:hover:not(.locked){border-color:var(--pink);transform:translateX(3px)}
+  .quiz-option.correct{background:rgba(126,231,135,.12);border-color:var(--green);color:var(--green)}
+  .quiz-option.wrong{background:rgba(255,123,114,.1);border-color:var(--red);color:var(--red)}
+  .quiz-feedback{margin-top:10px;font-size:13px;color:var(--muted);display:none}
+  .quiz-feedback.show{display:block}
+  /* Footer */
+  footer{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;border-top:1px solid var(--border);margin-top:60px}
+  /* Reveal */
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}
+  .reveal.in{opacity:1;transform:none}
+  /* Mobile */
+  @media(max-width:900px){
+    .app{grid-template-columns:1fr}
+    aside{
+      position:fixed;left:0;top:0;width:280px;z-index:1000;
+      transform:translateX(-100%);transition:transform .3s;
+      box-shadow:20px 0 60px rgba(0,0,0,.5);
+    }
+    aside.open{transform:none}
+    #menuToggle{display:grid;place-items:center}
+    main{padding:70px 20px 80px}
+  }
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--pink)}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<button id="menuToggle" aria-label="Toggle menu">≡</button>
+
+<div class="app">
+  <aside id="sidebar">
+    <div class="logo">
+      <div class="logo-mark">GQL</div>
+      <div>GraphQL Guide<small>React + TypeScript</small></div>
+    </div>
+    <nav id="nav">
+      <a href="#intro"><span class="num">01</span> What & Why</a>
+      <a href="#concepts"><span class="num">02</span> Core Concepts</a>
+      <a href="#schema"><span class="num">03</span> The Schema</a>
+      <a href="#explorer"><span class="num">04</span> Query Explorer</a>
+      <a href="#apollo"><span class="num">05</span> Apollo Client Setup</a>
+      <a href="#queries"><span class="num">06</span> Queries in React</a>
+      <a href="#mutations"><span class="num">07</span> Mutations</a>
+      <a href="#codegen"><span class="num">08</span> Type Safety + Codegen</a>
+      <a href="#patterns"><span class="num">09</span> Senior Patterns</a>
+      <a href="#pitfalls"><span class="num">10</span> Common Pitfalls</a>
+      <a href="#quiz"><span class="num">11</span> Test Yourself</a>
+    </nav>
+    <div class="sidebar-foot">
+      Built for engineers who want to ship.<br>
+      Read top to bottom — ~15 min.
+    </div>
+  </aside>
+
+  <main>
+    <header class="hero reveal">
+      <div class="badge">● Senior-level guide · explained simply</div>
+      <h1>Master <span class="grad">GraphQL</span><br>with React & TypeScript</h1>
+      <p>GraphQL isn't just "REST but different." It's a contract between your frontend and backend, a strongly-typed language for asking for exactly the data you need, and the foundation of a maintainable data layer. This guide walks you from first principles to production patterns — no hand-waving.</p>
+      <div class="stats">
+        <div class="stat"><b>11</b><span>Sections</span></div>
+        <div class="stat"><b>~15</b><span>Minutes</span></div>
+        <div class="stat"><b>1</b><span>Interactive Playground</span></div>
+      </div>
+    </header>
+
+    <!-- 1. INTRO -->
+    <section id="intro" class="reveal">
+      <div class="sec-head"><h2>What is GraphQL, really?</h2><span class="tag">fundamentals</span></div>
+      <p class="lead">GraphQL is a <strong>query language for your API</strong> + a runtime that fulfills those queries. You describe what data exists; the client asks for the shape it wants; the server returns exactly that shape — nothing more, nothing less.</p>
+
+      <div class="compare">
+        <div class="bad">
+          <h4>✗ REST: over/under-fetching</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0">To show a user's name + their 3 recent posts, you'd hit <span class="pill">GET /users/1</span> then <span class="pill">GET /users/1/posts</span>. You probably got the user's email, address, and 50 posts you didn't need.</p>
+        </div>
+        <div class="good">
+          <h4>✓ GraphQL: one round-trip</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0">One request, exactly the fields you want, nested as deep as the schema allows. The server resolves each field in parallel and returns a JSON shape that mirrors your query.</p>
+        </div>
+      </div>
+
+      <div class="callout tip"><strong>Junior takeaway:</strong> REST endpoints = verbs (URLs). GraphQL = nouns (types) + you choose the verbs. The frontend becomes the architect of its own data.</div>
+    </section>
+
+    <!-- 2. CONCEPTS -->
+    <section id="concepts" class="reveal">
+      <div class="sec-head"><h2>The four pillars</h2><span class="tag">mental model</span></div>
+      <div class="grid grid-2">
+        <div class="card"><div class="card-body"><h3><span class="icon">Q</span> Query</h3><p>Read data. Like a <span class="pill">GET</span>. You describe the shape; you get JSON back in the same shape.</p></div></div>
+        <div class="card"><div class="card-body"><h3><span class="icon">M</span> Mutation</h3><p>Write data. Like <span class="pill">POST/PUT/DELETE</span>. Always returns data too — what changed.</p></div></div>
+        <div class="card"><div class="card-body"><h3><span class="icon">S</span> Subscription</h3><p>Real-time push over WebSocket. Server emits when data changes. Great for live updates.</p></div></div>
+        <div class="card"><div class="card-body"><h3><span class="icon">T</span> Type System</h3><p>The schema. Every field has a type, every type has fields. This is the contract.</p></div></div>
+      </div>
+
+      <div class="callout"><strong>Senior insight:</strong> The schema is the single source of truth. Backend devs, frontend devs, tooling, mocks, tests — all read from it. Lose the schema, lose everything.</div>
+    </section>
+
+    <!-- 3. SCHEMA -->
+    <section id="schema" class="reveal">
+      <div class="sec-head"><h2>The schema — your contract</h2><span class="tag">SDL</span></div>
+      <p>Written in Schema Definition Language (SDL). Every type, field, and relationship lives here. Here's a small blog schema we'll reuse throughout:</p>
+
+      <div class="code">
+        <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>schema.graphql</span><button class="copy-btn">copy</button></div>
+<pre><span class="cm"># The root query type — every read starts here</span>
+<span class="kw">type</span> <span class="ty">Query</span> {
+  <span class="fn">me</span>: <span class="ty">User</span>!
+  <span class="fn">user</span>(<span class="vr">id</span>: <span class="ty">ID</span>!): <span class="ty">User</span>
+  <span class="fn">posts</span>(<span class="vr">limit</span>: <span class="ty">Int</span> = <span class="nm">10</span>, <span class="vr">offset</span>: <span class="ty">Int</span> = <span class="nm">0</span>): [<span class="ty">Post</span>]!
+}
+
+<span class="kw">type</span> <span class="ty">Mutation</span> {
+  <span class="fn">createPost</span>(<span class="vr">input</span>: <span class="ty">CreatePostInput</span>!): <span class="ty">Post</span>!
+}
+
+<span class="kw">type</span> <span class="ty">User</span> {
+  <span class="fn">id</span>: <span class="ty">ID</span>!
+  <span class="fn">name</span>: <span class="ty">String</span>!
+  <span class="fn">email</span>: <span class="ty">String</span>
+  <span class="fn">posts</span>: [<span class="ty">Post</span>]!
+}
+
+<span class="kw">type</span> <span class="ty">Post</span> {
+  <span class="fn">id</span>: <span class="ty">ID</span>!
+  <span class="fn">title</span>: <span class="ty">String</span>!
+  <span class="fn">body</span>: <span class="ty">String</span>!
+  <span class="fn">author</span>: <span class="ty">User</span>!
+  <span class="fn">createdAt</span>: <span class="ty">DateTime</span>!
+}
+
+<span class="kw">input</span> <span class="ty">CreatePostInput</span> {
+  <span class="fn">title</span>: <span class="ty">String</span>!
+  <span class="fn">body</span>: <span class="ty">String</span>!
+}</pre>
+      </div>
+
+      <div class="callout warn"><strong>The <span class="pill">!</span> matters.</strong> <span class="pill">User</span> = nullable. <span class="pill">User!</span> = guaranteed non-null. <span class="pill">[Post]</span> = list may be null AND items may be null. <span class="pill">[Post!]!</span> = always a list, always non-null items. Get these right; they're your runtime safety net.</div>
+    </section>
+
+    <!-- 4. EXPLORER -->
+    <section id="explorer" class="reveal">
+      <div class="sec-head"><h2>Interactive query explorer</h2><span class="tag">try it</span></div>
+      <p>Toggle the fields below and watch the query build itself. This is exactly how GraphiQL/Apollo Studio work — you compose a query by selecting what you need, and the result mirrors your selection.</p>
+
+      <div class="explorer">
+        <div class="side">
+          <h4>↓ Select fields</h4>
+          <div id="fieldTree"></div>
+        </div>
+        <div class="side" style="background:#0a0813;padding:0">
+          <div style="padding:10px 18px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">query.gql — live</div>
+          <div class="query-out" id="queryOut"></div>
+        </div>
+      </div>
+
+      <div class="callout tip"><strong>Try this:</strong> uncheck everything, then check only <code>me → name</code>. Notice how the query shrinks to one line of meaningful work. That's the whole pitch.</div>
+    </section>
+
+    <!-- 5. APOLLO SETUP -->
+    <section id="apollo" class="reveal">
+      <div class="sec-head"><h2>Setting up Apollo Client</h2><span class="tag">setup</span></div>
+      <p>Apollo Client is the most mature GraphQL client for React. It gives you caching, loading/error states, refetching, and devtools out of the box.</p>
+
+      <div class="steps">
+        <div class="step"><h3>Install dependencies</h3>
+          <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>terminal</span><button class="copy-btn">copy</button></div>
+<pre><span class="cm"># Apollo Client + GraphQL core</span>
+<span class="fn">npm</span> install @apollo/client graphql
+
+<span class="cm"># (Optional, recommended) typed document nodes</span>
+<span class="fn">npm</span> install -D @graphql-codegen/cli @graphql-codegen/client-preset</pre>
+        </div>
+        <div class="step"><h3>Create the client</h3>
+          <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>src/lib/apollo.ts</span><button class="copy-btn">copy</button></div>
+<pre><span class="kw">import</span> { <span class="ty">ApolloClient</span>, <span class="ty">InMemoryCache</span>, <span class="ty">HttpLink</span> } <span class="kw">from</span> <span class="st">'@apollo/client'</span>;
+
+<span class="kw">export const</span> <span class="fn">apolloClient</span> = <span class="kw">new</span> <span class="ty">ApolloClient</span>({
+  <span class="fn">link</span>: <span class="kw">new</span> <span class="ty">HttpLink</span>({
+    <span class="fn">uri</span>: <span class="st">'https://api.example.com/graphql'</span>,
+    <span class="cm">// Attach auth token from localStorage on every request</span>
+    <span class="fn">headers</span>: () => ({
+      <span class="fn">Authorization</span>: <span class="st">`Bearer </span><span class="vr">${localStorage.getItem('token') ?? ''}</span><span class="st">`</span>,
+    }),
+  }),
+  <span class="fn">cache</span>: <span class="kw">new</span> <span class="ty">InMemoryCache</span>({
+    <span class="cm">// Tell Apollo how to identify objects by type</span>
+    <span class="fn">typePolicies</span>: {
+      <span class="ty">Post</span>: { <span class="fn">keyFields</span>: [<span class="st">'id'</span>] },
+      <span class="ty">User</span>: { <span class="fn">keyFields</span>: [<span class="st">'id'</span>] },
+    },
+  }),
+});</pre>
+        </div>
+        <div class="step"><h3>Wrap your app</h3>
+          <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>src/main.tsx</span><button class="copy-btn">copy</button></div>
+<pre><span class="kw">import</span> { <span class="ty">ApolloProvider</span> } <span class="kw">from</span> <span class="st">'@apollo/client/react'</span>;
+<span class="kw">import</span> { <span class="fn">apolloClient</span> } <span class="kw">from</span> <span class="st">'./lib/apollo'</span>;
+<span class="kw">import</span> <span class="ty">App</span> <span class="kw">from</span> <span class="st">'./App'</span>;
+
+<span class="ty">ReactDOM</span>.<span class="fn">createRoot</span>(<span class="fn">document.getElementById</span>(<span class="st">'root'</span>)!).<span class="fn">render</span>(
+  <span class="op">&lt;</span><span class="ty">ApolloProvider</span> <span class="fn">client</span>={<span class="fn">apolloClient</span>}<span class="op">&gt;</span>
+    <span class="op">&lt;</span><span class="ty">App</span> <span class="op">/&gt;</span>
+  <span class="op">&lt;</span>/<span class="ty">ApolloProvider</span><span class="op">&gt;</span>
+);</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. QUERIES -->
+    <section id="queries" class="reveal">
+      <div class="sec-head"><h2>Running queries in React</h2><span class="tag">useQuery</span></div>
+      <p>The <span class="pill">useQuery</span> hook is your bread and butter. It gives you <code>loading</code>, <code>error</code>, and <code>data</code>. Apollo also caches the result — if two components ask for the same data, it's served from cache.</p>
+
+      <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>src/features/posts/PostList.tsx</span><button class="copy-btn">copy</button></div>
+<pre><span class="kw">import</span> { <span class="ty">useQuery</span>, <span class="ty">gql</span> } <span class="kw">from</span> <span class="st">'@apollo/client'</span>;
+
+<span class="cm">// 1. Define the query as a typed document</span>
+<span class="kw">const</span> <span class="fn">GET_POSTS</span> = <span class="fn">gql</span><span class="st">`
+  query GetPosts($limit: Int) {
+    posts(limit: $limit) {
+      id
+      title
+      author {
+        name
+      }
+    }
+  }
+`</span>;
+
+<span class="kw">export function</span> <span class="fn">PostList</span>() {
+  <span class="cm">// 2. Run the query</span>
+  <span class="kw">const</span> { <span class="vr">loading</span>, <span class="vr">error</span>, <span class="vr">data</span> } = <span class="fn">useQuery</span>(<span class="fn">GET_POSTS</span>, {
+    <span class="fn">variables</span>: { <span class="fn">limit</span>: <span class="nm">10</span> },
+    <span class="cm">// Skip cache for fresh data on mount (optional)</span>
+    <span class="fn">fetchPolicy</span>: <span class="st">'cache-first'</span>,
+  });
+
+  <span class="kw">if</span> (<span class="vr">loading</span>) <span class="kw">return</span> <span class="op">&lt;</span><span class="ty">Spinner</span> <span class="op">/&gt;</span>;
+  <span class="kw">if</span> (<span class="vr">error</span>) <span class="kw">return</span> <span class="op">&lt;</span><span class="ty">ErrorBanner</span> <span class="fn">message</span>={<span class="vr">error</span>.<span class="fn">message</span>} <span class="op">/&gt;</span>;
+
+  <span class="kw">return</span> (
+    <span class="op">&lt;</span><span class="ty">ul</span><span class="op">&gt;</span>
+      {<span class="vr">data</span>.<span class="fn">posts</span>.<span class="fn">map</span>(<span class="vr">p</span> <span class="op">=&gt;</span> (
+        <span class="op">&lt;</span><span class="ty">li</span> <span class="fn">key</span>={<span class="vr">p</span>.<span class="fn">id</span>}<span class="op">&gt;</span>{<span class="vr">p</span>.<span class="fn">title</span>} — <span class="vr">by</span> {<span class="vr">p</span>.<span class="fn">author</span>.<span class="fn">name</span>}<span class="op">&lt;</span>/<span class="ty">li</span><span class="op">&gt;</span>
+      ))}
+    <span class="op">&lt;</span>/<span class="ty">ul</span><span class="op">&gt;</span>
+  );
+}</pre>
+      </div>
+
+      <div class="callout tip"><strong>Wait — this isn't typed!</strong> <code>data.posts[0].author.name</code> is <code>any</code>. Apollo doesn't know the shape. We fix this in <a href="#codegen" style="color:var(--cyan)">Section 08 — Codegen</a>. This is the #1 thing separating junior from senior GraphQL codebases.</div>
+    </section>
+
+    <!-- 7. MUTATIONS -->
+    <section id="mutations" class="reveal">
+      <div class="sec-head"><h2>Mutations — write & sync cache</h2><span class="tag">useMutation</span></div>
+      <p>Mutations change data. The tricky part isn't running them — it's keeping your cache consistent afterward. Three strategies, in order of preference:</p>
+
+      <div class="grid grid-2">
+        <div class="card"><h3><span class="icon">1</span> Return what changed</h3><p>Best: the mutation returns the full updated object. Apollo auto-merges by <code>id + __typename</code>. Zero manual work.</p></div>
+        <div class="card"><h3><span class="icon">2</span> refetchQueries</h3><p>Easy but expensive. Tell Apollo which queries to re-run after the mutation lands.</p></div>
+        <div class="card"><h3><span class="icon">3</span> update() callback</h3><p>Manual cache writes. Most control, most bugs. Use when the others can't express the change.</p></div>
+        <div class="card"><h3><span class="icon">4</span> Optimistic UI</h3><p>Update the cache before the server responds, rollback on error. Feels instant to users.</p></div>
+      </div>
+
+      <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>CreatePostForm.tsx</span><button class="copy-btn">copy</button></div>
+<pre><span class="kw">const</span> <span class="fn">CREATE_POST</span> = <span class="fn">gql</span><span class="st">`
+  mutation CreatePost($input: CreatePostInput!) {
+    createPost(input: $input) {
+      id
+      title
+      body
+      author { id name }
+    }
+  }
+`</span>;
+
+<span class="kw">function</span> <span class="fn">CreatePostForm</span>() {
+  <span class="kw">const</span> [<span class="fn">createPost</span>, { <span class="vr">loading</span> }] = <span class="fn">useMutation</span>(<span class="fn">CREATE_POST</span>, {
+    <span class="cm">// Strategy 2: refetch the list to include the new post</span>
+    <span class="fn">refetchQueries</span>: [<span class="st">'GetPosts'</span>],
+
+    <span class="cm">// Strategy 4: optimistic response — show the post instantly</span>
+    <span class="fn">optimisticResponse</span>: ({ <span class="vr">variables</span> }) <span class="op">=&gt;</span> ({
+      <span class="fn">__typename</span>: <span class="st">'Mutation'</span>,
+      <span class="fn">createPost</span>: {
+        <span class="fn">__typename</span>: <span class="st">'Post'</span>,
+        <span class="fn">id</span>: <span class="st">'temp-'</span> + <span class="ty">Date</span>.<span class="fn">now</span>(),
+        <span class="fn">title</span>: <span class="vr">variables</span>.<span class="fn">input</span>.<span class="fn">title</span>,
+        <span class="fn">body</span>: <span class="vr">variables</span>.<span class="fn">input</span>.<span class="fn">body</span>,
+        <span class="fn">author</span>: { <span class="fn">__typename</span>: <span class="st">'User'</span>, <span class="fn">id</span>: <span class="st">'me'</span>, <span class="fn">name</span>: <span class="st">'You'</span> },
+      },
+    }),
+  });
+
+  <span class="kw">return</span> (
+    <span class="op">&lt;</span><span class="ty">form</span> <span class="fn">onSubmit</span>={<span class="vr">e</span> <span class="op">=&gt;</span> {
+      <span class="vr">e</span>.<span class="fn">preventDefault</span>();
+      <span class="fn">createPost</span>({ <span class="fn">variables</span>: { <span class="fn">input</span>: { <span class="fn">title</span>, <span class="fn">body</span> } } });
+    }}<span class="op">&gt;</span>
+      <span class="cm">{/* ...inputs... */}</span>
+      <span class="op">&lt;</span><span class="ty">button</span> <span class="fn">disabled</span>={<span class="vr">loading</span>}<span class="op">&gt;</span>Publish<span class="op">&lt;</span>/<span class="ty">button</span><span class="op">&gt;</span>
+    <span class="op">&lt;</span>/<span class="ty">form</span><span class="op">&gt;</span>
+  );
+}</pre>
+      </div>
+
+      <div class="callout warn"><strong>Gotcha:</strong> <code>refetchQueries</code> uses the operation <em>name</em>, not the query string. If your query is <code>query GetPosts</code>, the name is <code>'GetPosts'</code>. Mismatch = silent no-op.</div>
+    </section>
+
+    <!-- 8. CODEGEN -->
+    <section id="codegen" class="reveal">
+      <div class="sec-head"><h2>Type safety with GraphQL Codegen</h2><span class="tag">typescript</span></div>
+      <p class="lead">This is what makes GraphQL + TypeScript actually sing. Instead of <code>any</code> everywhere, codegen reads your schema + your <code>.graphql</code> files and generates fully-typed hooks. You never write a manual interface again.</p>
+
+      <div class="steps">
+        <div class="step"><h3>Add the config</h3>
+          <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>codegen.ts</span><button class="copy-btn">copy</button></div>
+<pre><span class="kw">import</span> { <span class="ty">CodegenConfig</span> } <span class="kw">from</span> <span class="st">'@graphql-codegen/cli'</span>;
+
+<span class="kw">const</span> <span class="fn">config</span>: <span class="ty">CodegenConfig</span> = {
+  <span class="fn">schema</span>: <span class="st">'https://api.example.com/graphql'</span>,
+  <span class="fn">documents</span>: [<span class="st">'src/**/*.{ts,tsx,graphql}'</span>],
+  <span class="fn">generates</span>: {
+    <span class="st">'src/gql/'</span>: {
+      <span class="fn">preset</span>: <span class="st">'client'</span>,
+      <span class="fn">plugins</span>: [],
+    },
+  },
+  <span class="fn">ignoreDocuments</span>: [<span class="st">'**/node_modules/**'</span>],
+};
+<span class="kw">export default</span> <span class="fn">config</span>;</pre>
+        </div>
+        <div class="step"><h3>Add npm scripts & run</h3>
+          <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>package.json</span><button class="copy-btn">copy</button></div>
+<pre>{
+  <span class="st">"scripts"</span>: {
+    <span class="st">"codegen"</span>: <span class="st">"graphql-codegen"</span>,
+    <span class="st">"dev"</span>: <span class="st">"npm run codegen && vite"</span>
+  }
+}</pre>
+        </div>
+        <div class="step"><h3>Use the generated hook</h3>
+          <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>PostList.tsx — fully typed</span><button class="copy-btn">copy</button></div>
+<pre><span class="kw">import</span> { <span class="fn">graphql</span> } <span class="kw">from</span> <span class="st">'../gql'</span>;
+
+<span class="cm">// graphql`` is a tagged template that generates a typed hook</span>
+<span class="kw">const</span> <span class="fn">GetPostsDocument</span> = <span class="fn">graphql</span><span class="st">`
+  query GetPosts($limit: Int) {
+    posts(limit: $limit) {
+      id
+      title
+      author { name }
+    }
+  }
+`</span>;
+
+<span class="kw">function</span> <span class="fn">PostList</span>() {
+  <span class="cm">// useGetPosts is auto-generated by codegen</span>
+  <span class="kw">const</span> { <span class="vr">data</span> } = <span class="fn">useGetPosts</span>({ <span class="fn">variables</span>: { <span class="fn">limit</span>: <span class="nm">10</span> } });
+
+  <span class="cm">// data is fully typed: { posts: { id, title, author: { name } }[] }</span>
+  <span class="kw">return</span> <span class="vr">data</span>?.<span class="fn">posts</span>.<span class="fn">map</span>(<span class="vr">p</span> <span class="op">=&gt;</span> <span class="op">&lt;</span><span class="ty">li</span> <span class="fn">key</span>={<span class="vr">p</span>.<span class="fn">id</span>}<span class="op">&gt;</span>{<span class="vr">p</span>.<span class="fn">title</span>}<span class="op">&lt;</span>/<span class="ty">li</span><span class="op">&gt;</span>);
+}</pre>
+        </div>
+      </div>
+
+      <div class="callout tip"><strong>Why this is senior-tier:</strong> If the backend renames <code>title</code> to <code>headline</code>, your build breaks locally before merge. Type errors catch breaking changes at compile time — no more "works on my machine."</div>
+    </section>
+
+    <!-- 9. PATTERNS -->
+    <section id="patterns" class="reveal">
+      <div class="sec-head"><h2>Senior patterns you should steal</h2><span class="tag">production</span></div>
+      <div class="grid grid-2">
+        <div class="card"><h3><span class="icon">①</span> Colocate queries with components</h3><p>Put the <code>graphql</code> tag in the same file as the component that uses it. Don't dump all queries in <code>queries.ts</code>. Easier to delete, easier to find.</p></div>
+        <div class="card"><h3><span class="icon">②</span> Fragments for reuse</h3><p>Extract <code>PostCardFields</code> as a fragment. Compose it into multiple queries. Change once, update everywhere.</p></div>
+        <div class="card"><h3><span class="icon">③</span> Typed error policies</h3><p>Use <code>errorPolicy: 'all'</code> when partial data is OK. The default <code>'none'</code> throws away partial results.</p></div>
+        <div class="card"><h3><span class="icon">④</span> Pagination with cursors</h3><p>Use <code>fetchMore</code> + Relay-style cursor pagination. Avoid offset for mutable lists — items shift.</p></div>
+        <div class="card"><h3><span class="icon">⑤</span> Persisted queries</h3><p>Send a query hash instead of the full string. Smaller payloads, security benefits. Apollo Server supports this natively.</p></div>
+        <div class="card"><h3><span class="icon">⑥</span> Schema-first > code-first</h3><p>Design the schema as a team before writing resolvers. It's the API contract — get it reviewed like one.</p></div>
+      </div>
+
+      <div class="code"><div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>Fragments example</span><button class="copy-btn">copy</button></div>
+<pre><span class="cm">// Define once</span>
+<span class="kw">export const</span> <span class="fn">PostCardFields</span> = <span class="fn">graphql</span><span class="st">`
+  fragment PostCardFields on Post {
+    id
+    title
+    author { name }
+    createdAt
+  }
+`</span>;
+
+<span class="cm">// Reuse everywhere</span>
+<span class="kw">const</span> <span class="fn">GetFeed</span> = <span class="fn">graphql</span><span class="st">`
+  query GetFeed {
+    posts(limit: 20) {
+      ...PostCardFields
+    }
+  }
+`</span>;</pre>
+      </div>
+    </section>
+
+    <!-- 10. PITFALLS -->
+    <section id="pitfalls" class="reveal">
+      <div class="sec-head"><h2>Pitfalls that bite juniors</h2><span class="tag">warnings</span></div>
+      <div class="compare">
+        <div class="bad">
+          <h4>✗ N+1 queries via the client</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0">Don't render a list, then fire a query per item. Use one query with nested fields. The whole point of GraphQL is one request.</p>
+        </div>
+        <div class="good">
+          <h4>✓ One query, nested data</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0"><code>posts { author { name } }</code> — done. The server resolves the join; you get one payload.</p>
+        </div>
+      </div>
+      <div class="compare">
+        <div class="bad">
+          <h4>✗ Returning huge unbounded lists</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0"><code>posts</code> with no <code>limit</code> argument → return 100k rows → server dies. Always paginate.</p>
+        </div>
+        <div class="good">
+          <h4>✓ Pagination is mandatory</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0">Force <code>first</code>/<code>after</code> (Relay) or <code>limit</code>/<code>offset</code> in the schema. Reject unbounded queries in resolvers.</p>
+        </div>
+      </div>
+      <div class="compare">
+        <div class="bad">
+          <h4>✗ Trusting client input</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0">GraphQL doesn't validate business rules. Validate inputs in resolvers; use custom scalar types (e.g. <code>Email</code>, <code>URL</code>).</p>
+        </div>
+        <div class="good">
+          <h4>✓ Validate + authorize at resolver layer</h4>
+          <p style="font-size:13px;color:var(--muted);margin:0">Use <code>@auth</code> directives or middleware. Never assume the client won't ask for fields they shouldn't see.</p>
+        </div>
+      </div>
+
+      <div class="callout warn"><strong>Deep nesting attacks:</strong> a malicious client can send <code>posts { author { posts { author { posts { ... } } } } }</code> and blow up your DB. Use query depth limiters (e.g. <code>graphql-depth-limit</code>) in production. Always.</div>
+    </section>
+
+    <!-- 11. QUIZ -->
+    <section id="quiz" class="reveal">
+      <div class="sec-head"><h2>Test yourself</h2><span class="tag">quiz</span></div>
+      <div class="quiz">
+        <h4><span class="qmark">Q</span> What does the <code>!</code> after a type mean in GraphQL?</h4>
+        <button class="quiz-option" data-correct="false">The field is optional and may be null</button>
+        <button class="quiz-option" data-correct="true">The field is non-nullable — the server guarantees a value</button>
+        <button class="quiz-option" data-correct="false">The field is deprecated</button>
+        <button class="quiz-option" data-correct="false">The field is private</button>
+        <p class="quiz-feedback"></p>
+      </div>
+      <div class="quiz">
+        <h4><span class="qmark">Q</span> After a mutation creates a new Post, what's the simplest way to update the cached list of posts?</h4>
+        <button class="quiz-option" data-correct="false">Manually update React state</button>
+        <button class="quiz-option" data-correct="true">Return the new Post from the mutation + use refetchQueries or update()</button>
+        <button class="quiz-option" data-correct="false">Reload the whole page</button>
+        <button class="quiz-option" data-correct="false">There's no way — Apollo can't sync automatically</button>
+        <p class="quiz-feedback"></p>
+      </div>
+      <div class="quiz">
+        <h4><span class="qmark">Q</span> Why use GraphQL Codegen instead of <code>gql</code> with <code>any</code> types?</h4>
+        <button class="quiz-option" data-correct="false">It's faster at runtime</button>
+        <button class="quiz-option" data-correct="false">Apollo requires it</button>
+        <button class="quiz-option" data-correct="true">It generates typed hooks so breaking schema changes fail at compile time, not in prod</button>
+        <button class="quiz-option" data-correct="false">It replaces the need for a backend</button>
+        <p class="quiz-feedback"></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>Built as a senior-level walkthrough · read, experiment, ship.</footer>
+
+<script>
+/* ---------- Progress bar ---------- */
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  progress.style.width = scrolled + '%';
+});
+
+/* ---------- Sidebar nav active state ---------- */
+const navLinks = document.querySelectorAll('#nav a');
+const sections = document.querySelectorAll('section');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`#nav a[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+sections.forEach(s => obs.observe(s));
+
+/* ---------- Reveal on scroll ---------- */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ---------- Mobile menu ---------- */
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('menuToggle');
+toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+navLinks.forEach(l => l.addEventListener('click', () => sidebar.classList.remove('open')));
+
+/* ---------- Copy buttons ---------- */
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const pre = btn.closest('.code').querySelector('pre');
+    const text = pre.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1600);
+    } catch { btn.textContent = 'failed'; }
+  });
+});
+
+/* ---------- Interactive Query Explorer ---------- */
+const schema = {
+  me: {
+    label: 'me', type: 'User!', fields: {
+      id: { label: 'id', type: 'ID!' },
+      name: { label: 'name', type: 'String!' },
+      email: { label: 'email', type: 'String' },
+      posts: { label: 'posts', type: '[Post!]!', fields: {
+        id: { label: 'id', type: 'ID!' },
+        title: { label: 'title', type: 'String!' },
+        body: { label: 'body', type: 'String!' },
+        createdAt: { label: 'createdAt', type: 'DateTime!' },
+      }},
+    }
+  }
+};
+
+const tree = document.getElementById('fieldTree');
+const out = document.getElementById('queryOut');
+const checked = new Set(['me','me.name','me.posts','me.posts.title']);
+
+function renderNode(key, node, depth) {
+  const wrap = document.createElement('div');
+  if (depth > 0) wrap.className = 'field-group';
+  const row = document.createElement('label');
+  row.className = 'field-row';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = checked.has(key);
+  cb.addEventListener('change', () => {
+    if (cb.checked) {
+      checked.add(key);
+      // auto-add parent
+      const parts = key.split('.');
+      for (let i = 1; i < parts.length; i++) {
+        checked.add(parts.slice(0, i+1).join('.'));
+      }
+    } else {
+      // remove children too
+      [...checked].forEach(k => { if (k.startsWith(key + '.') || k === key) checked.delete(k); });
+    }
+    rebuild();
+  });
+  row.appendChild(cb);
+  const lbl = document.createElement('span');
+  lbl.textContent = node.label;
+  row.appendChild(lbl);
+  const ty = document.createElement('span');
+  ty.className = 'ftype';
+  ty.textContent = node.type;
+  row.appendChild(ty);
+  wrap.appendChild(row);
+  if (node.fields) {
+    Object.entries(node.fields).forEach(([childKey, child]) => {
+      const fullKey = key + '.' + child.label;
+      wrap.appendChild(renderNode(fullKey, child, depth + 1));
+    });
+  }
+  return wrap;
+}
+
+function buildQuery() {
+  // Collect selected leaf paths under 'me'
+  const root = schema.me;
+  const lines = ['query GetMe {', '  me {'];
+  function walk(key, node, indent) {
+    if (!node.fields) return;
+    const childEntries = Object.entries(node.fields).filter(([_, child]) => {
+      const ck = key + '.' + child.label;
+      // include if checked or any descendant checked
+      return [...checked].some(c => c === ck || c.startsWith(ck + '.'));
+    });
+    childEntries.forEach(([_, child]) => {
+      const ck = key + '.' + child.label;
+      const hasChildren = child.fields && [...checked].some(c => c.startsWith(ck + '.'));
+      if (hasChildren) {
+        lines.push(indent + child.label + ' {');
+        walk(ck, child, indent + '  ');
+        lines.push(indent + '}');
+      } else {
+        lines.push(indent + child.label);
+      }
+    });
+  }
+  walk('me', root, '    ');
+  lines.push('  }', '}');
+  return lines.join('\n');
+}
+
+function highlight(q) {
+  return q
+    .replace(/\b(query|mutation|subscription|fragment|on)\b/g, '<span class="q-kw">$1</span>')
+    .replace(/\b(me|posts|name|email|id|title|body|createdAt|author)\b/g, '<span class="q-fn">$1</span>')
+    .replace(/\b(User|Post|ID|String|Int|DateTime)\b/g, '<span class="q-ty">$1</span>');
+}
+
+function rebuild() {
+  tree.innerHTML = '';
+  tree.appendChild(renderNode('me', schema.me, 0));
+  const q = buildQuery();
+  out.innerHTML = highlight(q);
+}
+
+rebuild();
+
+/* ---------- Quiz ---------- */
+document.querySelectorAll('.quiz').forEach(quiz => {
+  const opts = quiz.querySelectorAll('.quiz-option');
+  const feedback = quiz.querySelector('.quiz-feedback');
+  const explanations = {
+    'true': "✓ Correct. The ! marks a field as non-nullable — if the resolver returns null, GraphQL returns an error for that field, not silent null.",
+    'false': "✗ Not quite. Try again."
+  };
+  opts.forEach(opt => {
+    opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.add('locked'));
+      const correct = opt.dataset.correct === 'true';
+      if (correct) {
+        opt.classList.add('correct');
+        feedback.textContent = "✓ Correct. " + quizExplanation(quiz);
+        feedback.style.color = 'var(--green)';
+      } else {
+        opt.classList.add('wrong');
+        // highlight the right one
+        opts.forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); });
+        feedback.textContent = "✗ Not quite — see the highlighted answer. " + quizExplanation(quiz);
+        feedback.style.color = 'var(--red)';
+      }
+      feedback.classList.add('show');
+    });
+  });
+});
+
+function quizExplanation(quiz) {
+  const h4 = quiz.querySelector('h4').textContent;
+  if (h4.includes('non-nullable')) return "The ! is the server's promise that this field will never be null. Lose it = accept nulls = handle them everywhere.";
+  if (h4.includes('cached list')) return "Returning the new Post lets Apollo merge it by id+__typename. refetchQueries re-runs the list query. Avoid page reloads — that defeats the cache.";
+  if (h4.includes('Codegen')) return "Codegen turns your schema + queries into typed hooks. Backend changes break the build, not production.";
+  return "";
+}
+</script>
+</body>
+</html>

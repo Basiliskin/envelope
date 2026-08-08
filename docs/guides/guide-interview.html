@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Technical Anchor — Interview Prep Dossier</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --bg:#0a0f16; --bg2:#0d1420; --panel:#101826; --panel2:#141e2f;
+  --ink:#dfe8f2; --muted:#8ea2b8; --line:#20304a; --line2:#2b3f5e;
+  --amber:#f7a83c; --amber-d:#c97e16; --teal:#38d6b5; --red:#ff6b6b; --blue:#5aa9ff; --green:#5ad17a;
+  --code-bg:#0b1220; --shadow:0 10px 30px rgba(0,0,0,.45);
+  --glow1:rgba(247,168,60,.07); --glow2:rgba(56,214,181,.06);
+}
+[data-theme="light"]{
+  --bg:#eef1f6; --bg2:#e6ebf2; --panel:#ffffff; --panel2:#f4f7fb;
+  --ink:#16222f; --muted:#5a6b7e; --line:#d3dce8; --line2:#b9c7d8;
+  --amber:#b06a08; --amber-d:#8a5306; --teal:#0c8a72; --red:#cf3f3f; --blue:#2f6fd6; --green:#1f8f45;
+  --code-bg:#0e1726; --shadow:0 10px 26px rgba(22,34,47,.12);
+  --glow1:rgba(176,106,8,.06); --glow2:rgba(12,138,114,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.6;font-size:15.5px;overflow-x:hidden}
+/* layered ambient background */
+body::before{content:"";position:fixed;inset:0;z-index:-2;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:44px 44px;opacity:.16;mask-image:radial-gradient(ellipse 90% 80% at 50% 0%,#000 30%,transparent 100%)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(700px 420px at 85% -5%,var(--glow1),transparent 70%),
+             radial-gradient(640px 420px at 8% 22%,var(--glow2),transparent 70%),
+             radial-gradient(800px 500px at 60% 105%,var(--glow1),transparent 70%);
+  animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate3d(0,-24px,0) scale(1.03)}}
+::selection{background:var(--amber);color:#141005}
+a{color:var(--blue)}
+h1,h2,h3,h4{line-height:1.25}
+.mono{font-family:var(--mono)}
+
+/* ============ LAYOUT ============ */
+#sidebar{position:fixed;top:0;left:0;bottom:0;width:264px;background:var(--bg2);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;z-index:60;transition:transform .3s ease}
+.brand{padding:20px 20px 14px;border-bottom:1px solid var(--line)}
+.brand .b1{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--amber)}
+.brand .b2{font-family:var(--mono);font-weight:700;font-size:17px;margin-top:2px}
+.brand .b3{font-size:11.5px;color:var(--muted);margin-top:2px}
+.nav{flex:1;overflow-y:auto;padding:12px 10px}
+.nav a{display:flex;gap:10px;align-items:baseline;padding:7px 10px;color:var(--muted);text-decoration:none;
+  font-family:var(--mono);font-size:12.5px;border-left:2px solid transparent;border-radius:0 6px 6px 0;transition:.18s}
+.nav a .n{color:var(--amber-d);min-width:20px;font-size:11px}
+.nav a:hover{color:var(--ink);background:var(--panel);transform:translateX(2px)}
+.nav a.act{color:var(--ink);border-left-color:var(--amber);background:var(--panel)}
+.side-foot{padding:14px 18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--muted)}
+#progTxt{color:var(--teal)}
+
+main{margin-left:264px;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:10px 22px;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+#menuBtn{display:none;background:none;border:1px solid var(--line2);color:var(--ink);border-radius:6px;padding:6px 9px;cursor:pointer}
+.searchbox{flex:1;max-width:420px;position:relative}
+.searchbox input{width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:8px;color:var(--ink);
+  padding:8px 12px 8px 34px;font-family:var(--mono);font-size:12.5px;outline:none;transition:.2s}
+.searchbox input:focus{border-color:var(--amber);box-shadow:0 0 0 3px color-mix(in srgb,var(--amber) 20%,transparent)}
+.searchbox svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.55}
+#searchMeta{font-family:var(--mono);font-size:11px;color:var(--teal);white-space:nowrap}
+.spacer{flex:1}
+.icon-btn{background:var(--panel);border:1px solid var(--line2);color:var(--ink);border-radius:8px;padding:7px 10px;cursor:pointer;transition:.18s;display:flex;align-items:center}
+.icon-btn:hover{border-color:var(--amber);transform:translateY(-1px)}
+[data-theme="light"] .ico-moon{display:none}
+:root:not([data-theme="light"]) .ico-sun{display:none}
+.progwrap{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:transparent}
+#progBar{height:100%;width:0;background:linear-gradient(90deg,var(--amber),var(--teal));transition:width .5s ease}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 26px 40px}
+section{padding-top:56px;scroll-margin-top:70px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.24em;color:var(--amber);text-transform:uppercase;margin-bottom:6px}
+.sec-head h2{font-family:var(--mono);font-size:clamp(22px,3.2vw,30px);letter-spacing:-.01em}
+.sec-sub{color:var(--muted);max-width:760px;margin-bottom:22px}
+.mod-check{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  border:1px dashed var(--line2);padding:6px 12px;border-radius:8px;cursor:pointer;user-select:none;transition:.2s}
+.mod-check:hover{border-color:var(--teal);color:var(--ink)}
+.mod-check input{accent-color:var(--teal);width:15px;height:15px}
+.divider{height:1px;background:linear-gradient(90deg,var(--line2),transparent);margin-top:44px}
+
+/* ============ HERO ============ */
+.hero{padding:52px 0 0}
+.hero-grid{display:grid;grid-template-columns:1.3fr .95fr;gap:26px;align-items:stretch}
+.hero-left .tag-line{font-family:var(--mono);font-size:12px;letter-spacing:.26em;color:var(--teal);margin-bottom:14px}
+.hero-left h1{font-family:var(--mono);font-size:clamp(30px,4.6vw,50px);line-height:1.08;letter-spacing:-.02em}
+.hero-left h1 em{font-style:normal;color:var(--amber)}
+.hero-left p.lede{margin-top:16px;color:var(--muted);font-size:16.5px;max-width:56ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-family:var(--mono);font-size:11px;padding:4px 10px;border:1px solid var(--line2);border-radius:5px;color:var(--ink);
+  background:var(--panel);transition:.18s;cursor:default}
+.chip:hover{border-color:var(--amber);transform:translateY(-1px)}
+.chip.a{border-color:color-mix(in srgb,var(--amber) 55%,transparent);color:var(--amber)}
+.chip.t{border-color:color-mix(in srgb,var(--teal) 55%,transparent);color:var(--teal)}
+.chip.r{border-color:color-mix(in srgb,var(--red) 55%,transparent);color:var(--red)}
+.chip.b{border-color:color-mix(in srgb,var(--blue) 55%,transparent);color:var(--blue)}
+.mission-panel{background:var(--panel);border:1px solid var(--line);padding:20px 22px;position:relative;box-shadow:var(--shadow);
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%)}
+.mission-panel h3{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--amber);margin-bottom:14px}
+.mission-panel dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13px}
+.mission-panel dt{font-family:var(--mono);color:var(--muted);font-size:11.5px;padding-top:2px}
+.mission-panel dd{color:var(--ink)}
+/* pipeline animation */
+.pipeline{display:flex;align-items:center;gap:0;margin:26px 0 6px;flex-wrap:wrap}
+.pnode{border:1px solid var(--line2);background:var(--panel);padding:10px 16px;font-family:var(--mono);font-size:12px;
+  position:relative;transition:.2s;border-radius:6px}
+.pnode small{display:block;color:var(--muted);font-size:10px;letter-spacing:.1em}
+.pnode:hover{border-color:var(--teal);transform:translateY(-2px)}
+.pnode .dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.plink{flex:1;min-width:52px;height:2px;background:var(--line2);position:relative;margin:0 4px}
+.plink::after{content:"";position:absolute;top:-3px;left:0;width:8px;height:8px;border-radius:50%;background:var(--amber);
+  box-shadow:0 0 10px var(--amber);animation:flow 2.6s linear infinite}
+.plink:nth-of-type(4)::after{animation-delay:1.3s}
+@keyframes flow{0%{left:0;opacity:0}12%{opacity:1}88%{opacity:1}100%{left:calc(100% - 8px);opacity:0}}
+/* ticker */
+.ticker{margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:8px 0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.ticker-track{display:inline-flex;gap:44px;white-space:nowrap;font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;
+  color:var(--muted);animation:tick 38s linear infinite}
+.ticker-track span b{color:var(--teal);font-weight:400}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ============ COMPONENTS ============ */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 22px;transition:.22s}
+.panel:hover{border-color:var(--line2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+h4.lbl{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin:16px 0 6px}
+h4.lbl.am{color:var(--amber)} h4.lbl.rd{color:var(--red)} h4.lbl.bl{color:var(--blue)}
+ul.tight{list-style:none;margin:4px 0}
+ul.tight li{padding:4px 0 4px 20px;position:relative;font-size:14px}
+ul.tight li::before{content:"▸";position:absolute;left:2px;color:var(--amber);font-family:var(--mono);font-size:11px;top:7px}
+ul.tight.teal li::before{color:var(--teal)}
+ul.tight.blue li::before{color:var(--blue)}
+.quote{border-left:3px solid var(--amber);background:var(--panel2);padding:12px 16px;border-radius:0 8px 8px 0;font-size:14px;margin:8px 0}
+.quote b{color:var(--amber)}
+.dodont{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+.dd{border:1px solid var(--line);border-radius:8px;padding:12px 16px;background:var(--panel2)}
+.dd h5{font-family:var(--mono);font-size:11px;letter-spacing:.18em;margin-bottom:6px}
+.dd.do h5{color:var(--green)} .dd.dont h5{color:var(--red)}
+.dd ul{list-style:none}
+.dd li{font-size:13.5px;padding:3px 0 3px 20px;position:relative}
+.dd.do li::before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:700}
+.dd.dont li::before{content:"✕";position:absolute;left:0;color:var(--red);font-weight:700}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+.acc:hover{border-color:var(--line2)}
+.acc-h{width:100%;display:flex;align-items:center;gap:14px;background:none;border:0;color:var(--ink);cursor:pointer;
+  padding:16px 20px;text-align:left;font-family:inherit}
+.acc-h .idx{font-family:var(--mono);color:var(--amber);font-size:12px;min-width:26px}
+.acc-h h3{font-size:16.5px;font-weight:650;flex:1}
+.acc-h .chev{width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+  transform:rotate(45deg);transition:.25s;flex-shrink:0}
+.acc.open .acc-h .chev{transform:rotate(225deg)}
+.acc-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s ease}
+.acc.open .acc-b{grid-template-rows:1fr}
+.acc-i{overflow:hidden;min-height:0}
+.acc-pad{padding:4px 20px 22px;border-top:1px solid var(--line)}
+/* training cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:0;transition:.22s}
+.tcard:hover{transform:translateY(-4px);border-color:var(--amber);box-shadow:var(--shadow)}
+.tcard .tc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.tcard h3{font-size:16.5px}
+.diff{font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:3px 8px;border-radius:4px;border:1px solid var(--line2);white-space:nowrap}
+.diff i{display:inline-block;width:5px;height:9px;background:var(--line2);margin-left:2px;border-radius:1px}
+.diff i.on{background:var(--amber)}
+.diff.core i.on{background:var(--red)}
+.tcard p{font-size:13.5px;color:var(--muted)}
+.mini-q{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line2)}
+.mini-q .q{font-size:13.5px;font-weight:600}
+.mini-a{display:none;margin-top:8px;font-size:13px;background:var(--panel2);border-left:3px solid var(--teal);padding:9px 12px;border-radius:0 6px 6px 0}
+.mini-a.show{display:block;animation:fadein .3s}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+.btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;background:var(--panel2);color:var(--amber);
+  border:1px solid color-mix(in srgb,var(--amber) 50%,transparent);border-radius:6px;padding:6px 14px;cursor:pointer;transition:.18s;margin-top:9px}
+.btn:hover{background:var(--amber);color:#141005;transform:translateY(-1px)}
+.btn.teal{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 50%,transparent)}
+.btn.teal:hover{background:var(--teal);color:#04110d}
+.btn.big{padding:10px 22px;font-size:12.5px}
+/* code */
+.codewrap{margin:12px 0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.codebar{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border-bottom:1px solid var(--line);
+  padding:6px 12px;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em}
+.copy{background:none;border:1px solid var(--line2);color:var(--teal);font-family:var(--mono);font-size:10.5px;
+  padding:3px 10px;border-radius:4px;cursor:pointer;transition:.18s}
+.copy:hover{border-color:var(--teal)}
+pre{background:var(--code-bg);color:#c9d7e8;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.8px;line-height:1.65;tab-size:2}
+pre .k{color:#f7a83c} pre .s{color:#7ee0c0} pre .c{color:#5c718a;font-style:italic} pre .f{color:#6db3ff} pre .n{color:#f0916e} pre .t{color:#c9a7ff}
+/* star */
+.star{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.star:last-child{border-bottom:0}
+.star .s-tag{font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--amber);padding-top:3px}
+.star p{font-size:14px}
+/* tables */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);
+  background:var(--panel2);text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top;background:var(--panel)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-family:var(--mono);color:var(--teal);white-space:nowrap;font-size:12.5px}
+tr:hover td{background:var(--panel2)}
+/* flashcards */
+.fc-scene{perspective:1200px;max-width:640px;margin:8px auto}
+.fc-card{position:relative;width:100%;min-height:280px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.7,.3,1)}
+.fc-card.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--panel);
+  border:1px solid var(--line2);border-radius:12px;padding:30px;display:flex;flex-direction:column;justify-content:center;box-shadow:var(--shadow)}
+.fc-face.back{transform:rotateY(180deg);border-color:var(--teal)}
+.fc-face .fc-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--amber);margin-bottom:12px}
+.fc-face.back .fc-tag{color:var(--teal)}
+.fc-face p{font-size:16px}
+.fc-ctrl{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:18px;flex-wrap:wrap}
+#fcCount{font-family:var(--mono);font-size:12px;color:var(--muted)}
+/* quiz */
+.qbox{max-width:760px}
+.qcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px}
+.qmeta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:12px}
+.qmeta .score{color:var(--teal)}
+.qcard h3{font-size:17px;margin-bottom:14px}
+.opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+  border-radius:8px;padding:11px 15px;margin-bottom:9px;cursor:pointer;font-size:14px;font-family:inherit;transition:.16s}
+.opt:hover:not(:disabled){border-color:var(--amber);transform:translateX(3px)}
+.opt.ok{border-color:var(--green);background:color-mix(in srgb,var(--green) 12%,var(--panel2))}
+.opt.bad{border-color:var(--red);background:color-mix(in srgb,var(--red) 12%,var(--panel2))}
+.opt:disabled{cursor:default}
+.qwhy{display:none;margin-top:10px;font-size:13.5px;border-left:3px solid var(--blue);padding:9px 13px;background:var(--panel2);border-radius:0 6px 6px 0}
+.qwhy.show{display:block;animation:fadein .3s}
+.qsummary{text-align:center;padding:34px 20px}
+.qsummary .big-score{font-family:var(--mono);font-size:52px;color:var(--amber)}
+.qbar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;max-width:380px;margin:16px auto}
+.qbar div{height:100%;background:linear-gradient(90deg,var(--amber),var(--teal));transition:width .8s ease}
+/* mock */
+.mock-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px;max-width:820px;margin:0 auto;box-shadow:var(--shadow)}
+.mock-ideal{display:none;margin-top:16px;border-top:1px dashed var(--line2);padding-top:14px}
+.mock-ideal.show{display:block;animation:fadein .3s}
+/* misc */
+.note{border:1px dashed var(--line2);border-radius:8px;padding:14px 18px;font-size:13.5px;color:var(--muted);background:var(--panel2);margin:14px 0}
+.note b{color:var(--amber)}
+.flag-list li{padding-left:22px}
+.flag-list li::before{content:"⚑";color:var(--red)}
+#topBtn{position:fixed;bottom:24px;right:24px;z-index:55;opacity:0;pointer-events:none;transition:.3s;
+  background:var(--panel);border:1px solid var(--amber);color:var(--amber);border-radius:8px;padding:9px 12px;cursor:pointer;font-family:var(--mono);font-size:12px}
+#topBtn.show{opacity:1;pointer-events:auto}
+#overlay{display:none;position:fixed;inset:0;background:rgba(4,8,14,.55);z-index:55}
+body.nav-open #overlay{display:block}
+footer{padding:34px 0 46px;color:var(--muted);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;border-top:1px solid var(--line);margin-top:30px}
+.sx.hid{display:none!important}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:960px){
+  #sidebar{transform:translateX(-100%)}
+  body.nav-open #sidebar{transform:none;box-shadow:var(--shadow)}
+  main{margin-left:0}
+  #menuBtn{display:flex}
+  .hero-grid,.grid2,.grid3,.dodont{grid-template-columns:1fr}
+  .searchbox{max-width:none}
+  #searchMeta{display:none}
+}
+@media (max-width:560px){ .wrap{padding:0 14px 30px} .plink{min-width:24px} }
+
+/* ============ PRINT ============ */
+@media print{
+  body{background:#fff;color:#000}
+  body::before,body::after,#sidebar,.topbar,.ticker,#topBtn,.btn,.copy,.mod-check,.fc-ctrl,#overlay{display:none!important}
+  main{margin:0}
+  .acc-b{grid-template-rows:1fr!important}
+  .panel,.acc,.tcard,.qcard,.mock-card{box-shadow:none;break-inside:avoid}
+  a{color:#000;text-decoration:none}
+  body.print-cheat main>section:not(#cheat),body.print-cheat .hero{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<div id="overlay"></div>
+
+<!-- ================= SIDEBAR ================= -->
+<aside id="sidebar">
+  <div class="brand">
+    <div class="b1">INTERVIEW DOSSIER //</div>
+    <div class="b2">LEAD TECHNICAL ANCHOR</div>
+    <div class="b3">Multi-tier SaaS · Edge → On-Prem → Cloud</div>
+  </div>
+  <nav class="nav">
+    <a href="#summary"><span class="n">01</span> Executive Summary</a>
+    <a href="#skills"><span class="n">02</span> Skills Breakdown</a>
+    <a href="#cards"><span class="n">03</span> Training Cards</a>
+    <a href="#deep"><span class="n">04</span> Technical Deep Dive</a>
+    <a href="#behav"><span class="n">05</span> Behavioral / STAR</a>
+    <a href="#code"><span class="n">06</span> Coding Interview</a>
+    <a href="#design"><span class="n">07</span> System Design</a>
+    <a href="#company"><span class="n">08</span> Company Prep</a>
+    <a href="#flash"><span class="n">09</span> Flashcards</a>
+    <a href="#quiz"><span class="n">10</span> Knowledge Check</a>
+    <a href="#cheat"><span class="n">11</span> Cheat Sheet</a>
+    <a href="#plan"><span class="n">12</span> 7-Day Study Plan</a>
+    <a href="#mock"><span class="n">13</span> Mock Interview</a>
+    <a href="#bonus"><span class="n">14</span> Bonus Material</a>
+  </nav>
+  <div class="side-foot">PROGRESS: <span id="progTxt">0 / 14 modules</span></div>
+</aside>
+
+<main>
+  <!-- ================= TOPBAR ================= -->
+  <div class="topbar">
+    <button id="menuBtn" aria-label="Menu">☰</button>
+    <div class="searchbox">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="Search everything… ( / )" autocomplete="off">
+    </div>
+    <span id="searchMeta"></span>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="themeBtn" title="Toggle theme">
+      <svg class="ico-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M4.2 4.2l2.2 2.2M17.6 17.6l2.2 2.2M1 12h3M20 12h3M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2"/></svg>
+      <svg class="ico-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <div class="progwrap"><div id="progBar"></div></div>
+  </div>
+
+  <div class="wrap">
+
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="tag-line">// MISSION BRIEFING — CANDIDATE PREP KIT</div>
+        <h1>Lead Technical<br>Anchor <em>// Platform</em></h1>
+        <p class="lede">Greenfield platform group. Mission-critical inference ecosystem spanning worldwide SaaS, on-premise gateways, and tactical edge sensors. Your job: be the Principal Architect's technical right hand — and stay <b>hot on code</b>.</p>
+        <div class="chips">
+          <span class="chip a">TypeScript</span><span class="chip a">Node.js</span><span class="chip a">NestJS</span><span class="chip a">Express</span>
+          <span class="chip t">Kafka</span><span class="chip t">Redis</span><span class="chip t">PostgreSQL</span><span class="chip t">gRPC</span>
+          <span class="chip b">EKS / K8s</span><span class="chip b">Docker</span><span class="chip b">ZTA + mTLS</span><span class="chip">React</span>
+        </div>
+      </div>
+      <div class="mission-panel">
+        <h3>▮ MISSION PARAMETERS</h3>
+        <dl>
+          <dt>ROLE</dt><dd>Key technical partner to Principal Architect</dd>
+          <dt>STAGE</dt><dd>Brand-new platform group, foundational team in place</dd>
+          <dt>SCOPE</dt><dd>Ideate → design → code → deploy → run</dd>
+          <dt>CULTURE</dt><dd><b>"You Build It, You Run It"</b></dd>
+          <dt>EXPERIENCE</dt><dd>7+ yrs total · 5+ backend/distributed · 5+ cloud</dd>
+          <dt>TIERS</dt><dd>Cloud SaaS · On-Prem Gateways (MSC2) · Edge SDR/IoT</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="pipeline" aria-hidden="true">
+      <div class="pnode"><span class="dot"></span>EDGE<small>SDR / IoT SENSORS</small></div>
+      <div class="plink"></div>
+      <div class="pnode"><span class="dot"></span>ON-PREM<small>GATEWAYS / MSC2</small></div>
+      <div class="plink"></div>
+      <div class="pnode"><span class="dot"></span>CLOUD<small>WORLDWIDE SAAS</small></div>
+    </div>
+    <div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack">
+      <span>EVENT LOOP <b>▸</b></span><span>KAFKA CONSUMER GROUPS <b>▸</b></span><span>mTLS / ZERO TRUST <b>▸</b></span><span>NESTJS DI <b>▸</b></span><span>BACKPRESSURE <b>▸</b></span><span>OUTBOX PATTERN <b>▸</b></span><span>ROW-LEVEL SECURITY <b>▸</b></span><span>gRPC STREAMING <b>▸</b></span><span>HPA / KEDA <b>▸</b></span><span>IDEMPOTENCY KEYS <b>▸</b></span><span>DEAD LETTER QUEUES <b>▸</b></span><span>YOU BUILD IT YOU RUN IT <b>▸</b></span>
+    </div></div>
+  </header>
+
+  <!-- ================= 01 EXECUTIVE SUMMARY ================= -->
+  <section id="summary">
+    <div class="sec-head">
+      <div><div class="kicker">01 / Briefing</div><h2>Executive Summary</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="summary"> mark complete</label>
+    </div>
+    <p class="sec-sub">Everything below is derived from the job description. The company is unnamed in the JD — research signals are flagged in Section 08.</p>
+    <div class="grid2">
+      <div class="panel sx">
+        <h4 class="lbl am">Company read (from signals)</h4>
+        <ul class="tight">
+          <li>Building a <b>brand-new Platform group</b> — foundational team already hired; you join early with real influence.</li>
+          <li>Product is a <b>multi-tenant SaaS distributed ecosystem + inference platform</b>, explicitly mission-critical.</li>
+          <li>Three-tier footprint — worldwide cloud, on-prem gateways (MSC2), tactical edge sensors (SDR/IoT) — strongly suggests <b>defense-adjacent / dual-use or industrial telemetry</b> customers.</li>
+          <li>Hybrid delivery model (SaaS + on-prem) implies customers with connectivity constraints and strict security posture.</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl am">Role summary</h4>
+        <ul class="tight">
+          <li>You are the <b>primary driving force</b>: ideate, design, implement, maintain, monitor the platform.</li>
+          <li>Right hand to the Principal/Software Architect — translate architectural vision into production reality.</li>
+          <li>Still <b>deeply hands-on</b>: you set code standards in TypeScript / Node.js / Express / NestJS by writing code, not slides.</li>
+          <li>Full lifecycle ownership — architecture through production monitoring — in a strict <b>You Build It, You Run It</b> culture.</li>
+          <li>Occasional React work to ship end-to-end features.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div class="panel sx">
+        <h4 class="lbl bl">Key responsibilities</h4>
+        <ul class="tight blue">
+          <li>Design + implement high-throughput distributed systems spanning Edge, On-Prem, and Cloud from scratch.</li>
+          <li>Seamless data ingestion and inference across all three tiers.</li>
+          <li>Set engineering standards via sharp, scalable, maintainable code.</li>
+          <li>High-performance backend tasks, robust infra, high-throughput BFF layers (REST + gRPC) for real-time sensor data and telemetry.</li>
+          <li>Ensure high availability and observability of the multi-tenant SaaS environment.</li>
+          <li>Automated deployment and production operations of what you build.</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl">What success looks like</h4>
+        <ul class="tight teal">
+          <li><b>First 90 days:</b> ship production code in the core stack, earn the Principal's trust on design calls, map the full edge→cloud data path, own one subsystem end-to-end.</li>
+          <li><b>6 months:</b> a tier-spanning pipeline you designed is live with SLOs, dashboards, and on-call you helped define; your code conventions are the team's default.</li>
+          <li><b>12 months:</b> the platform scales with tenants, gateway fleet upgrades are boring, other engineers unblock themselves using your patterns — and you can still point to the hot-path code you wrote last sprint.</li>
+          <li>Interview translation: they're hiring <b>judgment + velocity</b>. Every answer should carry both.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 02 SKILLS ================= -->
+  <section id="skills">
+    <div class="sec-head">
+      <div><div class="kicker">02 / Capability Matrix</div><h2>Skills Breakdown</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="skills"> mark complete</label>
+    </div>
+    <p class="sec-sub">Every requirement from the JD, decomposed. Click each to expand. Tag legend: <span class="chip a">CORE</span> <span class="chip b">REQUIRED</span> <span class="chip t">WILLINGNESS</span></p>
+
+    <!-- S1 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-01</span><h3>TypeScript &amp; Modern JavaScript</h3><span class="chip a">CORE</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Statically-typed superset of JavaScript; the language of every service in this stack. Includes ES2022+ features (async/await, structured error causes, top-level patterns) plus a compile-time contract system.</p>
+            <h4 class="lbl">Why it matters here</h4><p>Shared DTO types flow between cloud services, BFF, and React. In a multi-team platform, types are the cheapest form of cross-service safety you have.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Generics, discriminated unions, narrowing, utility types.</li><li>Modeling domain events so invalid states are unrepresentable.</li><li>Knowing types die at runtime — pairing TS with runtime validation.</li><li>strict mode discipline and tsconfig choices.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>How would you type a heterogeneous telemetry event bus?</li><li>interface vs type — when does it matter?</li><li>How do generics help build a typed repository or retry wrapper?</li><li>How do you keep types honest across service boundaries?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"I treat TypeScript as an internal contract and assume it dies at every boundary. Ingress points — HTTP bodies, Kafka messages, gRPC metadata — get runtime validation with a schema library like zod, and the validated type flows inward. Domain events are discriminated unions on <b>kind</b>, so the compiler forces every consumer to handle every event shape."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4>
+        <ul class="tight"><li>Leaking <b>any</b> to silence errors; sprinkling non-null assertions.</li><li>Trusting types on external input without runtime validation.</li><li>Enums and inheritance-first design instead of unions and composition.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>strict: true, noImplicitAny, noUncheckedIndexedAccess</li><li>Branded types for TenantId / DeviceId so IDs can't mix</li><li>Share a DTO/contracts package across services</li><li>Validate at edges, trust internally</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Use <b>as</b> casts as an escape hatch</li><li>Assume a Kafka payload matches its interface</li><li>Write types after the fact as documentation</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Can't explain variance or why <b>readonly</b> is shallow.</li><li>"Types replace tests."</li><li>No strategy for evolving shared types across independently deployed services.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S2 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-02</span><h3>Node.js Internals &amp; the Event Loop</h3><span class="chip a">CORE</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Single-threaded V8 event loop plus the libuv thread pool (4 threads by default) for file I/O, DNS, and some crypto. Phases: timers → pending callbacks → poll → check → close; microtasks drain between every phase.</p>
+            <h4 class="lbl">Why it matters here</h4><p>Every ingest hot path runs here. One 200ms JSON.parse of a fat payload stalls <b>every tenant</b> sharing that process. This is the JD's loudest "expert" requirement.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Output-ordering puzzles (setTimeout vs Promise vs setImmediate vs nextTick).</li><li>Blocking the loop vs async I/O; CPU-bound strategies.</li><li>Streams, backpressure, and memory under load.</li><li>Production diagnostics: heap snapshots, event-loop-lag monitoring.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Walk through the event loop phases. Where do promise callbacks run?</li><li>How do you keep a Node service healthy under CPU-heavy work?</li><li>How would you detect a blocked loop in production?</li><li>cluster vs worker_threads vs child_process — pick one for each case.</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"My rule: nothing touches the loop for more than a few milliseconds. Heavy transforms go to worker threads or a dedicated service, crypto rides the libuv pool, and I treat <b>event-loop lag as a first-class SLO signal</b> via monitorEventLoopDelay — rising lag predicts p99 collapse before CPU does."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4>
+        <ul class="tight"><li>Believing "async" means multithreaded.</li><li>Unbounded Promise.all fan-out melting memory.</li><li>Ignoring unhandledRejection / graceful shutdown on SIGTERM.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Measure loop lag + RSS in production</li><li>Stream big payloads; respect drain</li><li>Cap concurrency at every fan-out point</li><li>Drain connections on SIGTERM for clean K8s rollouts</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Parse/serialize huge blobs on the main thread</li><li>Use sync fs APIs on hot paths</li><li>Assume GC will save an unbounded queue</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Can't order microtasks vs macrotasks.</li><li>No answer for CPU-bound work in Node.</li><li>Has never diagnosed a memory leak.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S3 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-03</span><h3>Express</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Minimalist HTTP framework built on a middleware chain (req, res, next). NestJS runs on top of it (or Fastify); expect legacy and BFF endpoints written raw.</p>
+            <h4 class="lbl">Why it matters here</h4><p>Public/debug REST surfaces and the BFF layer. Error handling, body limits, and middleware ordering are where Express services die in production.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Middleware ordering and the 4-arg error handler signature.</li><li>Async handler errors actually reaching the error middleware.</li><li>Security defaults: helmet, body-size limits, rate limiting.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>What happens when an async handler throws and you don't catch it?</li><li>How do you structure a large Express codebase?</li><li>How do you attach tenant context to every request?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"I wrap async handlers in a tiny helper that forwards rejections to next(err), keep one central error middleware that maps domain errors to status codes and correlation IDs, and set per-route JSON body limits — ingest endpoints get a few KB, bulk imports get their own route with a real cap."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4>
+        <ul class="tight"><li>No central error handler → stack traces leak to clients.</li><li>Registering error middleware before routes.</li><li>Synchronous logging/serialization in the hot path.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Central error mapper + request IDs</li><li>helmet, body limits, per-IP/tenant rate limits</li><li>Keep handlers thin; logic in injected services</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Swallow errors with empty catch blocks</li><li>Trust req.body size by default</li><li>Build "frameworks" of 30 middleware deep</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Can't explain why their async errors 404 instead of 500.</li><li>No mention of request/body limits anywhere.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S4 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-04</span><h3>NestJS</h3><span class="chip a">CORE</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Opinionated TypeScript framework: modules, dependency injection, decorators, guards/interceptors/pipes/filters, plus first-class microservice transports (Kafka, gRPC, Redis, TCP).</p>
+            <h4 class="lbl">Why it matters here</h4><p>It's the team standard. You'll set the patterns: how services are structured, tested, and how Kafka consumers and gRPC servers are wired. DI is also the testability story.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>DI scopes (singleton / request / transient) and their cost.</li><li>Execution order: middleware → guards → interceptors → pipes → handler → filters.</li><li>Dynamic modules, circular deps (forwardRef), lifecycle hooks.</li><li>Testing with Test.createTestingModule and mock providers.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Guard vs interceptor vs pipe — what's each for?</li><li>How do you implement a Kafka consumer in Nest?</li><li>When is request scope justified?</li><li>How do you keep modules from becoming a distributed monolith?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"Controllers stay thin, services own logic, repositories are injected behind interfaces so tests swap them for fakes. Cross-cutting concerns go in the right slot: guards for authZ, an interceptor that seeds tenant context into AsyncLocalStorage + tracing, pipes for validation. And I keep request scope rare — it allocates a whole graph per request."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4>
+        <ul class="tight"><li>God-modules: one AppModule importing everything.</li><li>Business logic living inside interceptors.</li><li>Circular imports papered over instead of boundaries fixed.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>One bounded context per module; export only providers others need</li><li>Contract-test the Kafka consumers like HTTP endpoints</li><li>Use custom providers for infra adapters (Redis, Postgres)</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Reach for request scope for one tenant field — use AsyncLocalStorage</li><li>Decorate without understanding what runs when</li><li>Skip onApplicationShutdown for graceful drain</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Knows decorators but can't explain the DI container.</li><li>Has never unit-tested a Nest service without booting everything.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S5 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-05</span><h3>Distributed Systems From Scratch</h3><span class="chip a">CORE</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Designing across failure domains: partial failure, consistency, ordering, idempotency, backpressure, quorums, split-brain — across a WAN, an on-prem network, and battery-powered radios.</p>
+            <h4 class="lbl">Why it matters here</h4><p>The JD asks for "battle scars." The three tiers guarantee partitions: gateways lose cloud connectivity, sensors lose gateways. The platform must degrade, buffer, and reconcile — by design.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>War stories with real failure analysis, not textbook recitals.</li><li>CAP/PACELC as practical tradeoff language.</li><li>Exactly-once skepticism; outbox, sagas, idempotent consumers.</li><li>Clock skew, sequence numbers, store-and-forward at the edge.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Tell me about a system you designed from scratch. What broke?</li><li>How do you guarantee ordering across three tiers?</li><li>Design ingest for 100k devices. (See Section 07.)</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"I design assuming every link lies and every node dies mid-message. Across tiers that means: monotonic per-device sequence numbers so gaps are detectable, store-and-forward buffers at the gateway, at-least-once delivery with idempotent consumers keyed on device + sequence, and explicit reconciliation jobs — because 'eventually consistent' only works if something actively drives the 'eventually.'"</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4>
+        <ul class="tight"><li>Happy-path designs that assume the WAN is a LAN.</li><li>Trusting device wall-clock timestamps for ordering.</li><li>Synchronous call chains crossing tier boundaries.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Enumerate failure modes before components</li><li>Put idempotency + dedup at every ingest point</li><li>Define SLOs per link, not just per service</li><li>Design the offline/reconnect path first for edge</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Promise exactly-once end-to-end casually</li><li>Use timestamps as ordering truth across tiers</li><li>Ignore backpressure because "Kafka handles it"</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>No story about a production failure they owned.</li><li>Hand-waves consistency questions with "we'd use Kafka."</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S6 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-06</span><h3>Event-Driven Design (Kafka / RabbitMQ / Redis Streams)</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Kafka: partitioned, replayable log — the backbone. RabbitMQ: broker with per-message acks and routing, great for task/work-queue semantics. Redis Streams: lightweight in-memory streams with consumer groups for ephemeral intra-service flows.</p>
+            <h4 class="lbl">Why it matters here</h4><p>Telemetry ingestion and inference fan-out are streaming problems. Partition-key choice, consumer groups, DLQs, and schema evolution will be daily decisions.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Choosing partition keys (tenant? device? tenant+device?) and hot-partition awareness.</li><li>Offset commit strategy: process-then-commit vs at-most-once shortcuts.</li><li>Rebalance storms, consumer lag as an SLO, replay plans.</li><li>When NOT to use Kafka.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Kafka vs RabbitMQ vs Redis Streams — how do you choose?</li><li>A tenant floods one partition. What happens, and how do you design against it?</li><li>How do you version an event schema safely?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"Kafka is the durable telemetry backbone — partitioned by tenant+device so per-device order holds and load spreads; consumers commit after durable processing and dedup via device+sequence. Redis Streams handles short-lived intra-service queues where replay isn't needed. RabbitMQ-style semantics win for RPC-ish task routing with strict per-message ack. Schema evolution is additive-only with a registry; breaking changes get a new topic."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4>
+        <ul class="tight"><li>Single-partition topics; committing offsets before processing.</li><li>No DLQ → poison messages stall consumers forever.</li><li>Breaking schema changes on a live topic.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Alert on consumer lag like it's an error rate</li><li>Idempotent consumers + dedup store</li><li>Plan retention/replay from day one</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Treat Kafka as a fast queue for RPC</li><li>Let one tenant monopolize a partition key</li><li>Ignore rebalance behavior on deploys</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>"Kafka guarantees exactly-once, so we're fine."</li><li>No DLQ or poison-message story.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S7 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-07</span><h3>Microservices &amp; Service Boundaries</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Decomposing by bounded context with independent ownership, deploy, and data — while avoiding the distributed monolith (services coupled by sync calls and shared databases).</p>
+            <h4 class="lbl">Why it matters here</h4><p>A greenfield platform lets you draw boundaries right the first time: ingest vs enrichment vs inference vs serving vs BFF are natural seams with different scaling profiles.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Knowing when NOT to split (modular monolith first).</li><li>Data ownership: one service per datastore schema.</li><li>Contract testing, versioning, ownership topology.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Where would you cut services in this platform?</li><li>How do services share data without sharing databases?</li><li>How do you keep a small team from drowning in services?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"I start with a modular monolith per tier and split along hot seams with different scaling or failure profiles — ingest and inference absolutely diverge. Each service owns its schema and publishes domain events for others to consume; consumers keep their own projections. Fewer, well-bounded services beat many tiny ones when the team is young."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>Splitting by layer (UI service, DB service) instead of capability.</li><li>Shared databases; chatty synchronous meshes; no contract tests.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Define ownership + on-call per service from day one</li><li>Consumer-driven contract tests</li><li>Events for integration, sync calls only inside a boundary</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Create service sprawl before you have 2-pizza teams for it</li><li>Let two services write one table</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Resume-driven decomposition; can't name a boundary they regretted.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S8 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-08</span><h3>Cloud-Native: Kubernetes, Serverless, Auto-scaling</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>5+ years on AWS/Azure/GCP with managed services: EKS/AKS/GKE, serverless (Lambda), managed Kafka/Redis/Postgres, IAM, IaC — and autoscaling that actually tracks load.</p>
+            <h4 class="lbl">Why it matters here</h4><p>"You build it, you run it" means you own the deploy target: rolling updates, probes, resource limits, and scaling ingest consumers on Kafka lag rather than CPU.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>HPA vs KEDA (event-driven autoscaling) and when each fits.</li><li>Requests vs limits; OOMKilled forensics; Node memory flags.</li><li>Multi-AZ resilience, IRSA/pod identity, cost awareness.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>How do you scale ingest consumers with bursty traffic?</li><li>Your pod is OOMKilled on deploy spikes — walk me through it.</li><li>Managed Kafka vs self-hosted: how do you decide?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"CPU-based HPA is the wrong signal for streaming consumers — I scale on lag with KEDA, with min replicas sized for baseline and max capped by partition count. Pods get readiness gates before they join consumption, sane requests/limits tuned from real RSS, and graceful SIGTERM drain so rollouts don't drop in-flight batches."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>No resource requests/limits; :latest tags; no probes.</li><li>Scaling I/O-bound services on CPU only.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Multi-stage, non-root, minimal images</li><li>Terraform/IaC everything; no console pets</li><li>Budget spot/graviton-style savings for stateless tiers</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Run stateful things without understanding the storage class</li><li>Ignore cross-AZ transfer costs in chatty designs</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Has deployed to K8s but can't explain a rolling update or a probe.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S9 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-09</span><h3>Redis — High-Speed In-Memory State</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Single-threaded (core ops) in-memory store with rich structures: strings, hashes, sets, sorted sets, streams; persistence via RDB snapshots and AOF log; Redis Cluster shards by 16384 slots.</p>
+            <h4 class="lbl">Why it matters here</h4><p>Last-known device state, session/tenant config cache, rate limiting, dedup claims, and ephemeral queues — all sub-millisecond paths in front of Postgres.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Data-structure selection per use case (ZSET leaderboards, HASH device state).</li><li>Eviction policies, big keys, hot keys, KEYS-in-prod sins.</li><li>Cache stampede protection; durability tradeoffs (RDB vs AOF).</li><li>Limits of Redlock; when Redis is the wrong lock.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Design a rate limiter with Redis.</li><li>Redis crashes mid-failover — what happens to your cache and your DB?</li><li>How do you keep Redis memory flat under a growing fleet?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"Redis is a cache and a state index, never the system of record. Last-known device state lives in per-tenant hashes with TTLs; dedup uses SET NX EX claims; rate limits are sliding windows on sorted sets. I assume Redis can vanish at any moment — so Postgres load is capped by request coalescing and cache-aside with jittered TTLs to avoid stampedes."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>KEYS * in production; 50MB values; no maxmemory-policy; treating Redis as durable storage by default.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Namespace keys tenant:*; per-tenant key budgets</li><li>SCAN, pipelining, Lua for atomic multi-steps</li><li>Monitor evictions + memory fragmentation</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Store unbounded lists per device</li><li>Trust a single-instance Redis for anything you'd mourn</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>No eviction strategy; no stampede answer.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S10 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-10</span><h3>PostgreSQL — System of Record</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>MVCC relational store: B-tree/GIN/BRIN indexes, partitioning, row-level security, JSONB, replication, LISTEN/NOTIFY. The durable core of the multi-tenant SaaS.</p>
+            <h4 class="lbl">Why it matters here</h4><p>Tenants, devices, configs, inference results — plus time-partitioned telemetry and tenant isolation enforced in the database, not just the app.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Tenancy models: DB-per-tenant vs schema vs shared rows + RLS, and tradeoffs.</li><li>Partitioning telemetry by (tenant, time); index strategy.</li><li>Isolation levels, connection pooling (PgBouncer), vacuum awareness.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>One tenant's analytical query is melting the shared DB. Now what?</li><li>How do you paginate a billion-row readings table?</li><li>JSONB or a separate table for sensor payloads?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"Shared tables with tenant_id on every composite index, plus RLS as defense-in-depth so a missing WHERE clause fails closed instead of leaking. Telemetry partitions daily and drops old partitions instead of DELETE-ing. Heavy analytical tenants get read replicas or an export to object storage — noisy neighbors are an architecture problem, not just a query problem."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>OFFSET pagination on big tables; missing tenant_id in indexes; long-lived transactions blocking vacuum; N+1 via ORM laziness.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Keyset pagination; EXPLAIN ANALYZE in review culture</li><li>Pool via PgBouncer; keep pool ≈ vCPUs, not 500 conns</li><li>Lint for tenant_id in every query on tenant tables</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Let the app hold hundreds of idle connections</li><li>Use Postgres as a queue at scale (small SKIP LOCKED queues are fine)</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>No opinion on multi-tenant isolation; can't explain an index choice.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S11 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-11</span><h3>API Design: REST + gRPC + BFF</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>REST for open/debuggable surfaces; gRPC over HTTP/2 with protobuf for internal east-west and gateway→cloud streaming (4 call modes). BFF = a backend tailored to each frontend, aggregating services into UI-shaped responses.</p>
+            <h4 class="lbl">Why it matters here</h4><p>The JD explicitly calls out high-throughput BFF layers processing real-time telemetry with both protocols. Protocol choice per link is a real design decision here.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Where each protocol belongs in the edge→cloud→browser chain.</li><li>Deadlines, retries, metadata/auth in gRPC; streaming patterns.</li><li>Proto evolution rules (never reuse field numbers).</li><li>Fan-in aggregation without creating a god-BFF.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>gRPC vs REST — what do you use between gateway and cloud, and why?</li><li>How does a browser talk to a gRPC world?</li><li>How do you keep the BFF from becoming a monolith?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"Device→gateway is whatever the hardware can do reliably; gateway→cloud is gRPC bidirectional streaming over mTLS — flow control gives us real backpressure on the WAN; cloud east-west is gRPC; and the React dashboard talks to a NestJS BFF over REST + WebSocket/SSE. The BFF owns UI aggregation and per-tenant rate limits, never business rules."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>Chatty per-field RPCs; no deadlines (hung calls pile up); breaking proto changes; BFF holding domain logic.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Set deadlines + retry budgets on every RPC</li><li>Version by package; additive fields only</li><li>Batch UI calls; stream live views</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Reuse or renumber proto field tags</li><li>Make browsers call raw gRPC without a bridge</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Can't articulate why gRPC needs HTTP/2, or what backpressure it buys.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S12 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-12</span><h3>Multi-Tenant SaaS Security: Zero Trust + mTLS</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Multi-tenancy: isolating many customers on shared infra across network, data, and compute. Zero Trust: never trust, always verify — no implicit trust from network location. mTLS: both sides present certificates, giving workloads cryptographic identity.</p>
+            <h4 class="lbl">Why it matters here</h4><p>Mission-critical + on-prem + tactical edge = hostile threat model. A cross-tenant leak or spoofed device is existential. Tenant context must flow verified through every hop: ingest → Kafka → processors → DB.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Where tenant identity comes from (verified token claims, never client headers) and how it propagates.</li><li>Layered isolation: RLS, topic ACLs, key namespaces, per-tenant rate limits.</li><li>Cert lifecycle: issuance, rotation, short-lived workload certs (SPIFFE-style).</li><li>Testing for cross-tenant leakage.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Walk the tenant identity from login to a Postgres row.</li><li>How do you prevent a forged gateway from injecting data?</li><li>What does Zero Trust change about internal service calls?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"Tenant ID rides in a verified JWT, gets extracted once at the edge, and propagates via context and event metadata — never re-trusted from downstream headers. In Postgres, RLS makes a missing tenant context fail closed. Every gateway has a provisioned device certificate; gateway→cloud is mTLS with short-lived rotated certs, so identity is cryptographic, not IP-based. And we run automated cross-tenant probes: request tenant A's resource with tenant B's token, fail CI if it ever returns 200."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>Trusting X-Tenant-Id headers from clients; secrets in git/env committed; no per-tenant rate limiting; cert rotation as a mystery ritual.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Least privilege by default; deny-all network policy</li><li>Automate cert issuance/rotation</li><li>Audit-log tenant-scoped admin actions</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Treat the VPC boundary as authentication</li><li>Share long-lived static secrets between services</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>"It's fine, it's inside our network."</li><li>No answer for device/gateway identity.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S13 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-13</span><h3>Docker &amp; Kubernetes Operations</h3><span class="chip b">REQUIRED</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Docker: multi-stage builds, layering, minimal images. Kubernetes: pods, Deployments, Services, Ingress, probes, HPA, ConfigMaps/Secrets, RBAC, network policies. JD asks for hands-on Docker + basic K8s, but a lead should exceed "basic."</p>
+            <h4 class="lbl">Why it matters here</h4><p>Every cloud service you ship is a container on managed K8s; rollout safety and graceful shutdown are part of "you run it."</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Liveness vs readiness vs startup probes — and misusing them.</li><li>Rolling update mechanics: maxUnavailable, PDBs, preStop hooks.</li><li>Node.js specifics: memory limits vs V8 heap, SIGTERM handling.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Why does my Node service get OOMKilled at a 512Mi limit?</li><li>Design a zero-downtime deploy for a Kafka consumer service.</li><li>What goes in the image vs the ConfigMap?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"Readiness gates on the consumer only after it's caught up enough to serve; on SIGTERM the pod stops taking traffic, pauses consumption, finishes the in-flight batch, commits offsets, and exits before terminationGracePeriod expires. Images are multi-stage and non-root; heap is sized below the container limit with headroom for buffers, because V8 doesn't know about cgroups."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>:latest tags, root users, no probes, secrets baked into images, one giant readiness probe hiding startup from liveness.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Pin digests/versions; scan images</li><li>Set requests=typical, limits=ceiling; load-test them</li><li>preStop sleep + graceful drain for connection traffic</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Restart-loop your way out of bad readiness config</li><li>Store secrets as plaintext env when secret managers exist</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Can't explain what happens between kubectl apply and traffic.</li></ul>
+      </div></div></div>
+    </article>
+
+    <!-- S14 -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">S-14</span><h3>React &amp; End-to-End Ownership</h3><span class="chip t">WILLINGNESS</span><span class="chev"></span></button>
+      <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+        <div class="grid2">
+          <div>
+            <h4 class="lbl">Explanation</h4><p>Component-based UI with hooks; data-fetching caches; live updates over WebSocket/SSE; virtualization for big device tables. The JD wants practical experience and willingness — not a frontend specialist.</p>
+            <h4 class="lbl">Why it matters here</h4><p>"Occasionally dive into the frontend to deliver complete features." The winning framing: you can carry a feature from ingest field to pixel without blocking on another team.</p>
+            <h4 class="lbl bl">What interviewers evaluate</h4>
+            <ul class="tight blue"><li>Enough React to be dangerous: hooks, state, effect discipline.</li><li>How you'd wire live telemetry into a dashboard (your BFF!).</li><li>Attitude: ownership over job description.</li></ul>
+          </div>
+          <div>
+            <h4 class="lbl am">Common questions</h4>
+            <ul class="tight"><li>Tell me about a frontend feature you shipped.</li><li>How would you render 10k live device rows without melting the browser?</li><li>How comfortable are you owning UI bugs in production?</li></ul>
+            <h4 class="lbl">Strong answer example</h4>
+            <div class="quote">"My strength is the vertical slice: I recently shipped a fleet-status view end-to-end — new ingest field, BFF aggregation endpoint, and a React table with virtualized rows and a WebSocket feed, with request-coalescing so 10k devices don't fan out 10k calls. I'm not chasing pixel-perfect design-system work, but I will happily own a feature across the stack and its pager."</div>
+          </div>
+        </div>
+        <h4 class="lbl rd">Beginner mistakes</h4><ul class="tight"><li>Overclaiming frontend depth; effect-based data-fetching spaghetti; ignoring re-render cost on live streams.</li></ul>
+        <div class="dodont">
+          <div class="dd do"><h5>DO</h5><ul><li>Frame as T-shaped: backend deep, frontend capable</li><li>Mention virtualization + batching for live data</li><li>Show enthusiasm for end-to-end ownership</li></ul></div>
+          <div class="dd dont"><h5>DON'T</h5><ul><li>Say "I don't do frontend" — that's a hard no for this role</li><li>Pretend to be a CSS virtuoso</li></ul></div>
+        </div>
+        <h4 class="lbl rd">Red flags</h4><ul class="tight flag-list"><li>Resistance to touching client-side code at all.</li></ul>
+      </div></div></div>
+    </article>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 03 TRAINING CARDS ================= -->
+  <section id="cards">
+    <div class="sec-head">
+      <div><div class="kicker">03 / Drill Deck</div><h2>Interactive Training Cards</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="cards"> mark complete</label>
+    </div>
+    <p class="sec-sub">Nine concepts this role lives on. Each ends with a mini quiz — answer out loud before revealing.</p>
+    <div class="cards">
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>The Event Loop, Practically</h3><span class="diff core">CORE <i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+        <p><b>Concept:</b> Node processes I/O in phases on one thread; microtasks drain between phases. Your handler must yield quickly or every request suffers.</p>
+        <p><b>Real-world:</b> An ingest service p99 jumped from 12ms to 900ms — a teammate added a synchronous 8MB JSON.parse per batch. One line, all tenants affected.</p>
+        <p><b>Best practices:</b> Budget ≤5–10ms per handler tick; stream big payloads; monitor loop lag; offload CPU work.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Chunk big parses/loops</li><li>Use monitorEventLoopDelay alerts</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Sync fs/crypto on hot paths</li><li>Unbounded fan-out</li></ul></div></div>
+        <p><b>Pitfalls:</b> Believing await = parallelism; forgetting microtasks starve timers.</p>
+        <div class="mini-q"><div class="q">Quiz: A Promise.resolve().then() callback vs setTimeout(fn, 0) — which runs first, and why?</div>
+        <div class="mini-a">The promise callback — microtasks drain before the timers phase runs, even for a 0ms timer scheduled earlier.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>Backpressure</h3><span class="diff core">CORE <i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+        <p><b>Concept:</b> Slowing a producer when consumers can't keep up — TCP flow control, Node stream pause/drain, gRPC flow-control windows, Kafka fetch limits.</p>
+        <p><b>Real-world:</b> Gateways batching 50k readings/sec into an ingest that processes 30k. Without pushback, the ingest's in-memory queue grew until OOMKilled. With credit-based flow, gateways buffer locally and retry.</p>
+        <p><b>Best practices:</b> Bounded queues everywhere with explicit overflow policy (reject / buffer-to-disk / shed load).</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Check write() return; await drain</li><li>Expose queue depth as a metric</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Let arrays grow without bound</li><li>Silently drop data when full</li></ul></div></div>
+        <p><b>Pitfalls:</b> Treating "Kafka buffers it" as a design; retry storms removing the pressure signal.</p>
+        <div class="mini-q"><div class="q">Quiz: Your Node stream's write() returns false. What do you do?</div>
+        <div class="mini-a">Stop writing and wait for the 'drain' event before resuming — otherwise you buffer unbounded in process memory.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>Idempotency &amp; "Exactly-Once"</h3><span class="diff">ADVANCED <i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+        <p><b>Concept:</b> Retries are mandatory in distributed systems; duplicates are the price. Idempotent processing = same input applied N times yields the same state.</p>
+        <p><b>Real-world:</b> A gateway retransmit after a timeout doubled every device's "alert fired" event. Fix: dedup key (device_id, seq) claimed with SET NX before side effects; replay returns stored result.</p>
+        <p><b>Best practices:</b> Client-generated idempotency keys; atomic claim before action; persist results for replay; unique constraints in DB as backstop.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Claim → act → store result</li><li>TTL the dedup window deliberately</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Check-then-act without atomicity</li><li>Trust "Kafka exactly-once" end-to-end</li></ul></div></div>
+        <p><b>Pitfalls:</b> Dedup window shorter than max retry interval; side effects before the claim.</p>
+        <div class="mini-q"><div class="q">Quiz: Why is "check if processed, then process" race-prone, and what's the fix?</div>
+        <div class="mini-a">Two retries can both pass the check concurrently. Fix: an atomic claim — SET NX / INSERT ... ON CONFLICT — where only one writer wins.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>Retries, Backoff &amp; Circuit Breakers</h3><span class="diff">INTERMEDIATE <i class="on"></i><i class="on"></i><i></i></span></div>
+        <p><b>Concept:</b> Retry transient failures with exponential backoff + jitter; open a circuit breaker when a dependency is down so you fail fast instead of piling on it.</p>
+        <p><b>Real-world:</b> Inference service deploys caused 30s blips. Callers retrying instantly turned a blip into a brownout. Adding jitter + a breaker (open at 50% errors, half-open probe) made deploys invisible.</p>
+        <p><b>Best practices:</b> Retry budgets per caller; jitter always; breakers on synchronous calls; never retry non-idempotent writes without a key.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Cap total retry time &lt; caller's deadline</li><li>Alert on breaker state changes</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Retry forever / fixed-interval storms</li><li>Breaker-wrap a Kafka consumer offset commit</li></ul></div></div>
+        <p><b>Pitfalls:</b> Retry amplification through 5 hops; no jitter = synchronized hammering.</p>
+        <div class="mini-q"><div class="q">Quiz: What does an OPEN circuit breaker do, and why is that good?</div>
+        <div class="mini-a">It short-circuits calls locally (fail fast) without touching the failing dependency, giving it recovery time; half-open probes test readiness.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>Kafka Partitions &amp; Consumer Groups</h3><span class="diff">ADVANCED <i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+        <p><b>Concept:</b> Order + parallelism unit = partition. A consumer group divides partitions among members; one partition → one consumer per group; rebalance on membership change.</p>
+        <p><b>Real-world:</b> Keying by tenant_id gave one whale tenant 40% of traffic on one partition. Re-keying to tenant+device hash spread load; per-device order still held.</p>
+        <p><b>Best practices:</b> Choose the finest key that still needs ordering; size partitions for max parallelism; monitor lag per partition; sticky assignors to calm rebalances.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Process → commit (at-least-once + dedup)</li><li>Plan partition growth before launch</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>More consumers than partitions</li><li>Commit before processing "for speed"</li></ul></div></div>
+        <p><b>Pitfalls:</b> Hot partitions; rebalance storms during rolling deploys (mitigate with session timeouts + static membership).</p>
+        <div class="mini-q"><div class="q">Quiz: 12 partitions, 16 consumers in one group. What happens?</div>
+        <div class="mini-a">12 consume, 4 sit idle. Parallelism is capped by partitions — scale partitions first, or use the idle capacity for another group's work.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>Multi-Tenant Isolation Patterns</h3><span class="diff">ADVANCED <i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+        <p><b>Concept:</b> Spectrum from DB-per-tenant (max isolation, ops cost) → schema-per-tenant → shared rows + tenant_id with Row-Level Security (best density). Combine with per-tenant quotas everywhere.</p>
+        <p><b>Real-world:</b> One tenant's report query table-scanned 400M rows and degraded everyone. Fixes: composite (tenant_id, ts) indexes, RLS fail-closed, statement timeouts, and read-replica routing for heavy tenants.</p>
+        <p><b>Best practices:</b> Tenant in every index on shared tables; RLS as backstop; per-tenant rate limits + quotas; leak tests in CI.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Propagate verified tenant context end-to-end</li><li>Noisy-neighbor detection alerts</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Trust client-sent tenant headers</li><li>Cross-tenant joins "just this once"</li></ul></div></div>
+        <p><b>Pitfalls:</b> Tenant as afterthought in caching keys, logs, and queues — leaks hide in the layers you forget.</p>
+        <div class="mini-q"><div class="q">Quiz: What does RLS buy you that application WHERE clauses don't?</div>
+        <div class="mini-a">Defense in depth: even a buggy or missing WHERE clause can't return another tenant's rows — the database enforces isolation per-session/context.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>mTLS &amp; Zero Trust Networking</h3><span class="diff">ADVANCED <i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+        <p><b>Concept:</b> TLS proves the server; mTLS proves both sides. Workloads get cryptographic identity (certs, ideally short-lived/SPIFFE-style), so trust never comes from "it's inside the VPC."</p>
+        <p><b>Real-world:</b> Gateways in customer data centers can't rely on network perimeter. Each gateway gets a provisioned cert; the cloud verifies identity and tenant binding before accepting a single reading.</p>
+        <p><b>Best practices:</b> Automate issuance/rotation; deny-all network policy + explicit allows; tie cert identity to tenant/device registry.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Short-lived certs + automated rotation</li><li>Log auth failures as security events</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Long-lived shared certs per environment</li><li>IP allowlists as identity</li></ul></div></div>
+        <p><b>Pitfalls:</b> Cert expiry outages (monitor!); hand-managed keystores; forgetting on-prem clocks skew cert validation.</p>
+        <div class="mini-q"><div class="q">Quiz: A gateway's cert is valid but it's sending data tagged for another tenant. Where do you stop it?</div>
+        <div class="mini-a">At ingestion authorization: the tenant claimed in payloads must match the tenant bound to the gateway's certificate identity in the device registry — authN passed, authZ still applies.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>BFF — Backend for Frontend</h3><span class="diff">INTERMEDIATE <i class="on"></i><i class="on"></i><i></i></span></div>
+        <p><b>Concept:</b> A service shaped for one UI: aggregates multiple backends into screen-ready payloads, owns auth/session edges, fan-out caching, and live-update channels.</p>
+        <p><b>Real-world:</b> A fleet dashboard needed 6 backend calls per page. The BFF collapsed them into one aggregated response (p95 2.4s → 380ms) and streams live deltas over WebSocket.</p>
+        <p><b>Best practices:</b> Thin aggregation + caching + auth; domain rules stay in domain services; per-tenant rate limits at the BFF edge.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Batch + parallelize upstream calls with timeouts</li><li>Cache aggregated views keyed by tenant</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Put business logic in the BFF</li><li>Let one UI's BFF become everyone's API</li></ul></div></div>
+        <p><b>Pitfalls:</b> God-BFF; duplicating validation; N+1 fan-out to services per render.</p>
+        <div class="mini-q"><div class="q">Quiz: Where does per-tenant rate limiting best live for browser traffic, and why?</div>
+        <div class="mini-a">At the BFF edge — it's the first authenticated, tenant-aware hop, so you protect every downstream service with one policy point.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+
+      <div class="tcard sx">
+        <div class="tc-top"><h3>Observability: RED, Lag &amp; Traces</h3><span class="diff">INTERMEDIATE <i class="on"></i><i class="on"></i><i></i></span></div>
+        <p><b>Concept:</b> RED (Rate, Errors, Duration) per service; consumer lag and queue age for async paths; end-to-end trace IDs across tiers; logs with tenant + correlation IDs.</p>
+        <p><b>Real-world:</b> "The dashboard is slow" became answerable in 60 seconds when a trace showed the BFF waiting on an inference projection 40 seconds stale — consumer lag was the real culprit.</p>
+        <p><b>Best practices:</b> SLOs + burn-rate alerts; lag as a first-class SLO; synthetic probes from edge to cloud; dashboards per tenant for support.</p>
+        <div class="dodont"><div class="dd do"><h5>DO</h5><ul><li>Propagate one trace/span context through Kafka headers</li><li>Alert on symptoms (SLO burn), not every cause</li></ul></div><div class="dd dont"><h5>DON'T</h5><ul><li>Log payloads with tenant secrets/PII</li><li>Dashboards without on-call ownership</li></ul></div></div>
+        <p><b>Pitfalls:</b> Metrics without exemplars; alerts nobody acts on; per-tenant views missing when support calls.</p>
+        <div class="mini-q"><div class="q">Quiz: Requests are fast but users see stale data. Which async-path metric do you check first?</div>
+        <div class="mini-a">Consumer lag / projection freshness — synchronous p99 can be healthy while the pipeline feeding the view is minutes behind.</div>
+        <button class="btn">Show answer</button></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 04 DEEP DIVES ================= -->
+  <section id="deep">
+    <div class="sec-head">
+      <div><div class="kicker">04 / Engineering Core</div><h2>Technical Deep Dive</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="deep"> mark complete</label>
+    </div>
+    <p class="sec-sub">Every technology in the JD, nine angles each. Expand what you're weakest on first.</p>
+
+    <!-- T1 Node -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-01</span><h3>Node.js Runtime</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>V8 executes JS on one thread; libuv provides the event loop + a 4-thread pool for blocking ops (fs, dns, some crypto); C++ bindings expose async handles (TCP, timers, signals).</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Phases: timers → pending → poll → check → close; microtasks between all.</li><li>Non-blocking I/O: handles + callbacks, never thread-per-connection.</li><li>Streams as first-class backpressure primitive.</li></ul>
+      <h4 class="lbl am">Important APIs</h4><ul class="tight"><li>perf_hooks.monitorEventLoopDelay, worker_threads, cluster, async_hooks/AsyncLocalStorage, stream.pipeline, diagnostics_channel.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Order the outputs: setTimeout(0), Promise.then, setImmediate, process.nextTick.</li><li>How does Node scale reads across cores? (cluster vs workers)</li><li>What happens on unhandledRejection since Node 15?</li></ul>
+      <h4 class="lbl bl">Coding questions</h4><ul class="tight blue"><li>Implement Promise.all / a concurrency pool (Section 06).</li><li>Debounce/throttle; flatten promises; readable→writable pipe with transform.</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>Stateless processes + horizontal scale; pin per-instance concurrency; design for SIGTERM drain; keep per-pod memory modest for fast autoscaling.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Loop lag is the leading indicator; watch RSS vs V8 heap (buffers live off-heap); avoid megabyte JSON on the loop; reuse buffers in ingest.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>Validate/size-limit all input; run non-root; lock dependency supply chain (lockfiles, audits); secrets via managers, not env sprawl.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>Graceful shutdown hooks; liveness/readiness endpoints; structured logs with request/tenant IDs; heap snapshot runbooks; pin runtime versions in images.</li></ul>
+    </div></div></div></article>
+
+    <!-- T2 NestJS+Express -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-02</span><h3>NestJS + Express</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>Module graph of providers resolved by a DI container; HTTP adapter (Express by default); request pipeline: middleware → guards → interceptors(pre) → pipes → handler → interceptors(post) → exception filters. Microservice mode adds Kafka/gRPC/Redis transports.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Providers + injection tokens; dynamic modules for configurable libs.</li><li>Scopes: default singleton, request, transient.</li><li>Lifecycle: onModuleInit → onApplicationBootstrap → onApplicationShutdown.</li></ul>
+      <h4 class="lbl am">Important APIs/features</h4><ul class="tight"><li>@Module/@Injectable/@Controller, forwardRef, Test.createTestingModule, @nestjs/microservices (KafkaServer, GrpcOptions), APP_FILTER/APP_GUARD tokens.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Guard vs interceptor vs pipe — assign each a real use.</li><li>How do you structure 15 services sharing contracts?</li><li>Circular dependency: diagnose and fix properly.</li></ul>
+      <h4 class="lbl bl">Coding questions</h4><ul class="tight blue"><li>Write a TenantGuard extracting verified tenant from JWT and storing it in AsyncLocalStorage.</li><li>Implement a retry interceptor with backoff.</li></ul>
+      <div class="codewrap"><div class="codebar"><span>tenant.controller.ts — shape they'll expect you to write fluently</span><button class="copy" data-copy="cd-nest">Copy</button></div>
+<pre id="cd-nest"><span class="k">@Controller</span>(<span class="s">'devices'</span>)
+<span class="k">export class</span> <span class="t">DeviceController</span> {
+  <span class="k">constructor</span>(<span class="k">private readonly</span> devices: <span class="t">DeviceService</span>) {}
+
+  <span class="k">@Get</span>(<span class="s">':id/telemetry'</span>)
+  <span class="k">@UseGuards</span>(<span class="t">TenantGuard</span>)
+  <span class="f">stream</span>(<span class="k">@Param</span>(<span class="s">'id'</span>) id: <span class="t">string</span>, <span class="k">@Tenant</span>() t: <span class="t">TenantCtx</span>) {
+    <span class="k">return</span> <span class="k">this</span>.devices.<span class="f">telemetry</span>(id, t); <span class="c">// tenant verified upstream</span>
+  }
+}</pre></div>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>One Nest pattern library across services (error mapping, tracing, tenant context) = the "engineering standards" the JD asks you to set.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Avoid request scope; keep validation pipes cheap; Fastify adapter when raw throughput matters; benchmark interceptors — they're on every request.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>Global guards over per-route (can't forget); ValidationPipe whitelist:true strips unknown fields; guards fail closed.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>Health endpoints (Terminus) wired to probes; graceful shutdown for consumers; integration tests per transport (HTTP + Kafka + gRPC).</li></ul>
+    </div></div></div></article>
+
+    <!-- T3 TypeScript -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-03</span><h3>TypeScript</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>Compile-time layer erased at emit; structural typing ("duck typing" with proofs). Your cross-service contract fabric via shared packages or generated types (from protobuf/OpenAPI).</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Discriminated unions + exhaustive switch (never checks).</li><li>Generics + constraints; conditional/utility types (Pick, Omit, ReturnType).</li><li>Branded/nominal-ish types for IDs; readonly + immutability discipline.</li></ul>
+      <h4 class="lbl am">Important features</h4><ul class="tight"><li>strict flags, satisfies operator, const assertions, declaration merging pitfalls, project references for monorepos.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Model a union of telemetry events so handlers can't miss a case.</li><li>interface vs type; unknown vs any; covariance of arrays (and why it bites).</li></ul>
+      <h4 class="lbl bl">Coding questions</h4><ul class="tight blue"><li>Type a generic retry wrapper preserving the wrapped function's signature.</li><li>Write types for an event emitter keyed by event map.</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>Contracts package versioning: additive changes, generated clients from protos, CI type-check across all services on contract change.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Build perf: project references, incremental builds; runtime perf is unaffected — but type-driven design prevents runtime shape checks everywhere.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>Types ≠ validation: schema-validate every boundary; treat decoded Kafka/HTTP payloads as unknown until proven.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>strict everywhere; ESLint bans any/casts; type coverage in CI for the contracts package.</li></ul>
+    </div></div></div></article>
+
+    <!-- T4 Kafka -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-04</span><h3>Kafka / Event Streaming</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>Cluster of brokers; topics split into partitions replicated across brokers (leader/followers, ISR); producers batch and append; consumers pull in groups; offsets stored in __consumer_offsets.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Partition = order + parallelism unit; key → partition hash.</li><li>Consumer group rebalance protocol; offsets as "progress pointers."</li><li>Retention (time/size), log compaction, replay.</li></ul>
+      <h4 class="lbl am">Important APIs/configs</h4><ul class="tight"><li>acks=all, enable.idempotence=true, max.in.flight=5; consumer: auto.offset.reset, session.timeout vs max.poll.interval; transactions for read-process-write.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>How do you keep per-device order with 100k devices?</li><li>What breaks during a rolling consumer deploy, and how do you soften it?</li><li>Compacted topic use cases (latest state per key).</li></ul>
+      <h4 class="lbl bl">Coding questions</h4><ul class="tight blue"><li>Implement an idempotent consumer wrapper with a dedup store.</li><li>Design offset commit logic that never loses or double-skips.</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>Partition count = future max parallelism (shrinking is painful); DLQ topics + retry topics with backoff tiers; schema registry + additive evolution.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Batching (linger.ms) trades latency for throughput; compression (lz4/zstd); fetch sizing; monitor produce/consume lag per partition.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>mTLS between brokers/clients (SASL); per-tenant topic ACLs or prefixed topics; encrypt at rest; audit consumer-group access.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>Lag SLOs with paging thresholds; consumer canaries on new images; never rebalance-storm during deploys (static group membership helps).</li></ul>
+    </div></div></div></article>
+
+    <!-- T5 Redis -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-05</span><h3>Redis</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>In-memory engine, single-threaded command loop (I/O threads optional); optional replication, Sentinel for HA, or Cluster (16384 hash slots). Persistence: RDB snapshots + AOF log.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Structure selection: STRING counters, HASH device state, ZSET ranking/rate-limits, STREAMS queues.</li><li>TTLs + eviction policies (allkeys-lru etc.); O(1) vs O(N) command awareness.</li></ul>
+      <h4 class="lbl am">Important APIs/features</h4><ul class="tight"><li>SET NX EX, INCR + EXPIRE, ZADD/ZRANGEBYSCORE, Lua EVAL for atomic multi-ops, SCAN, pipelining, XADD/XREADGROUP.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Sliding-window rate limiter design (Section 06 has the code).</li><li>How do you survive a full Redis loss with Postgres intact?</li><li>Redlock's controversy — when is a Redis lock the wrong tool?</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>Cache-aside with jittered TTLs; request coalescing for stampedes; hash-tag grouping for related keys in Cluster; per-tenant key namespaces + budgets.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Sub-millisecond locally; watch big-key ops (they block the loop!), hot keys, fragmentation; use UNLINK not DEL for big keys.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>No public exposure; TLS between clients; ACLs per service; never store unencrypted tenant secrets.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>maxmemory + policy always set; memory/eviction alerts; treat failover as data-loss event for caches; snapshot restores drilled.</li></ul>
+    </div></div></div></article>
+
+    <!-- T6 Postgres -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-06</span><h3>PostgreSQL</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>Process-per-connection server; MVCC keeps readers unblocked by writers; WAL for durability + replication; planner chooses index/scan strategies from statistics.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Indexes: B-tree default, GIN for JSONB/arrays, BRIN for time-series.</li><li>Partitioning (range by time + tenant), constraint exclusion.</li><li>Isolation levels; READ COMMITTED default; vacuum freezes old tuples.</li></ul>
+      <h4 class="lbl am">Important features</h4><ul class="tight"><li>RLS policies, LISTEN/NOTIFY, advisory locks, JSONB, SKIP LOCKED (small job queues), logical replication/CDC.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Tenancy model choice and defense-in-depth (Section 02/S-10).</li><li>DELETE vs partition-drop for retention at scale.</li><li>Diagnose: sudden p99 spike on one tenant.</li></ul>
+      <div class="codewrap"><div class="codebar"><span>rls.sql — isolation enforced in the database</span><button class="copy" data-copy="cd-rls">Copy</button></div>
+<pre id="cd-rls"><span class="k">ALTER TABLE</span> readings <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="k">CREATE POLICY</span> tenant_isolation <span class="k">ON</span> readings
+  <span class="k">USING</span> (tenant_id = <span class="f">current_setting</span>(<span class="s">'app.tenant_id'</span>)::<span class="t">uuid</span>);
+
+<span class="c">-- app sets per-connection context inside the transaction:</span>
+<span class="c">-- SET LOCAL app.tenant_id = $1;  → missing context fails closed</span></pre></div>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>Hot writes: batch inserts, partitioned tables; reads: replicas + cache; retention: partition drops; outbox table + CDC/poller for events.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>EXPLAIN ANALYZE culture; keyset pagination; pool connections (PgBouncer) — 500 direct conns kills it; watch long txns vs vacuum.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>RLS + least-privilege roles; TLS client certs; encrypt at rest; audit DDL; per-tenant statement timeouts.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>Automated backups + restore drills; replication lag alerts; slow-query log review as a ritual; migration safety rules (no table-rewriting ALTERs at peak).</li></ul>
+    </div></div></div></article>
+
+    <!-- T7 gRPC -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-07</span><h3>gRPC + Protocol Buffers</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>RPC framework over HTTP/2 with protobuf IDL: binary framing, multiplexed streams, flow control, headers-as-metadata. Four call modes: unary, server-stream, client-stream, bidi-stream.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Contracts-first: .proto → generated clients/servers.</li><li>Deadlines propagate; status codes replace HTTP semantics.</li><li>Streaming = natural fit for telemetry uplink and command downlink.</li></ul>
+      <h4 class="lbl am">Important features</h4><ul class="tight"><li>Interceptors (auth, tracing), metadata, health-check protocol, reflection, grpc-web/envoy bridge for browsers.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Design the gateway→cloud link: which call mode and why?</li><li>How do deadlines + retries interact across hops?</li><li>Proto evolution: what's forbidden?</li></ul>
+      <h4 class="lbl bl">Coding questions</h4><ul class="tight blue"><li>Implement a bidi streaming handler with heartbeat + reconnect semantics.</li><li>Write an interceptor that injects tenant + trace metadata.</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>WAN links: streaming + flow control = real backpressure; batch readings per message; HTTP/2 connection reuse beware load-balancer stickiness (L7 can pin streams).</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Protobuf beats JSON on size/speed; message-size limits; compression per-message; keep streams long-lived to amortize setup.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>mTLS per link; per-RPC authZ from metadata verified server-side; don't trust client-supplied tenant metadata without cert binding.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>Centralized retry/timeout budgets; version packages (v1/); breaking-change linting in CI (buf breaking); contract tests per mode.</li></ul>
+    </div></div></div></article>
+
+    <!-- T8 K8s -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-08</span><h3>Docker + Kubernetes</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>Docker builds layered OCI images. K8s: control plane schedules Pods onto nodes; Deployments manage replica sets; Services/Ingress route traffic; controllers reconcile desired vs actual state.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Workloads: Deployment (stateless), StatefulSet (identity/order), DaemonSet (per-node agents), Jobs/CronJobs.</li><li>Probes: startup / readiness / liveness — distinct purposes.</li><li>Rolling updates: maxSurge/maxUnavailable, PDBs, preStop hooks.</li></ul>
+      <h4 class="lbl am">Important features</h4><ul class="tight"><li>HPA + KEDA, ConfigMaps/Secrets, NetworkPolicy, RBAC, ServiceAccount pod identity (IRSA), topology spread.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Zero-downtime deploy of a Kafka consumer service — step by step.</li><li>Liveness probe restarts your pod under load. Diagnose.</li><li>Node heap vs container limit: why OOMKilled at "50% memory"?</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>Stateless services scale; state lives in managed stores; multi-AZ spread; budget spot capacity for stateless tiers only.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Right-size via load tests, not guesses; scale on real signals (lag, p95) not CPU alone for I/O workloads; image size affects scale-up latency.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>Non-root, read-only fs where possible; no privileged pods; network deny-by-default; secrets from managers; image scanning + pinned digests.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>PDBs for quorum services; dashboards per Deployment (restarts, OOMs, saturation); GitOps deploys with automatic rollback on SLO burn.</li></ul>
+    </div></div></div></article>
+
+    <!-- T9 Cloud -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-09</span><h3>Cloud Managed Services (AWS-flavored; map to Azure/GCP)</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>Managed control planes you compose: EKS (K8s), MSK (Kafka), ElastiCache (Redis), RDS/Aurora (Postgres), S3 (object lake), Lambda (event glue), IAM (identity), plus IaC.</p>
+      <p class="mono" style="font-size:12px;color:var(--muted)">Azure map: AKS · Event Hubs · Cache for Redis · Flexible Server · Blob · Functions · Entra. GCP map: GKE · Pub/Sub · Memorystore · Cloud SQL · GCS · Cloud Run/Functions · IAM.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Buy undifferentiated heavy lifting (broker quorums, failover, backups); own the topology and the code.</li><li>IAM boundaries per service; pod/workload identity instead of shared keys.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>Managed Kafka vs self-hosted — cost/ops/control tradeoff.</li><li>Where does Lambda fit (and not fit) in a streaming platform?</li><li>How do you keep cloud spend sane while scaling 10x?</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>Multi-AZ by default; cross-region only where the business case is real (this product also ships on-prem, so cloud regions are for SaaS density); egress costs shape gateway batching.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Autoscaling on KEDA/lag; provisioned throughput where SLOs are contractual; cache layers in front of managed DBs to cut cost + latency.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>Least-privilege IAM per workload; private subnets + VPC endpoints; KMS-managed keys; CloudTrail-style audit everywhere.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>Everything in Terraform; per-account/per-env isolation; cost anomaly alerts; chaos-drill a managed-service outage (they happen too).</li></ul>
+    </div></div></div></article>
+
+    <!-- T10 React -->
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">T-10</span><h3>React (end-to-end ownership)</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl">Architecture overview</h4><p>Component tree rendered from state; hooks manage local state/effects; data layer via fetch cache + live channels (WebSocket/SSE) fed by your BFF.</p>
+      <h4 class="lbl">Core concepts</h4><ul class="tight"><li>Unidirectional data flow; effect discipline (cleanup, deps); memoization where measured.</li><li>Virtualization for large live tables; optimistic updates for commands.</li></ul>
+      <h4 class="lbl bl">Common interview questions</h4><ul class="tight blue"><li>How do you wire a live telemetry feed without re-render storms?</li><li>Where do you split server state vs UI state?</li></ul>
+      <h4 class="lbl">System design considerations</h4><ul class="tight"><li>UI requirements should flow backward into BFF design — this is your unfair advantage as a full-slice engineer.</li></ul>
+      <h4 class="lbl">Performance considerations</h4><ul class="tight"><li>Batch stream deltas (e.g., flush every 250ms); virtualize lists; avoid per-message setState; code-split routes.</li></ul>
+      <h4 class="lbl rd">Security considerations</h4><ul class="tight"><li>Escape user/device strings (no dangerouslySetInnerHTML on telemetry); CSP; tokens via secure cookies/BFF rather than raw storage when feasible.</li></ul>
+      <h4 class="lbl">Production best practices</h4><ul class="tight"><li>Error boundaries + graceful "reconnecting" states for live feeds; feature flags for risky UI; same SLO rigor as backend.</li></ul>
+    </div></div></div></article>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 05 BEHAVIORAL ================= -->
+  <section id="behav">
+    <div class="sec-head">
+      <div><div class="kicker">05 / War Stories</div><h2>Behavioral — STAR Examples</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="behav"> mark complete</label>
+    </div>
+    <div class="note sx"><b>How to use:</b> these are complete, realistic templates shaped for a platform/telemetry career. Swap in your own incidents and numbers — interviewers can smell a borrowed story. Keep each telling under 2.5 minutes.</div>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-01</span><h3>Leadership — unifying three competing ingest implementations</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>Three squads had each built their own telemetry consumer — duplicated logic, schema drift, and double-counted events in reporting.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>I had no reporting line over the squads, but as the senior engineer I was asked to get us to one pipeline without stalling delivery.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>I wrote a short RFC defining a canonical event contract, built a working vertical slice of the target pipeline (~20% of traffic) to de-risk it, ran weekly cross-squad demos, and migrated tenants in batches with dual-read validation.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>One pipeline within a quarter; duplicate-event incidents dropped ~60%; the RFC + slice pattern became how the org does platform migrations. <b>Delivery tip:</b> emphasize influence without authority — that's exactly this role's relationship with the wider group.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-02</span><h3>Difficult bug — memory leak under backpressure</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>Our Node ingest service was OOMKilled roughly every 9 hours, always during traffic spikes.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Find the leak, fix it, and prove stability under load — I owned the service's pager that week.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>Took heap snapshots at 2h/6h/8h and diffed them: retained listeners on an EventEmitter kept growing. Root cause: each failed batch re-subscribed a retry handler without removing the old one — leaks only manifested under failure spikes. Fixed with a bounded retry queue + explicit listener cleanup, then soak-tested with injected failures.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>Flat RSS for 14 days straight; added an RSS growth-rate alert so the class of bug is caught in hours, not production. <b>Delivery tip:</b> narrate the diagnostic method, not just the fix.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-03</span><h3>Conflict — disagreeing with the architect</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>The principal architect proposed gateways sync directly to Postgres; I believed that would collapse under WAN latency and offline periods.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Disagree without derailing — and bring evidence, not opinions.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>I built a two-week pilot: event-log store-and-forward at the gateway vs direct sync, measured against simulated WAN loss. Presented the numbers (p99 ingest latency, data-loss window during 30-min outages) and genuinely committed to whichever won.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>The event-log design won decisively; we recorded it as an ADR, and the architect later used the pilot template for other debates. <b>Delivery tip:</b> this maps 1:1 to the role — show you can challenge the Principal respectfully and with data.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-04</span><h3>Deadline pressure — demo with missing firmware</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>Three weeks to a customer demo; the gateway firmware team slipped by at least two weeks.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Deliver a credible, honest demo without faking data in a way that would embarrass us later.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>I cut scope to the read-only telemetry slice that was genuinely ready, mocked the command path behind an explicit feature flag labeled as such, and ran daily 10-minute risk standups so nothing surprised us late.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>Demo landed, customer moved to pilot, and the real command path shipped two sprints later with zero rework because the contract was right. <b>Delivery tip:</b> show scope-negotiation skill, not martyrdom.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-05</span><h3>Ownership — adopting the orphaned export job</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>A nightly tenant-data export failed ~7% of the time and "nobody owned it" — it predated every current team.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Nobody asked me to take it. I did, because You-Build-It-You-Run-It means someone should.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>Put it on my team's pager, defined an SLO, added dashboards, made the job idempotent with resumable checkpoints, and wrote the runbook for the next on-call.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>Failure rate went from ~7% to &lt;0.2%; support tickets about missing exports disappeared. <b>Delivery tip:</b> this is the culture-fit story for this JD — tell it with zero reluctance.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-06</span><h3>Learning new technology — adopting gRPC</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>Our inter-service traffic was REST and straining under chatty calls; nobody on the team had shipped gRPC.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Get the team production-ready on gRPC without a three-month training detour.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>I took a one-week spike: built a minimal service pair with streaming, deadlines, and mTLS; documented the traps (load-balancer stream stickiness, proto evolution rules); packaged an internal starter with interceptors for tracing and auth.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>The first real gRPC service shipped on schedule; the starter became the default for four more services. <b>Delivery tip:</b> show learning-as-leverage: you learned it AND multiplied it.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-07</span><h3>Failure — the cross-tenant slow query I shipped</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>I shipped a fleet-analytics feature whose main query had no tenant_id in its index — under one large tenant, it degraded the shared DB for everyone.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Own it fast, fix it, and make it structurally impossible to repeat.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>Rolled back within 20 minutes, wrote the blameless postmortem, added the composite index, then went further: RLS on the table and a CI lint that flags queries on tenant tables missing tenant_id.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>The class of bug became unshippable; tenancy is now a checklist line in every query review. <b>Delivery tip:</b> no excuses, no self-flagellation — ownership plus systemic fix.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-08</span><h3>Teamwork — dashboard latency, three disciplines</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>The main dashboard's p95 was 2.4s and customers complained on every call.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Fix it as a trio: me (backend), a frontend engineer, and an SRE — no single layer owned the latency.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>We split the problem on a shared trace: I built a BFF aggregation endpoint with parallel bounded fan-out, the FE engineer added optimistic rendering and virtualization, SRE tuned cache TTLs and added a CDN for statics. Daily 15-minute sync against one flamegraph.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>p95 dropped to 380ms in two weeks; the trace-first triage became our template for cross-layer issues. <b>Delivery tip:</b> highlight clear interfaces between people, not just between services.</p></div>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">B-09</span><h3>Customer impact — silent alerts from clock drift</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <div class="star"><span class="s-tag">S</span><p>A fleet operator missed two real alerts; investigation traced it to gateway clock drift pushing readings outside our "recent" window, so they were silently dropped from alerting.</p></div>
+      <div class="star"><span class="s-tag">T</span><p>Restore trust with a customer whose product is literally mission-critical alerting.</p></div>
+      <div class="star"><span class="s-tag">A</span><p>I added ingestion-time normalization using gateway monotonic sequences instead of wall clocks, a configurable late-arrival window, and a "dropped reading" metric per tenant with alerting on it.</p></div>
+      <div class="star"><span class="s-tag">R</span><p>Alert delivery SLO held for the next two quarters; the customer expanded their license and cited reliability in the renewal. <b>Delivery tip:</b> connect engineering detail to revenue/trust outcomes — leads must speak both.</p></div>
+    </div></div></div></article>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 06 CODING ================= -->
+  <section id="code">
+    <div class="sec-head">
+      <div><div class="kicker">06 / Hands-On</div><h2>Coding Interview Preparation</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="code"> mark complete</label>
+    </div>
+    <p class="sec-sub">Five problems highly probable for a Node/TS platform lead. Practice writing them from scratch in 20–25 minutes each, narrating your reasoning.</p>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">C-01</span><h3>Concurrency-limited async pool</h3><span class="chip a">HIGH PROBABILITY</span><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <p><b>Problem:</b> Given N async task factories and a limit k, run at most k concurrently and return results in input order.</p>
+      <h4 class="lbl">Step-by-step</h4>
+      <ul class="tight"><li>1. Allocate a results array sized to inputs (preserves order without sorting).</li><li>2. Spawn min(k, N) worker loops; each grabs the next index atomically-ish (single-threaded JS: a shared counter is safe between awaits).</li><li>3. Workers exit when indices run out; await all workers.</li></ul>
+      <div class="codewrap"><div class="codebar"><span>limitPool.js</span><button class="copy" data-copy="cd1">Copy</button></div>
+<pre id="cd1"><span class="c">// Run async task factories with at most `limit` in flight</span>
+<span class="k">async function</span> <span class="f">limitPool</span>(factories, limit) {
+  <span class="k">const</span> results = <span class="k">new</span> <span class="t">Array</span>(factories.length);
+  <span class="k">let</span> next = <span class="n">0</span>;
+  <span class="k">async function</span> <span class="f">worker</span>() {
+    <span class="k">while</span> (next &lt; factories.length) {
+      <span class="k">const</span> i = next++;
+      results[i] = <span class="k">await</span> factories[i]();
+    }
+  }
+  <span class="k">const</span> n = <span class="t">Math</span>.<span class="f">min</span>(limit, factories.length);
+  <span class="k">await</span> <span class="t">Promise</span>.<span class="f">all</span>(<span class="t">Array</span>.<span class="f">from</span>({ length: n }, worker));
+  <span class="k">return</span> results;
+}</pre></div>
+      <p><b>Complexity:</b> O(N) time, O(N + k) space. <b>Common mistakes:</b> firing all tasks then "limiting" (damage already done); losing input order; forgetting k &gt; N edge case; not deciding error semantics (fail-fast vs settle-all).</p>
+      <p><b>Follow-ups:</b> Add per-task timeout. Add retry with backoff inside the pool (mention: retrying inside the pool still respects the limit). Per-result errors via Promise.allSettled semantics. How would this change across processes? (queue-based workers.)</p>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">C-02</span><h3>LRU cache with TTL</h3><span class="chip a">HIGH PROBABILITY</span><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <p><b>Problem:</b> Implement get/set with O(1), capacity eviction of least-recently-used entry, and per-entry expiry.</p>
+      <h4 class="lbl">Step-by-step</h4>
+      <ul class="tight"><li>1. JS Map preserves insertion order — exploit it as the recency structure.</li><li>2. On hit: validate TTL, delete + re-insert to move to most-recent.</li><li>3. On insert at capacity: evict the first key (oldest).</li></ul>
+      <div class="codewrap"><div class="codebar"><span>lru.js</span><button class="copy" data-copy="cd2">Copy</button></div>
+<pre id="cd2"><span class="k">class</span> <span class="t">LRUCache</span> {
+  <span class="f">constructor</span>(cap, ttlMs) { <span class="k">this</span>.cap = cap; <span class="k">this</span>.ttl = ttlMs; <span class="k">this</span>.map = <span class="k">new</span> <span class="t">Map</span>(); }
+
+  <span class="f">get</span>(k) {
+    <span class="k">const</span> e = <span class="k">this</span>.map.<span class="f">get</span>(k);
+    <span class="k">if</span> (!e) <span class="k">return undefined</span>;
+    <span class="k">if</span> (<span class="k">this</span>.ttl &amp;&amp; <span class="t">Date</span>.<span class="f">now</span>() &gt; e.exp) { <span class="k">this</span>.map.<span class="f">delete</span>(k); <span class="k">return undefined</span>; }
+    <span class="k">this</span>.map.<span class="f">delete</span>(k); <span class="k">this</span>.map.<span class="f">set</span>(k, e);  <span class="c">// refresh recency</span>
+    <span class="k">return</span> e.v;
+  }
+
+  <span class="f">set</span>(k, v) {
+    <span class="k">if</span> (<span class="k">this</span>.map.<span class="f">has</span>(k)) <span class="k">this</span>.map.<span class="f">delete</span>(k);
+    <span class="k">else if</span> (<span class="k">this</span>.map.size &gt;= <span class="k">this</span>.cap)
+      <span class="k">this</span>.map.<span class="f">delete</span>(<span class="k">this</span>.map.<span class="f">keys</span>().<span class="f">next</span>().value); <span class="c">// evict LRU</span>
+    <span class="k">this</span>.map.<span class="f">set</span>(k, { v, exp: <span class="t">Date</span>.<span class="f">now</span>() + <span class="k">this</span>.ttl });
+  }
+}</pre></div>
+      <p><b>Complexity:</b> O(1) get/set amortized; O(cap) space. <b>Common mistakes:</b> double-linked-list + hashmap implementation bugs (fine in Java interviews; in JS the Map-order trick shows platform fluency); lazy expiry only (mention periodic sweep for memory). <b>Follow-ups:</b> Make it distributed (Redis semantics, evictions under maxmemory). Cache stampede: add single-flight/locking. Sharding by tenant to avoid hot keys.</p>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">C-03</span><h3>Sliding-window rate limiter</h3><span class="chip b">LIKELY</span><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <p><b>Problem:</b> allow(key) returns true if the key made fewer than L requests in the last W ms.</p>
+      <h4 class="lbl">Step-by-step</h4>
+      <ul class="tight"><li>1. Keep a queue of timestamps per key.</li><li>2. On each call, drop timestamps outside the window, then compare count to limit.</li><li>3. Note the Redis version (ZSET or INCR+EXPIRE) — they'll ask.</li></ul>
+      <div class="codewrap"><div class="codebar"><span>rateLimiter.js</span><button class="copy" data-copy="cd3">Copy</button></div>
+<pre id="cd3"><span class="k">class</span> <span class="t">RateLimiter</span> {
+  <span class="f">constructor</span>(limit, windowMs) {
+    <span class="k">this</span>.limit = limit; <span class="k">this</span>.win = windowMs; <span class="k">this</span>.hits = <span class="k">new</span> <span class="t">Map</span>();
+  }
+  <span class="f">allow</span>(key) {
+    <span class="k">const</span> now = <span class="t">Date</span>.<span class="f">now</span>();
+    <span class="k">const</span> q = <span class="k">this</span>.hits.<span class="f">get</span>(key) ?? [];
+    <span class="k">while</span> (q.length &amp;&amp; q[<span class="n">0</span>] &lt;= now - <span class="k">this</span>.win) q.<span class="f">shift</span>(); <span class="c">// expire old</span>
+    <span class="k">if</span> (q.length &gt;= <span class="k">this</span>.limit) { <span class="k">this</span>.hits.<span class="f">set</span>(key, q); <span class="k">return false</span>; }
+    q.<span class="f">push</span>(now); <span class="k">this</span>.hits.<span class="f">set</span>(key, q); <span class="k">return true</span>;
+  }
+}</pre></div>
+      <p><b>Complexity:</b> amortized O(1) per call; O(keys × limit) memory. <b>Common mistakes:</b> fixed-window boundary burst (2×limit across the seam) — sliding window fixes it; unbounded memory for idle keys (add sweep/TTL). <b>Follow-ups:</b> Distributed version: ZADD score=now, ZREMRANGEBYSCORE old, ZCARD, EXPIRE — atomically via Lua. Token bucket vs sliding window tradeoffs. Per-tenant fairness vs per-IP.</p>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">C-04</span><h3>Idempotent event handler</h3><span class="chip b">LIKELY</span><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <p><b>Problem:</b> Process at-least-once events without duplicate side effects; retries must return the original result.</p>
+      <h4 class="lbl">Step-by-step</h4>
+      <ul class="tight"><li>1. Derive a stable idempotency key (client-provided or content hash).</li><li>2. Atomically claim the key (SET NX EX / unique constraint) BEFORE side effects.</li><li>3. Store the result for replay; on failure, release the claim so a retry can proceed.</li></ul>
+      <div class="codewrap"><div class="codebar"><span>idempotent.js</span><button class="copy" data-copy="cd4">Copy</button></div>
+<pre id="cd4"><span class="k">async function</span> <span class="f">idempotentHandler</span>(store, event) {
+  <span class="k">const</span> key = event.idempotencyKey ?? <span class="f">hash</span>(event);
+
+  <span class="c">// Atomic claim — SET NX EX in Redis, or unique row in Postgres</span>
+  <span class="k">const</span> claimed = <span class="k">await</span> store.<span class="f">setIfAbsent</span>(key, <span class="s">'processing'</span>, <span class="n">86400</span>);
+  <span class="k">if</span> (!claimed) <span class="k">return</span> store.<span class="f">getResult</span>(key); <span class="c">// duplicate → replay</span>
+
+  <span class="k">try</span> {
+    <span class="k">const</span> result = <span class="k">await</span> <span class="f">processEvent</span>(event);
+    <span class="k">await</span> store.<span class="f">setResult</span>(key, result);
+    <span class="k">return</span> result;
+  } <span class="k">catch</span> (err) {
+    <span class="k">await</span> store.<span class="f">clear</span>(key);   <span class="c">// let a safe retry proceed</span>
+    <span class="k">throw</span> err;
+  }
+}</pre></div>
+      <p><b>Complexity:</b> O(1) extra work per event; O(distinct keys) dedup storage. <b>Common mistakes:</b> check-then-act race; side effects before claim; never releasing a claim on failure (poison lockout). <b>Follow-ups:</b> What if the process dies between claim and result? (TTL + retry.) Dedup window sizing vs max retry interval. How Postgres unique constraints beat Redis for durable claims.</p>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">C-05</span><h3>Merge K sorted telemetry streams</h3><span class="chip b">LIKELY</span><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <p><b>Problem:</b> K async streams, each sorted by timestamp; emit one globally sorted stream without buffering everything.</p>
+      <h4 class="lbl">Step-by-step</h4>
+      <ul class="tight"><li>1. Prime the head of every stream.</li><li>2. Repeatedly yield the smallest head, refilling from its stream.</li><li>3. Naive min-scan is O(K) per item — state that a binary heap makes it O(log K), and offer to swap it in.</li></ul>
+      <div class="codewrap"><div class="codebar"><span>mergeStreams.js</span><button class="copy" data-copy="cd5">Copy</button></div>
+<pre id="cd5"><span class="k">async function*</span> <span class="f">mergeSorted</span>(streams) { <span class="c">// each: async iterable of {ts,…}</span>
+  <span class="k">const</span> heads = <span class="k">new</span> <span class="t">Map</span>();
+  <span class="k">const</span> iters = streams.<span class="f">map</span>(s =&gt; s[<span class="t">Symbol</span>.asyncIterator]());
+
+  <span class="k">for</span> (<span class="k">const</span> it <span class="k">of</span> iters) {
+    <span class="k">const</span> r = <span class="k">await</span> it.<span class="f">next</span>();
+    <span class="k">if</span> (!r.done) heads.<span class="f">set</span>(it, r.value);
+  }
+
+  <span class="k">while</span> (heads.size) {
+    <span class="k">let</span> minIt = <span class="k">null</span>;
+    <span class="k">for</span> (<span class="k">const</span> [it, v] <span class="k">of</span> heads)
+      <span class="k">if</span> (minIt === <span class="k">null</span> || v.ts &lt; heads.<span class="f">get</span>(minIt).ts) minIt = it;
+
+    <span class="k">yield</span> heads.<span class="f">get</span>(minIt);
+    <span class="k">const</span> r = <span class="k">await</span> minIt.<span class="f">next</span>();
+    r.done ? heads.<span class="f">delete</span>(minIt) : heads.<span class="f">set</span>(minIt, r.value);
+  }
+}</pre></div>
+      <p><b>Complexity:</b> O(N·K) time with linear scan → O(N·log K) with heap; O(K) memory — constant per input size, which is the point. <b>Common mistakes:</b> collecting all streams into memory first (defeats streaming); ignoring that async heads need awaits. <b>Follow-ups:</b> Late-arriving out-of-order events — add a watermark/allowed-lateness window. Dedup by (device, seq) during merge. Why this matters here: merging per-gateway streams into one ordered feed.</p>
+    </div></div></div></article>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 07 SYSTEM DESIGN ================= -->
+  <section id="design">
+    <div class="sec-head">
+      <div><div class="kicker">07 / Whiteboard</div><h2>System Design Walkthroughs</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="design"> mark complete</label>
+    </div>
+    <p class="sec-sub">Three walkthroughs tuned to this role. SD-1 is almost certainly <b>the</b> question. Practice speaking SD-1 aloud in 35 minutes.</p>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">SD-01</span><h3>Multi-tenant telemetry ingestion + inference platform (Edge → Gateway → Cloud)</h3><span class="chip a">FLAGSHIP</span><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+
+      <h4 class="lbl am">1 · Requirements gathering (ask these first)</h4>
+      <ul class="tight"><li><b>Scale:</b> ~100k devices, ~1 msg/sec avg, 10× bursts ⇒ ~100k msg/s peak, ~200B payloads ≈ 20MB/s ≈ ~1.7TB/day.</li><li><b>Tenants:</b> ~1,000, wildly uneven sizes (whale-tenant problem).</li><li><b>Delivery:</b> at-least-once + dedup; readings may be late; never silently drop.</li><li><b>Latency:</b> ingest ack &lt;100ms; reading→inference result &lt;2s typical.</li><li><b>Edge reality:</b> gateways lose cloud connectivity for minutes–hours; must buffer + forward.</li><li><b>Retention:</b> hot 7 days, cold (object storage) 1 year.</li></ul>
+
+      <h4 class="lbl am">2 · High-level architecture</h4>
+      <p style="font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:14px;line-height:2;overflow-x:auto">
+      EDGE SENSORS (SDR/IoT) → [MQTT/serial] → ON-PREM GATEWAY (buffer · dedup · batch · sign)<br>
+      → [gRPC bidi stream over mTLS WAN] → CLOUD INGEST (stateless, HPA/KEDA)<br>
+      → KAFKA <span style="color:var(--teal)">raw.telemetry</span> (key: tenant+device) → STREAM PROCESSOR (validate · enrich)<br>
+      → KAFKA <span style="color:var(--teal)">enriched</span> → INFERENCE WORKERS → KAFKA <span style="color:var(--teal)">inference.results</span><br>
+      → SERVING: PostgreSQL (system of record) + Redis (last-state) + S3 (cold)<br>
+      → BFF (NestJS: REST + WebSocket) → React dashboards</p>
+
+      <h4 class="lbl am">3 · Component breakdown</h4>
+      <ul class="tight">
+        <li><b>Gateway agent:</b> local ring buffer (disk-backed), per-device sequence numbers, dedup of sensor retransmits, batching (e.g., 500 msgs / 500ms), compression, store-and-forward with exponential backoff.</li>
+        <li><b>Ingest service:</b> stateless NestJS gRPC servers; validates cert↔tenant binding; assigns trace IDs; writes to Kafka; acks after durable append. Scale on connection count + lag.</li>
+        <li><b>Stream processor:</b> schema validation, enrichment (device metadata from cache), anomaly fast-path. Idempotent consumers.</li>
+        <li><b>Inference workers:</b> pull from enriched topic (or jobs topic), batch for model efficiency, publish results + metrics.</li>
+        <li><b>Projection/serving writers:</b> results → Postgres partitions + Redis last-state; events fan out to BFF WebSocket hub.</li>
+        <li><b>BFF:</b> aggregation, per-tenant rate limits, WS fan-out with subscription registry.</li>
+      </ul>
+
+      <h4 class="lbl am">4 · Database design</h4>
+      <ul class="tight">
+        <li><b>Postgres:</b> tenants, devices (cert fingerprint, gateway binding), readings (partitioned by day, composite indexes (tenant_id, device_id, ts)), inference_results, outbox table. RLS on all tenant tables.</li>
+        <li><b>Redis:</b> last-known state hashes tenant:{tid}:dev:{id}, tenant config cache, dedup claims, rate limits.</li>
+        <li><b>S3:</b> hourly Parquet dumps from Kafka (tiered retention) for replay + analytics.</li>
+        <li>Writes are batched (Kafka consumer micro-batching into COPY-style inserts); hot path never does chatty single-row inserts.</li>
+      </ul>
+
+      <h4 class="lbl am">5 · Scaling</h4>
+      <ul class="tight"><li>Partition count sized for 2–3× current peak consumers; key = hash(tenant+device) to spread whales while keeping per-device order.</li><li>Consumers autoscale on lag via KEDA; ingest scales on active streams + event-loop lag.</li><li>Gateway batching is the WAN economizer: 10× fewer, 5× bigger messages with zstd.</li><li>Per-tenant quotas (ingest rate, WS subscriptions) enforced at the edge services.</li></ul>
+
+      <h4 class="lbl am">6 · Caching</h4>
+      <ul class="tight"><li>Device/tenant metadata cached in Redis with event-driven invalidation (device-updated topic).</li><li>Last-known state served from Redis; Postgres for history.</li><li>Jittered TTLs + request coalescing to survive Redis failover without melting Postgres.</li></ul>
+
+      <h4 class="lbl am">7 · Messaging</h4>
+      <ul class="tight"><li>Topics: raw.telemetry, enriched, inference.jobs, inference.results, device.events, audit + *.dlq with retry-tier topics (1m/10m/1h).</li><li>acks=all, idempotent producer; consumers process→commit; dedup via (device, seq) claims.</li><li>Schema registry, additive-only evolution; breaking change ⇒ new topic + dual-run.</li></ul>
+
+      <h4 class="lbl am">8 · Monitoring</h4>
+      <ul class="tight"><li>RED per service; consumer lag + end-to-end freshness (reading timestamp vs now) as SLOs; event-loop lag; gateway buffer depth reported upstream (early-warning for partitions).</li><li>One trace ID from ingest through inference to BFF (propagated in Kafka headers).</li><li>Per-tenant dashboards for support; synthetic probe device that emits canary readings.</li></ul>
+
+      <h4 class="lbl rd">9 · Security</h4>
+      <ul class="tight"><li>Device/gateway provisioning issues per-device certs; cloud validates cert ↔ tenant ↔ gateway binding before accepting data.</li><li>mTLS on gateway→cloud and service→service; short-lived certs, automated rotation.</li><li>Topic + key prefixes ACL'd per tenant context; RLS in Postgres; audit topic for all admin actions; encryption at rest throughout.</li></ul>
+
+      <h4 class="lbl bl">10 · Tradeoffs (say these out loud)</h4>
+      <ul class="tight blue">
+        <li><b>Shared topics + keys vs per-tenant topics:</b> shared = simpler ops and rebalancing; per-tenant = hard isolation. Start shared with prefixes/ACLs; graduate whales to dedicated topics.</li>
+        <li><b>Edge inference vs cloud-only:</b> edge cuts latency/WAN cost but complicates model rollout + hardware variance; design the same job abstraction for both.</li>
+        <li><b>Kafka vs managed MQTT broker:</b> MQTT fits device links; Kafka backbone wins on replay, ecosystem, and stream processing.</li>
+        <li><b>Consistency:</b> dashboard freshness is eventual (seconds), command acks are strong; name which is which per surface.</li>
+      </ul>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">SD-02</span><h3>Real-time multi-tenant BFF + live dashboard</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl am">Requirements</h4><ul class="tight"><li>Dashboard TTI p95 &lt;500ms; live updates &lt;1s; 1k tenants; per-screen needs data from 4–6 services; mobile + desktop.</li></ul>
+      <h4 class="lbl am">High-level architecture</h4>
+      <p style="font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;line-height:2">React → BFF (NestJS) → REST snapshots from services (parallel, bounded, timeout-capped)<br>React ← WebSocket ← BFF fan-out hub ← Kafka consumer (inference.results / device.events)</p>
+      <h4 class="lbl am">Components</h4><ul class="tight"><li><b>Aggregation layer:</b> one endpoint per screen; bounded parallel fan-out; partial-degradation policy (ship what's ready, stream the rest).</li><li><b>Live hub:</b> per-connection subscription registry (tenant + entity sets); delta batching every 250ms; heartbeat + resume-from-seq on reconnect.</li><li><b>Auth edge:</b> verified JWT → tenant context; every subscription and query scoped by it.</li></ul>
+      <h4 class="lbl am">Database / caching</h4><ul class="tight"><li>BFF owns no system-of-record data; short-TTL response caches keyed tenant+screen+params; per-tenant cache budgets.</li></ul>
+      <h4 class="lbl am">Scaling</h4><ul class="tight"><li>Stateless HTTP pods scale via HPA on RPS/p95; WS hub scales on connection count — use sticky routing or a shared pub/sub (Redis pub/sub) so any pod can deliver a tenant's deltas.</li></ul>
+      <h4 class="lbl am">Messaging</h4><ul class="tight"><li>One consumer group feeding the hub; filter-to-subscription before serialization (never serialize then discard).</li></ul>
+      <h4 class="lbl am">Monitoring</h4><ul class="tight"><li>TTI, WS reconnect rate, delta-lag (event time → socket), per-tenant fan-out volume.</li></ul>
+      <h4 class="lbl rd">Security</h4><ul class="tight"><li>Per-tenant rate limits + WS subscription caps; no cross-tenant topics in one socket; CSP + escaped rendering downstream.</li></ul>
+      <h4 class="lbl bl">Tradeoffs</h4><ul class="tight blue"><li>GraphQL vs REST BFF: GraphQL gives client flexibility at the cost of query-governance; REST endpoints per screen are simpler to cache/authorize — pick per team maturity.</li><li>SSE vs WebSocket: SSE simpler + proxy-friendly; WS needed if commands flow up.</li></ul>
+    </div></div></div></article>
+
+    <article class="acc sx"><button class="acc-h" aria-expanded="false"><span class="idx">SD-03</span><h3>Distributed inference job scheduler (queue with quotas, retries, priority)</h3><span class="chev"></span></button>
+    <div class="acc-b"><div class="acc-i"><div class="acc-pad">
+      <h4 class="lbl am">Requirements</h4><ul class="tight"><li>Jobs: inference requests with tenant priority classes; at-least-once execution, idempotent effects; per-tenant fairness; retries with backoff; visibility into stuck jobs.</li></ul>
+      <h4 class="lbl am">Architecture</h4>
+      <p style="font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;line-height:2">API (enqueue, idempotency key) → Postgres jobs table (SKIP LOCKED lease) or Kafka priority lanes<br>WORKERS lease → execute → ack; reaper re-leases expired jobs; DLQ after N attempts</p>
+      <h4 class="lbl am">Core mechanics</h4><ul class="tight"><li><b>Leasing:</b> worker claims job with visibility timeout; heartbeat extends; crash ⇒ reaper re-leases. Idempotency key unique-constraint prevents double side effects.</li><li><b>Fairness:</b> weighted round-robin across tenants' queues or token buckets per tenant before dispatch — a whale can't starve small tenants.</li><li><b>Retries:</b> exponential backoff + jitter, attempt counter, DLQ with replay tooling.</li></ul>
+      <h4 class="lbl am">Database design</h4><ul class="tight"><li>jobs(id, tenant_id, idem_key UNIQUE, priority, state, lease_owner, lease_expires, attempts, payload); partial indexes on claimable rows; partition/archive completed jobs.</li></ul>
+      <h4 class="lbl am">Scaling</h4><ul class="tight"><li>Workers autoscale on queue depth/oldest-job-age (KEDA); SKIP LOCKED scales to a few thousand TPS — beyond that, move to Kafka lanes + keep Postgres as record.</li></ul>
+      <h4 class="lbl am">Messaging / caching / monitoring</h4><ul class="tight"><li>Job lifecycle events published for projections + audit; cache tenant quota state in Redis; alert on oldest-waiting-job SLO + DLQ depth + lease-expiry rate (worker health signal).</li></ul>
+      <h4 class="lbl rd">Security</h4><ul class="tight"><li>Enqueue authorized per tenant; payloads encrypted at rest; workers run with least privilege and can't read other tenants' job payloads in shared tables (RLS again).</li></ul>
+      <h4 class="lbl bl">Tradeoffs</h4><ul class="tight blue"><li>Postgres queue (transactional simplicity, ops you know) vs Kafka/SQS-style (throughput ceiling higher, more moving parts). Start Postgres, migrate dispatch when metrics demand.</li><li>Priority preemption vs weighted fairness — preemption wastes in-flight GPU/CPU; weighted share is usually kinder.</li></ul>
+    </div></div></div></article>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 08 COMPANY ================= -->
+  <section id="company">
+    <div class="sec-head">
+      <div><div class="kicker">08 / Recon</div><h2>Company-Specific Preparation</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="company"> mark complete</label>
+    </div>
+    <div class="note sx"><b>Honest caveat:</b> the job description doesn't name the company, so treat everything below as a working hypothesis to confirm during research — don't state guesses as facts in the interview.</div>
+    <div class="grid2">
+      <div class="panel sx">
+        <h4 class="lbl am">Likely product shape</h4>
+        <ul class="tight"><li>A hybrid inference platform: tactical/industrial sensors (SDR) feed gateways (MSC2), which feed a worldwide multi-tenant SaaS where customers get processed insight, not raw data.</li><li>The word "inference" suggests onboard or cloud ML on signal/sensor data — the platform's value is decisions, not dashboards.</li><li>On-prem tier implies customers who can't (or won't) put everything in the public cloud.</li></ul>
+        <h4 class="lbl am">Likely customers</h4>
+        <ul class="tight"><li>Defense/public-safety or critical-infrastructure operators; possibly dual-use (civilian + tactical).</li><li>Confirm: LinkedIn "customers also viewed," press releases, job postings mentioning clearance or specific verticals.</li></ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl am">Business model hypothesis</h4>
+        <ul class="tight"><li>SaaS subscription per tenant/device tier + on-prem gateway licenses + support SLAs. Hybrid delivery usually means higher ACV and longer sales cycles — engineering reliability is a sales asset here.</li></ul>
+        <h4 class="lbl am">Competitor categories to research</h4>
+        <ul class="tight"><li>Edge-AI/telemetry platforms (e.g., industrial IoT suites), signal-intelligence vendors if defense-adjacent, and DIY stacks (customers building on Kafka + managed K8s themselves).</li></ul>
+        <h4 class="lbl am">Research checklist (30 minutes)</h4>
+        <ul class="tight"><li>Recent news: funding rounds, contracts, product launches, exec hires.</li><li>Engineering blog / talks by the Principal Architect — mirror their vocabulary.</li><li>Glassdoor/LinkedIn for culture confirmation of "you build it, you run it."</li></ul>
+      </div>
+    </div>
+    <div class="panel sx" style="margin-top:18px">
+      <h4 class="lbl">Intelligent questions to ask (pick 3–4 per interviewer)</h4>
+      <ul class="tight teal">
+        <li>"What does the Principal Architect expect to hand me in month one, and what should I have taken full ownership of by month six?"</li>
+        <li>"Which tier — edge, gateway, or cloud — is currently the biggest source of pain, and why?"</li>
+        <li>"How is 'you build it, you run it' operationalized — who carries the pager in the first six months while the platform is greenfield?"</li>
+        <li>"What's the current state of gateway↔cloud connectivity assumptions? How often are gateways expected to be offline?"</li>
+        <li>"How do you balance multi-tenant SaaS velocity against on-prem release friction?"</li>
+        <li>"What engineering standards already exist, and which ones do you expect this role to define?"</li>
+        <li>"What would make you say, a year from now, that hiring this person was the best decision the platform group made?"</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 09 FLASHCARDS ================= -->
+  <section id="flash">
+    <div class="sec-head">
+      <div><div class="kicker">09 / Rapid Recall</div><h2>Interactive Flashcards</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="flash"> mark complete</label>
+    </div>
+    <p class="sec-sub">Answer out loud, then reveal. Shuffle when the order gets memorized instead of the material.</p>
+    <div class="sx">
+      <div class="fc-scene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face front"><div class="fc-tag">QUESTION</div><p id="fcQ"></p></div>
+          <div class="fc-face back"><div class="fc-tag">ANSWER</div><p id="fcA"></p></div>
+        </div>
+      </div>
+      <div class="fc-ctrl">
+        <button class="btn" id="fcPrev">◀ Prev</button>
+        <button class="btn teal" id="fcReveal">Reveal</button>
+        <button class="btn" id="fcNext">Next ▶</button>
+        <button class="btn" id="fcShuffle">⇄ Shuffle</button>
+        <span id="fcCount" class="mono"></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 10 QUIZ ================= -->
+  <section id="quiz">
+    <div class="sec-head">
+      <div><div class="kicker">10 / Knowledge Check</div><h2>Interactive Quiz</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="quiz"> mark complete</label>
+    </div>
+    <p class="sec-sub">12 multiple-choice questions with immediate feedback. Target: 10/12 before interview day.</p>
+    <div class="qbox sx" id="quizBox"></div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 11 CHEAT SHEET ================= -->
+  <section id="cheat">
+    <div class="sec-head">
+      <div><div class="kicker">11 / One-Pager</div><h2>Interview Cheat Sheet</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="cheat"> mark complete</label>
+    </div>
+    <p class="sec-sub no-print">Print this section only, or review it the morning of the interview.</p>
+    <div class="no-print" style="margin-bottom:14px"><button class="btn big" id="printBtn">⎙ Print Cheat Sheet</button></div>
+    <div class="grid2">
+      <div class="panel sx">
+        <h4 class="lbl am">Key technologies — one line each</h4>
+        <ul class="tight">
+          <li><b>Node.js</b> — one thread, libuv pool; loop lag is your vital sign.</li>
+          <li><b>NestJS</b> — modules + DI; middleware→guards→interceptors→pipes→handler.</li>
+          <li><b>Kafka</b> — partition = order + parallelism; process then commit; DLQ everything.</li>
+          <li><b>Redis</b> — cache/state index, never system of record; SET NX EX for claims.</li>
+          <li><b>PostgreSQL</b> — tenant_id in every composite index; RLS fail-closed; partition by time.</li>
+          <li><b>gRPC</b> — HTTP/2 + protobuf; deadlines always; bidi streaming for gateway uplink.</li>
+          <li><b>K8s</b> — probes, PDBs, graceful SIGTERM; scale consumers on lag (KEDA), not CPU.</li>
+          <li><b>mTLS/ZTA</b> — identity is cryptographic; the network is never the authentication.</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl am">Concepts to name-drop accurately</h4>
+        <ul class="tight teal">
+          <li>Outbox pattern (atomic DB write + event publish)</li>
+          <li>At-least-once + idempotent consumers = effective exactly-once</li>
+          <li>Backpressure: bounded queues, drain events, gRPC flow control</li>
+          <li>Store-and-forward at the gateway; per-device sequence numbers</li>
+          <li>Noisy-neighbor controls: quotas, RLS, replicas, rate limits</li>
+          <li>Cache stampede: jittered TTLs + request coalescing</li>
+          <li>Consumer lag and event-loop lag as SLO signals</li>
+          <li>BFF = aggregation + auth edge, never business logic</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl am">Numbers to remember</h4>
+        <ul class="tight blue">
+          <li>Redis read ≈ 0.1–0.5 ms · Postgres PK lookup ≈ 1–2 ms (same AZ)</li>
+          <li>Kafka end-to-end ≈ 5–50 ms (batching-dependent)</li>
+          <li>Edge→cloud WAN RTT ≈ 30–300 ms; inter-AZ ≈ 0.5–1 ms</li>
+          <li>Node handler budget: keep loop work &lt; 10 ms per tick</li>
+          <li>libuv default pool = 4 threads (UV_THREADPOOL_SIZE)</li>
+          <li>SLO math: 99.9% ≈ 43.8 min downtime/month; 99.95% ≈ 21.9 min</li>
+          <li>p99 is typically ~10× p50 — design for the tail</li>
+          <li>Redis Cluster = 16,384 hash slots</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl am">Interview behavior tips</h4>
+        <ul class="tight">
+          <li>Open design answers with 3–4 clarifying questions + quick capacity math.</li>
+          <li>Every war story: failure mode → your action → measured result → systemic fix.</li>
+          <li>Say "I" for your actions, "we" for team outcomes.</li>
+          <li>Tradeoffs out loud: "I'd pick X over Y because…, and I'd revisit if Z."</li>
+          <li>Unknown question: reason visibly, state assumptions, offer how you'd verify.</li>
+        </ul>
+        <h4 class="lbl rd">Common mistakes to avoid</h4>
+        <ul class="tight flag-list">
+          <li>Claiming exactly-once end-to-end without idempotency.</li>
+          <li>Happy-path designs that ignore gateway offline windows.</li>
+          <li>No numbers: latency, scale, or impact.</li>
+          <li>"I don't do frontend" — disqualifying for this role.</li>
+          <li>Treating Kafka as an RPC queue or Postgres as a high-scale queue.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 12 STUDY PLAN ================= -->
+  <section id="plan">
+    <div class="sec-head">
+      <div><div class="kicker">12 / Battle Rhythm</div><h2>7-Day Study Plan</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="plan"> mark complete</label>
+    </div>
+    <p class="sec-sub">~31 hours total. If you have less time, cut Day 4 reading and Day 6 follow-ups first — never cut Day 5 or Day 7.</p>
+    <div class="tblwrap sx">
+      <table>
+        <thead><tr><th>Day</th><th>Focus topics</th><th>Exercises</th><th>Reading / review</th><th>Practice questions</th><th>Time</th></tr></thead>
+        <tbody>
+          <tr><td>DAY 1</td><td>JS/TS deep + event loop</td><td>Output-ordering drills (10); write limitPool from memory; explain phases aloud</td><td>Sections 02 (S-01, S-02) · 04 (T-01, T-03) · Node event-loop docs</td><td>"Walk me through the event loop"; "How do you keep Node healthy under CPU load?"</td><td>4h</td></tr>
+          <tr><td>DAY 2</td><td>NestJS + Express standards</td><td>Build a mini Nest service: TenantGuard + AsyncLocalStorage, Kafka consumer stub, global exception filter; unit-test it</td><td>Sections 02 (S-03, S-04) · 04 (T-02)</td><td>"Guard vs interceptor vs pipe"; "How do you structure 15 services?"</td><td>5h</td></tr>
+          <tr><td>DAY 3</td><td>Distributed patterns + Kafka</td><td>Spin local Kafka (or redpanda); produce/consume; simulate consumer crash mid-batch; write idempotent consumer</td><td>Sections 02 (S-05, S-06) · 04 (T-04) · cards: idempotency, backpressure, breakers</td><td>"Partition key for 100k devices?"; "Rebalance on deploy — mitigate?"</td><td>5h</td></tr>
+          <tr><td>DAY 4</td><td>Redis + Postgres + multi-tenancy</td><td>Implement rate limiter (in-mem + discuss Redis/Lua); write RLS demo; design partition scheme on paper</td><td>Sections 02 (S-09, S-10, S-12) · 04 (T-05, T-06)</td><td>"Redis dies mid-failover — protect Postgres?"; "Tenancy model: pick and defend."</td><td>4h</td></tr>
+          <tr><td>DAY 5</td><td>System design</td><td>Speak SD-01 aloud in 35 min, timer on; sketch SD-02 and SD-03 in 20 min each</td><td>Section 07 complete · cheat-sheet numbers</td><td>Full mock design: "Design the edge→cloud ingest platform."</td><td>5h</td></tr>
+          <tr><td>DAY 6</td><td>Coding rounds</td><td>Timed 25-min runs: LRU, rate limiter, merge streams, concurrency pool; then each follow-up set aloud</td><td>Section 06 · flashcards shuffle pass</td><td>Redo any problem you needed hints on.</td><td>5h</td></tr>
+          <tr><td>DAY 7</td><td>Behavioral + full rehearsal</td><td>Rehearse all 9 STAR stories aloud (≤2.5 min each); run Section 13 mock end-to-end; print cheat sheet</td><td>Sections 05, 08, 14 · your company research notes</td><td>"Why this role?"; "Disagreement with an architect?"</td><td>3h</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 13 MOCK ================= -->
+  <section id="mock">
+    <div class="sec-head">
+      <div><div class="kicker">13 / Rehearsal</div><h2>Mock Interview</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="mock"> mark complete</label>
+    </div>
+    <p class="sec-sub">One question at a time. Answer out loud (aim for 2–4 minutes), check the likely follow-ups, then reveal the ideal answer and score yourself against the evaluation criteria.</p>
+    <div class="sx">
+      <div class="mock-card">
+        <div class="qmeta"><span id="mockCat" class="chip a"></span><span id="mockCount" class="mono"></span></div>
+        <h3 id="mockQ" style="font-size:19px;margin:10px 0 6px"></h3>
+        <div style="margin-top:10px"><h4 class="lbl rd" style="margin-top:8px">Likely follow-ups</h4><ul class="tight" id="mockFU"></ul></div>
+        <button class="btn teal" id="mockReveal">Reveal ideal answer + criteria</button>
+        <div class="mock-ideal" id="mockIdeal">
+          <h4 class="lbl">Ideal answer — key beats</h4>
+          <ul class="tight teal" id="mockIdealList"></ul>
+          <h4 class="lbl bl">They're evaluating</h4>
+          <div class="chips" id="mockEval"></div>
+        </div>
+        <div class="fc-ctrl" style="justify-content:space-between;margin-top:20px">
+          <button class="btn" id="mockPrev">◀ Previous</button>
+          <button class="btn" id="mockNext">Next question ▶</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ================= 14 BONUS ================= -->
+  <section id="bonus">
+    <div class="sec-head">
+      <div><div class="kicker">14 / Edge Advantage</div><h2>Bonus Material</h2></div>
+      <label class="mod-check"><input type="checkbox" data-prog="bonus"> mark complete</label>
+    </div>
+    <div class="grid2">
+      <div class="panel sx">
+        <h4 class="lbl am">Advanced topics that impress</h4>
+        <ul class="tight">
+          <li><b>SPIFFE/SPIRE</b> — automatic short-lived workload identity; the grown-up answer to "how do you rotate mTLS certs on 10k gateways?"</li>
+          <li><b>Outbox + CDC (Debezium)</b> — publishing events without dual-write, at scale.</li>
+          <li><b>Kafka KRaft + tiered storage</b> — cheaper long retention, simpler ops story.</li>
+          <li><b>CRDTs / sequence-number reconciliation</b> for edge state that must converge after long partitions.</li>
+          <li><b>OpenTelemetry across tiers</b> — trace context through Kafka headers and gRPC metadata.</li>
+          <li><b>KEDA + custom scalers</b> — scaling consumers on lag, queue age, even per-tenant fairness.</li>
+          <li><b>eBPF-based profiling/observability</b> for loop and syscall analysis without code changes.</li>
+          <li><b>Chaos engineering</b> — partition drills between gateway and cloud as a scheduled practice, not a scare.</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl rd">Common traps in this interview</h4>
+        <ul class="tight flag-list">
+          <li>Designing cloud-only and treating gateways as "dumb pipes."</li>
+          <li>Claiming exactly-once end-to-end without idempotency.</li>
+          <li>Skipping capacity math; hand-waving "Kafka will handle it."</li>
+          <li>Forgetting the human: this role partners with a Principal — show collaboration, not rivalry.</li>
+          <li>Answering React questions with visible disdain.</li>
+          <li>No monitoring story — "you run it" means you must talk dashboards and pagers unprompted.</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl bl">Senior-level discussion points</h4>
+        <ul class="tight blue">
+          <li>How release cadence differs across tiers: cloud daily, gateways in fleet campaigns, edge firmware seasonally — and the contract-testing that makes that safe.</li>
+          <li>Build vs buy per component (managed Kafka vs self-hosted; hosted inference vs own workers).</li>
+          <li>Technical-debt budget on a greenfield team: how much do you invest in abstractions before product signals arrive?</li>
+          <li>Multi-region strategy: latency vs data-residency vs the fact that some tenants will never leave on-prem.</li>
+          <li>Team topology: how a small platform group avoids becoming a bottleneck — standards + paved roads vs gatekeeping.</li>
+        </ul>
+      </div>
+      <div class="panel sx">
+        <h4 class="lbl">More questions to ask them</h4>
+        <ul class="tight teal">
+          <li>"What's your current deploy frequency to gateways, and what's blocking it from being faster?"</li>
+          <li>"How do you decide what runs at the edge vs in the cloud today? Is that decision codified?"</li>
+          <li>"What does the on-call rotation look like while the platform is still being born?"</li>
+          <li>"Where do you most want the new Technical Anchor to push back on existing plans?"</li>
+          <li>"What's the scariest gap between the architecture on paper and production today?"</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>// PREPARED FOR CANDIDATE USE · ALL SECTIONS SEARCHABLE (PRESS /) · GOOD LUCK OUT THERE ▮</footer>
+  </div>
+</main>
+
+<button id="topBtn" title="Back to top">↑ TOP</button>
+
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)}, $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+
+/* ---------- theme ---------- */
+var root=document.documentElement;
+try{var t=localStorage.getItem("ipa-theme");if(t)root.setAttribute("data-theme",t);}catch(e){}
+$("#themeBtn").addEventListener("click",function(){
+  var cur=root.getAttribute("data-theme")==="light"?"":"light";
+  if(cur)root.setAttribute("data-theme",cur);else root.removeAttribute("data-theme");
+  try{localStorage.setItem("ipa-theme",cur||"dark")}catch(e){}
+});
+
+/* ---------- sidebar drawer ---------- */
+$("#menuBtn").addEventListener("click",function(){document.body.classList.toggle("nav-open")});
+$("#overlay").addEventListener("click",function(){document.body.classList.remove("nav-open")});
+$$(".nav a").forEach(function(a){a.addEventListener("click",function(){document.body.classList.remove("nav-open")})});
+
+/* ---------- accordions ---------- */
+$$(".acc-h").forEach(function(h){
+  h.addEventListener("click",function(){
+    var a=h.parentElement, open=a.classList.toggle("open");
+    h.setAttribute("aria-expanded",open?"true":"false");
+  });
+});
+
+/* ---------- scrollspy ---------- */
+var links={};$$(".nav a").forEach(function(a){links[a.getAttribute("href").slice(1)]=a});
+if("IntersectionObserver" in window){
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){
+      if(en.isIntersecting){
+        $$(".nav a").forEach(function(a){a.classList.remove("act")});
+        var l=links[en.target.id];if(l)l.classList.add("act");
+      }
+    });
+  },{rootMargin:"-25% 0px -65% 0px"});
+  $$("main section[id]").forEach(function(s){io.observe(s)});
+}
+
+/* ---------- search ---------- */
+var sIn=$("#search"), sMeta=$("#searchMeta");
+function runSearch(){
+  var q=sIn.value.trim().toLowerCase(), n=0;
+  $$(".sx").forEach(function(el){
+    var hit=!q || el.textContent.toLowerCase().indexOf(q)!==-1;
+    el.classList.toggle("hid",!hit);
+    if(hit&&q)n++;
+  });
+  if(q){
+    $$(".acc").forEach(function(a){ if(a.querySelector(".sx:not(.hid)")) a.classList.add("open"); });
+    sMeta.textContent=n+" match"+(n===1?"":"es");
+  } else sMeta.textContent="";
+}
+sIn.addEventListener("input",runSearch);
+document.addEventListener("keydown",function(e){
+  if(e.key==="/"&&document.activeElement!==sIn){e.preventDefault();sIn.focus();}
+  if(e.key==="Escape"){sIn.value="";runSearch();sIn.blur();}
+});
+
+/* ---------- progress ---------- */
+var boxes=$$("[data-prog]"), KEY="ipa-prog", savedP={};
+try{savedP=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+boxes.forEach(function(b){ if(savedP[b.dataset.prog]) b.checked=true; });
+function updProg(){
+  var o={},n=0;
+  boxes.forEach(function(b){o[b.dataset.prog]=b.checked;if(b.checked)n++;});
+  try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}
+  $("#progBar").style.width=(n/boxes.length*100)+"%";
+  $("#progTxt").textContent=n+" / "+boxes.length+" modules";
+}
+boxes.forEach(function(b){b.addEventListener("change",updProg)});
+updProg();
+
+/* ---------- copy buttons ---------- */
+$$(".copy").forEach(function(b){
+  b.addEventListener("click",function(){
+    var el=document.getElementById(b.dataset.copy), txt=el?el.innerText:"";
+    function done(){b.textContent="Copied ✓";setTimeout(function(){b.textContent="Copy"},1500);}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,done);}
+    else{var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}ta.remove();done();}
+  });
+});
+
+/* ---------- mini quizzes ---------- */
+$$(".mini-q .btn").forEach(function(b){
+  b.addEventListener("click",function(){
+    var a=b.parentElement.querySelector(".mini-a"), show=!a.classList.contains("show");
+    a.classList.toggle("show",show);
+    b.textContent=show?"Hide answer":"Show answer";
+  });
+});
+
+/* ---------- print cheat sheet ---------- */
+$("#printBtn").addEventListener("click",function(){
+  document.body.classList.add("print-cheat");window.print();
+});
+window.addEventListener("afterprint",function(){document.body.classList.remove("print-cheat")});
+
+/* ---------- back to top ---------- */
+var topBtn=$("#topBtn");
+window.addEventListener("scroll",function(){topBtn.classList.toggle("show",window.scrollY>700)});
+topBtn.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"})});
+
+/* ---------- ticker duplicate for seamless loop ---------- */
+var tk=$("#tickerTrack"); tk.innerHTML+=tk.innerHTML;
+
+/* ================= FLASHCARDS ================= */
+var FLASH=[
+["What are the phases of the Node.js event loop, in order?","Timers → pending callbacks → poll → check → close callbacks. Microtasks (promise callbacks, queueMicrotask) drain between every phase."],
+["process.nextTick vs setImmediate — which fires first?","nextTick fires immediately after the current operation completes, before any other phase (it can starve I/O if abused). setImmediate fires in the check phase, after the poll phase."],
+["How do Kafka consumer groups scale consumption?","A topic's partitions are divided among the group's consumers; each partition is consumed by exactly one member. More consumers than partitions = idle consumers. Membership changes trigger rebalances."],
+["Name the three delivery semantics and the practical pick.","At-most-once (may lose), at-least-once (may duplicate — pair with idempotent consumers), exactly-once (effective once; Kafka transactions give it within the broker). Practical pick: at-least-once + dedup."],
+["Redis persistence: RDB vs AOF?","RDB = periodic snapshots (fast restore, possible recent loss). AOF = append-only op log (everysec is the common durability setting). Often both; Redis 7+ uses mixed RDB-AOF."],
+["What are NestJS DI scopes and their cost?","Default (singleton app-wide), Request (fresh graph per request — a real performance tax), Transient (fresh per injection). Use request scope deliberately, rarely."],
+["The four gRPC call modes?","Unary, server streaming, client streaming, bidirectional streaming — all over HTTP/2 with protobuf payloads."],
+["What does mTLS add over plain TLS?","Both sides present certificates: the client's identity is cryptographically verified too. Foundation of zero-trust workload auth; pair with short-lived, auto-rotated certs."],
+["Deployment vs StatefulSet vs DaemonSet?","Deployment = interchangeable stateless pods; StatefulSet = stable identity and ordered operations (databases); DaemonSet = one pod per node (agents, collectors)."],
+["CAP theorem, stated usefully?","During a network partition you choose consistency or availability for a given operation. Real systems tune per-operation; PACELC adds the latency tradeoff when there's no partition."],
+["What problem does the Outbox pattern solve?","Dual-write divergence. Write the state change and an event row in one DB transaction; a relay (poller or CDC like Debezium) publishes the event. Atomicity without distributed transactions."],
+["Where do idempotency keys belong and how are they enforced?","Generated by the client, sent with the request/event; the server claims the key atomically (SET NX / unique constraint) BEFORE side effects, and stores the result so retries replay the stored outcome."],
+["Define backpressure and give three mechanisms.","Signaling a fast producer to slow when consumers can't keep up. TCP flow control, Node stream pause/drain, gRPC flow-control windows / Kafka fetch limits / bounded queues with explicit overflow policy."],
+["Zero trust in one sentence?","Never trust, always verify: no implicit trust from network location — every request authenticated and authorized, least privilege everywhere, every hop encrypted and identified."]
+];
+var fi=0, flipped=false;
+function renderFC(){
+  var c=FLASH[fi];
+  $("#fcQ").textContent=c[0]; $("#fcA").textContent=c[1];
+  $("#fcCount").textContent=(fi+1)+" / "+FLASH.length;
+  $("#fcCard").classList.toggle("flipped",flipped);
+}
+$("#fcReveal").addEventListener("click",function(){flipped=!flipped;renderFC();});
+$("#fcPrev").addEventListener("click",function(){fi=(fi-1+FLASH.length)%FLASH.length;flipped=false;renderFC();});
+$("#fcNext").addEventListener("click",function(){fi=(fi+1)%FLASH.length;flipped=false;renderFC();});
+$("#fcShuffle").addEventListener("click",function(){
+  for(var i=FLASH.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),tmp=FLASH[i];FLASH[i]=FLASH[j];FLASH[j]=tmp;}
+  fi=0;flipped=false;renderFC();
+});
+renderFC();
+
+/* ================= KNOWLEDGE QUIZ ================= */
+var QUIZ=[
+{q:"What does setTimeout(fn, 0) actually guarantee in Node?",opts:["The callback runs immediately, before anything else","The callback runs at the earliest in a future timers phase — never synchronously, and after pending microtasks","The callback runs as a microtask, before promise .then handlers","The callback runs on a separate thread"],a:1,why:"0ms is a minimum delay, not a priority. Microtasks drain first; the timer fires in the next applicable timers phase."},
+{q:"Your Kafka topic can't keep up with ingest volume. What's the primary scale lever?",opts:["Increase message size","Add more partitions (and matching consumers)","Increase the replication factor","Restart the consumers"],a:1,why:"Partitions are the unit of parallelism; each partition feeds one consumer per group. More consumers than partitions just idles."},
+{q:"In a NestJS request, what executes FIRST?",opts:["Guards","Pipes","Middleware","Interceptors"],a:2,why:"Order: middleware → guards → interceptors (pre) → pipes → handler → interceptors (post) → exception filters."},
+{q:"Which Redis structure fits a per-tenant device leaderboard ranked by signal quality?",opts:["HASH","LIST","Sorted set (ZSET)","STRING"],a:2,why:"ZSET keeps members ordered by a score with O(log N) updates and range queries — made for rankings."},
+{q:"How many call modes does gRPC support?",opts:["2 — unary and streaming","3 — unary, server-stream, bidi","4 — unary, server-stream, client-stream, bidirectional","Unlimited — it's just HTTP/2"],a:2,why:"Unary, server streaming, client streaming, and bidirectional streaming."},
+{q:"Which multi-tenant data model gives the STRONGEST isolation?",opts:["Shared table with tenant_id column","Shared table + Row-Level Security","Schema-per-tenant","Database-per-tenant"],a:3,why:"Separate databases isolate completely (compute, I/O, blast radius) — at the highest operational cost, which is the tradeoff."},
+{q:"A Node service must do heavy CPU work (signal decoding). Best in-process tool?",opts:["cluster module","worker_threads","child_process.exec","A bigger setTimeout"],a:1,why:"worker_threads give true parallel execution with shared memory options; cluster duplicates whole processes; exec is for external programs."},
+{q:"mTLS means…",opts:["The server proves its identity with a certificate","Both client and server prove their identities with certificates","Traffic is encrypted twice","TLS with message authentication only"],a:1,why:"Mutual TLS authenticates both ends — the basis for workload identity in zero-trust networks."},
+{q:"A circuit breaker is OPEN. What happens to new calls?",opts:["They're queued until the dependency recovers","They fail fast locally, without calling the dependency","They're retried twice, then fail","They bypass the breaker"],a:1,why:"Open = fail fast to stop piling load on a failing dependency; half-open probes test recovery."},
+{q:"Kubernetes HPA primarily adjusts…",opts:["Node count based on queue depth","Pod replicas based on observed metrics like CPU or custom signals","Container image versions","Load balancer capacity"],a:1,why:"HPA scales pod replicas on metrics; node scaling is the cluster autoscaler's job; event-driven scaling on lag is KEDA territory."},
+{q:"The Outbox pattern primarily prevents…",opts:["Slow consumer commits","State change and event publication diverging (dual-write problem)","Schema drift","Cache stampedes"],a:1,why:"Both writes land in one DB transaction; a relay publishes the event, so state and events can't disagree."},
+{q:"Why prefer JSONB over JSON in PostgreSQL?",opts:["JSONB preserves key order","JSONB is stored in binary form and supports GIN indexing and efficient queries","JSONB is human-readable","There is no difference"],a:1,why:"JSONB parses once at write time, indexes via GIN, and queries efficiently — the right default for semi-structured payloads."}
+];
+var qi=0, qScore=0, qAnswered=false, qBox=$("#quizBox");
+function renderQuiz(){
+  qi=0;qScore=0;qAnswered=false;
+  qBox.innerHTML='<div class="qcard" id="qCard"></div>';
+  renderQ();
+}
+function renderQ(){
+  var q=QUIZ[qi], card=$("#qCard"), h="";
+  qAnswered=false;
+  h+='<div class="qmeta"><span>QUESTION '+(qi+1)+' / '+QUIZ.length+'</span><span class="score">SCORE '+qScore+'</span></div>';
+  h+='<h3>'+q.q+'</h3>';
+  q.opts.forEach(function(o,i){ h+='<button class="opt" data-i="'+i+'">'+String.fromCharCode(65+i)+'. '+o+'</button>'; });
+  h+='<div class="qwhy" id="qWhy"></div>';
+  h+='<button class="btn" id="qNext" style="display:none">'+(qi===QUIZ.length-1?'See results →':'Next question →')+'</button>';
+  card.innerHTML=h;
+  card.querySelectorAll(".opt").forEach(function(b){
+    b.addEventListener("click",function(){
+      if(qAnswered)return; qAnswered=true;
+      var pick=+b.dataset.i;
+      card.querySelectorAll(".opt").forEach(function(o){o.disabled=true;});
+      card.querySelector('.opt[data-i="'+q.a+'"]').classList.add("ok");
+      if(pick!==q.a) b.classList.add("bad"); else qScore++;
+      var why=$("#qWhy");
+      why.innerHTML=(pick===q.a?"✓ Correct. ":"✕ Not quite. ")+q.why;
+      why.classList.add("show");
+      $("#qNext").style.display="inline-block";
+      card.querySelector(".score").textContent="SCORE "+qScore;
+    });
+  });
+  card.querySelector("#qNext").addEventListener("click",function(){
+    qi++;
+    if(qi<QUIZ.length) renderQ(); else renderSummary();
+  });
+}
+function renderSummary(){
+  var pct=Math.round(qScore/QUIZ.length*100), msg;
+  if(pct>=90)msg="Interview-ready on the fundamentals. Go sharpen system design stories.";
+  else if(pct>=70)msg="Solid base — revisit the explanations you missed and retake tomorrow.";
+  else msg="Spend another day on Sections 02–04 before anything else.";
+  $("#qCard").innerHTML='<div class="qsummary"><div class="kicker">RESULTS</div>'+
+    '<div class="big-score">'+qScore+' / '+QUIZ.length+'</div>'+
+    '<div class="qbar"><div style="width:'+pct+'%"></div></div>'+
+    '<p style="color:var(--muted);margin-bottom:16px">'+msg+'</p>'+
+    '<button class="btn big" id="qRestart">↻ Retake quiz</button></div>';
+  $("#qRestart").addEventListener("click",renderQuiz);
+}
+renderQuiz();
+
+/* ================= MOCK INTERVIEW ================= */
+var MOCK=[
+{cat:"Technical",q:"Explain the Node.js event loop. Why is it great for this platform — and what's the danger?",fu:["Microtasks vs macrotasks: order outputs for me.","How would you detect a blocked loop in production?"],
+ideal:["One thread runs JS; I/O happens off-loop via libuv and returns via callbacks — ideal for tens of thousands of concurrent connections (ingest!).","Danger: any long synchronous work stalls every request. Budget loop work to a few ms per tick.","Offload CPU work (worker threads / separate services); monitor event-loop lag as an SLO signal."],
+eval:["Runtime depth","Production instincts","No hand-waving"]},
+{cat:"Technical",q:"Design the Kafka topology for multi-tenant sensor telemetry. Partition key? Ordering? A whale tenant flooding one partition?",fu:["What's your commit strategy and why?","How do you monitor consumer health?"],
+ideal:["Partition key = hash(tenant + device): spreads load, preserves per-device order, contains one device's duplicates.","Whale tenants can be promoted to dedicated topics later; quotas + per-tenant rate limits at ingest.","Process → commit (at-least-once) + idempotent consumers with a (device, seq) dedup claim; lag per partition as an SLO."],
+eval:["Streaming design","Failure-mode thinking","Tradeoff articulation"]},
+{cat:"Technical",q:"Redis is your cache layer. It fails over mid-traffic. What happens, and how do you protect Postgres?",fu:["How do you prevent a cache stampede on restart?","What's cache-aside vs write-through here?"],
+ideal:["Treat Redis loss as certain, not exceptional: all reads fall back to Postgres.","Protect DB with request coalescing/single-flight, jittered TTLs so expiries don't align, aggressive timeouts on Redis calls, and pre-warming critical tenant config.","Nothing in Redis is the system of record — that rule is what makes the failure boring."],
+eval:["Resilience design","Cache pattern fluency","Postgres empathy"]},
+{cat:"Technical",q:"REST vs gRPC — where does each belong across edge, gateway, cloud, and browser in this platform?",fu:["Why does gRPC need HTTP/2, and what does that buy on a WAN link?","How does the browser reach a gRPC world?"],
+ideal:["Device→gateway: pragmatic/embedded-friendly; gateway→cloud: gRPC bidi streaming over mTLS (flow control = real backpressure); east-west cloud: gRPC; browser: REST/WebSocket via the BFF.","Deadlines on every RPC; retry budgets smaller than caller deadlines.","Proto discipline: additive changes, never reuse field numbers."],
+eval:["Protocol judgment","Tier-aware thinking","Practical security"]},
+{cat:"Design",q:"Walk me through what happens, component by component, from a sensor reading to a pixel on a tenant's dashboard.",fu:["Where exactly do you dedup?","Which parts are strongly consistent vs eventually fresh?"],
+ideal:["Sensor → gateway (buffer, seq numbers, batch, sign) → gRPC stream over mTLS → stateless ingest validates cert↔tenant binding → Kafka raw.telemetry keyed tenant+device → enrich/validate processors → inference workers → results topic → Postgres partition + Redis last-state → BFF aggregates and fans out via WebSocket → React renders.","Dedup at gateway (sensor retransmits) AND at cloud consumers (gateway retransmits).","Dashboards are seconds-fresh by design; command acks are the strong-consistency surface."],
+eval:["End-to-end vision","Component vocabulary","Honesty about consistency"]},
+{cat:"Technical",q:"How would you structure NestJS services so a growing team ships fast without stepping on each other?",fu:["Where does shared tenant context live?","How do you test a Kafka consumer like a controller?"],
+ideal:["A shared platform library: error mapping, tracing, tenant context (AsyncLocalStorage), health endpoints — standards by convention, not copy-paste.","One bounded context per module; contracts package for DTOs generated from protos.","Consumers get integration tests with testcontainers-style brokers; DI makes services swappable in unit tests."],
+eval:["Standards leadership","NestJS depth","Team-scale thinking"]},
+{cat:"Behavioral",q:"Tell me about a time you disagreed with a senior architect. How did it resolve?",fu:["What evidence did you bring?","What would you do differently now?"],
+ideal:["Use STAR B-03: disagreement → time-boxed pilot with real metrics → committed to whichever won → ADR recorded.","Emphasize: challenged with data not ego, respected the decision, relationship came out stronger.","Tie back: this role is literally a partnership with a Principal — productive disagreement is a feature."],
+eval:["Influence without authority","Intellectual honesty","Partnership maturity"]},
+{cat:"Behavioral",q:"Describe a production incident you caused. Walk me through it.",fu:["How fast did you detect it?","What structural change prevented recurrence?"],
+ideal:["Use STAR B-07: own it plainly, no excuses; timeline: detect → mitigate (rollback) → postmortem → systemic fix (RLS + CI lint).","Show the metric or alert that exists now because of it.","Closing line: 'I'd rather build systems that make my mistakes unshippable.'"],
+eval:["Ownership","Postmortem culture","Systemic fixes over heroics"]},
+{cat:"Technical",q:"'You build it, you run it' — how do you keep on-call sustainable on a greenfield platform?",fu:["What do you alert on vs log?","How do you make the first on-call rotation survivable for new hires?"],
+ideal:["SLO + burn-rate alerts on symptoms; everything else is logs and dashboards, not pages.","Runbooks with every alert; error budgets that slow feature work when reliability slips.","Early investment in observability (traces, lag, loop lag) is what turns 3am pages into morning tickets."],
+eval:["Operational maturity","SLO fluency","Culture alignment"]},
+{cat:"Technical",q:"Multi-tenancy: DB-per-tenant vs schema-per-tenant vs shared rows + RLS. Choose for us and defend it.",fu:["How do you stop a whale tenant from degrading everyone?","How do you test for cross-tenant leaks?"],
+ideal:["Shared rows with tenant_id in every composite index + RLS failing closed: density and operability at 1,000+ tenants; mention graduation paths for regulated whales.","Noisy-neighbor kit: statement timeouts, read replicas, per-tenant quotas, isolated compute for premium tiers.","Automated leak tests in CI: request tenant B's resources with tenant A's token; fail the build on any 200."],
+eval:["Tenancy depth","Security layering","Decisive tradeoffs"]},
+{cat:"Technical",q:"How do you secure a Node/NestJS service end-to-end: secrets, transport, identity, supply chain?",fu:["How do gateways prove who they are?","What breaks when certs expire — and how do you make it unbreakable?"],
+ideal:["Secrets from a manager with least-privilege roles, never baked into images.","mTLS service-to-service and gateway-to-cloud; short-lived auto-rotated certs with expiry alerts; identity bound to tenant registry.","Supply chain: lockfiles, audits, pinned digests, non-root minimal images; input validation at every boundary; deny-all network policy."],
+eval:["Zero-trust literacy","Edge-device awareness","Defense in depth"]},
+{cat:"Behavioral",q:"Why this role, and why now? What about a greenfield platform group appeals to you?",fu:["What's the riskiest part of joining early — and how do you mitigate it?","Where do you want to be in two years?"],
+ideal:["Genuine pull: standards-setting from day one, three-tier problems you can't find elsewhere, and the rare role that's both architectural and hands-on.","Acknowledge risk honestly (ambiguity, no paved roads) and frame it as the work you do best.","Land it: 'I want to be the person the Principal hands a hard problem to — and the team copies code from.'"],
+eval:["Motivation authenticity","Self-awareness","Role-fit conviction"]}
+];
+var mi=0, mRevealed=false;
+function renderMock(){
+  var m=MOCK[mi]; mRevealed=false;
+  $("#mockCat").textContent=m.cat.toUpperCase();
+  $("#mockCat").className="chip "+(m.cat==="Behavioral"?"t":"a");
+  $("#mockCount").textContent="Q "+(mi+1)+" / "+MOCK.length;
+  $("#mockQ").textContent=m.q;
+  var fu=$("#mockFU"); fu.innerHTML="";
+  m.fu.forEach(function(f){var li=document.createElement("li");li.textContent=f;fu.appendChild(li);});
+  var il=$("#mockIdealList"); il.innerHTML="";
+  m.ideal.forEach(function(x){var li=document.createElement("li");li.textContent=x;il.appendChild(li);});
+  var ev=$("#mockEval"); ev.innerHTML="";
+  m.eval.forEach(function(x){var s=document.createElement("span");s.className="chip b";s.textContent=x;ev.appendChild(s);});
+  $("#mockIdeal").classList.remove("show");
+  $("#mockReveal").textContent="Reveal ideal answer + criteria";
+}
+$("#mockReveal").addEventListener("click",function(){
+  mRevealed=!mRevealed;
+  $("#mockIdeal").classList.toggle("show",mRevealed);
+  $("#mockReveal").textContent=mRevealed?"Hide ideal answer":"Reveal ideal answer + criteria";
+});
+$("#mockPrev").addEventListener("click",function(){mi=(mi-1+MOCK.length)%MOCK.length;renderMock();});
+$("#mockNext").addEventListener("click",function(){mi=(mi+1)%MOCK.length;renderMock();});
+renderMock();
+})();
+</script>
+</body>
+</html>
