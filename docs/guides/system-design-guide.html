@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>System Design Field Guide — Interactive Cards</title>
+<title>System Design Field Guide v2 — Cards + Case Studies</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -15,7 +15,6 @@
   body{font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
   .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
   section{scroll-margin-top:90px;margin:34px 0}
-
   header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   .head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 18px}
   .brand{font-size:17px}
@@ -26,14 +25,11 @@
   .progress{flex:1;height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}
   .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width .4s}
   #ptext{font-size:12.5px;color:var(--muted);white-space:nowrap}
-
   .hero h1{font-size:clamp(22px,3.4vw,32px);line-height:1.2}
-  .hero p{color:var(--muted);margin-top:8px;max-width:760px}
-
+  .hero p{color:var(--muted);margin-top:8px;max-width:780px}
+  .new{display:inline-block;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;font-size:12px;border-radius:99px;padding:2px 10px;margin-top:10px;font-weight:600}
   h2{font-size:21px;margin-bottom:6px}
   .sub{color:var(--muted);font-size:14.5px;margin-bottom:14px;max-width:820px}
-
-  /* ---------- decision helper ---------- */
   .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
   select,input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff;color:var(--ink)}
   select:focus,input:focus{outline:2px solid #c7d2fe;border-color:var(--accent)}
@@ -43,8 +39,6 @@
   #helpOut ol li::before{content:counter(st);position:absolute;left:10px;top:9px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
   .stop{background:var(--redbg);border:1px solid #fecaca;color:var(--red);border-radius:10px;padding:10px 12px;font-size:14px}
   .stop b::before{content:"🛑 "}
-
-  /* ---------- controls ---------- */
   .controls{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
   .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .chips{display:flex;gap:6px;flex-wrap:wrap}
@@ -56,8 +50,6 @@
   .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
   .btn:hover{border-color:var(--accent);color:var(--accent)}
   #count{font-size:12.5px;color:var(--muted);margin-left:auto}
-
-  /* ---------- cards ---------- */
   #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;align-items:start}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.05);transition:border-color .2s}
   .card.flash{border-color:var(--accent);box-shadow:0 0 0 3px #c7d2fe}
@@ -95,8 +87,6 @@
   .over h4{color:var(--amber);font-size:12.5px;margin-bottom:4px}
   .tools{margin-top:10px !important;font-size:13px;color:var(--muted)}
   .ask{margin:8px 16px 16px !important;font-size:13px;color:var(--accent);background:#eef2ff;border-radius:10px;padding:8px 10px}
-
-  /* ---------- over-engineering ---------- */
   .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:16px}
   .three div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;font-size:14px}
   .three b{display:block;margin-bottom:2px}
@@ -104,8 +94,6 @@
   #checklist label{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;cursor:pointer}
   #checklist input{margin-top:2px;accent-color:#dc2626;width:16px;height:16px}
   #verdict{margin-top:14px;border-radius:var(--r);padding:14px 16px;font-size:15px;border:1px solid var(--line);background:var(--card)}
-
-  /* ---------- playbook ---------- */
   #playbook ol{list-style:none;counter-reset:pb;display:grid;gap:10px}
   #playbook ol li{counter-increment:pb;position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 12px 52px;font-size:14.5px}
   #playbook ol li::before{content:counter(pb);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:13px}
@@ -117,7 +105,7 @@
 <body>
 
 <header><div class="wrap head">
-  <div class="brand">🧭 <b>System Design Field Guide</b></div>
+  <div class="brand">🧭 <b>System Design Field Guide</b> <span style="font-size:11px;color:var(--muted)">v2</span></div>
   <nav>
     <a href="#helper">Decision Helper</a><a href="#cards">Cards</a>
     <a href="#overeng">Over-engineering</a><a href="#playbook">Playbook</a>
@@ -128,7 +116,8 @@
 <main class="wrap">
   <section class="hero">
     <h1>What to use, when — and when it's over-engineering.</h1>
-    <p>Interactive learning cards for system design interviews. Click a card to open it. Hit <b>✓</b> once you can explain it out loud — your progress is saved in this browser.</p>
+    <p>41 interactive cards: tools, distributed-systems theory, and real production case studies. Click a card to open it, hit <b>✓</b> when you can explain it out loud — progress is saved in this browser.</p>
+    <span class="new">✨ v2 adds: Distributed Systems theory + 9 real-world case studies (LinkedIn, Netflix, Discord, Twitter, Amazon, Stripe…)</span>
   </section>
 
   <section id="helper">
@@ -142,9 +131,9 @@
 
   <section id="cards">
     <h2>🃏 Learning cards</h2>
-    <p class="sub">Green = reach for it. Red = think twice. Amber = the tell that you're over-engineering.</p>
+    <p class="sub">Green = reach for it. Red = think twice. Amber = over-engineering tell. 🏭 = real production story.</p>
     <div class="controls">
-      <div class="row"><input type="text" id="q" placeholder="🔍 Search (e.g. cache, shard, kafka, replay, latency…)"/></div>
+      <div class="row"><input type="text" id="q" placeholder="🔍 Search (e.g. kafka, cap, quorum, netflix, idempotency, fan-out…)"/></div>
       <div class="row">
         <div class="chips" id="chips"></div>
         <div class="seg" id="seg">
@@ -189,8 +178,8 @@
     <div class="gold">
       <div>💬 <b>Trade-offs &gt; tools.</b> Always say what you give up when you pick something.</div>
       <div>🧱 <b>Start boring.</b> Monolith, one DB, one cache, one queue. Scale only when forced.</div>
+      <div>🏭 <b>Name-drop real systems.</b> "Like Twitter's fan-out" or "like Stripe's idempotency keys" shows depth.</div>
       <div>🙋 <b>Call out red flags yourself.</b> "I would NOT shard here because…" scores points.</div>
-      <div>🔢 <b>Estimate first.</b> "10 GB fits one Postgres easily, so no sharding" beats hand-waving.</div>
     </div>
   </section>
 </main>
@@ -198,34 +187,37 @@
 <footer>Trade-offs &gt; tools. Built for interview prep — good luck! 🍀</footer>
 
 <script>
-const CATS={"Scaling":"#2563eb","Caching":"#ea580c","Storage":"#7c3aed","Messaging":"#0d9488","Reliability":"#e11d48","API & Realtime":"#db2777","Architecture":"#4f46e5","Ops":"#64748b"};
+const CATS={"Scaling":"#2563eb","Caching":"#ea580c","Storage":"#7c3aed","Messaging":"#0d9488",
+"Distributed Systems":"#0891b2","Reliability":"#e11d48","API & Realtime":"#db2777",
+"Architecture":"#4f46e5","Ops":"#64748b","Case Studies":"#4d7c0f"};
 const PRI={must:"🔥 Must-know",important:"⭐ Important",nice:"💡 Nice-to-have"};
 
 const CARDS=[
+/* ---------- SCALING / CACHING / STORAGE / MESSAGING / RELIABILITY / API / ARCH / OPS (v1) ---------- */
 {id:"lb",cat:"Scaling",pri:"must",title:"Load Balancer",tag:"Spread traffic across servers — no single point of failure.",
-use:["You run 2+ instances of a service","You need high availability & zero-downtime deploys","One machine can't take all the traffic","You want health checks to route around bad nodes"],
+use:["You run 2+ instances of a service","You need high availability & zero-downtime deploys","One machine can't take all the traffic","Health checks route around bad nodes"],
 avoid:["You have one server and no plan for a second","Hobby project with a few users — a single VPS is fine"],
-over:"Adding a service mesh / fancy L7 rules before you have real traffic. Sticky sessions everywhere instead of making the app stateless.",
+over:"Service mesh / fancy L7 rules before real traffic. Sticky sessions everywhere instead of making the app stateless.",
 tools:"Nginx · HAProxy · AWS ALB/NLB · Envoy",ask:"L4 vs L7? How do health checks work? What happens to in-flight requests when a node dies?"},
 {id:"cdn",cat:"Scaling",pri:"must",title:"CDN",tag:"Cache static content at edge locations close to users.",
-use:["Static assets: images, CSS, JS, video","Global audience → cut latency","Shrinking origin load & bandwidth cost"],
+use:["Static assets: images, CSS, JS, video","Global audience → cut latency","Shrink origin load & bandwidth cost"],
 avoid:["Fully dynamic, per-user responses (little to cache)","Internal tools with local users"],
 over:"Edge-compute / worker logic everywhere before you actually have global users.",
 tools:"Cloudflare · CloudFront · Fastly",ask:"What can and can't go on a CDN? How do you invalidate a cached asset?"},
 {id:"scale",cat:"Scaling",pri:"must",title:"Vertical vs Horizontal Scaling",tag:"Bigger machine (up) vs more machines (out).",
-use:["Vertical first: early stage, stateful single node (DB), simplest win","Horizontal: stateless services, need elasticity & fault tolerance, beyond one box's limit"],
+use:["Vertical first: early stage, stateful single node (DB), simplest win","Horizontal: stateless services, elasticity & fault tolerance, beyond one box"],
 avoid:["Horizontal before the app is stateless","Vertical when you need failover with zero downtime"],
 over:"Autoscaling groups + K8s for traffic that fits one box. 'Scale early' is a myth — measure first.",
-tools:"Cloud autoscaling · K8s HPA",ask:"When scale-up vs scale-out? Why does statelessness matter for horizontal scaling?"},
+tools:"Cloud autoscaling · K8s HPA",ask:"When scale-up vs scale-out? Why does statelessness matter?"},
 {id:"gw",cat:"Scaling",pri:"important",title:"API Gateway",tag:"One entry point: routing, auth, throttling across services.",
 use:["Many microservices behind one door","Cross-cutting concerns (auth, rate limits, CORS) in one place","Hide internal topology from clients"],
-avoid:["Monolith or 1–3 services — a plain reverse proxy (Nginx) is enough","When it's becoming a bottleneck / god-object"],
+avoid:["Monolith or 1–3 services — a plain reverse proxy (Nginx) is enough","When it becomes a bottleneck / god-object"],
 over:"Rolling your own gateway framework; stacking gateway + service mesh + GraphQL federation on a tiny system.",
 tools:"Kong · AWS API Gateway · Nginx · Envoy",ask:"Gateway vs load balancer — the difference?"},
 {id:"cache",cat:"Caching",pri:"must",title:"Caching (Redis)",tag:"Keep hot data in fast memory; hit the DB less, answer faster.",
 use:["Read-heavy, repeated expensive queries","Sessions, rate limits, locks (Redis shines)","Slow join results that tolerate TTL staleness"],
 avoid:["Data that must never be stale (balance right after a write)","Write-heavy, constantly changing data","When the DB is already fast — add an index first!"],
-over:"Three cache layers (local + Redis + CDN logic) for a small app; caching 'everything' without measuring hit rate; complex invalidation where a TTL would do.",
+over:"Three cache layers for a small app; caching 'everything' without measuring hit rate; complex invalidation where a TTL would do.",
 tools:"Redis · Memcached",ask:"Cache-aside vs write-through? What is cache stampede and how do you prevent it?"},
 {id:"pg",cat:"Storage",pri:"must",title:"PostgreSQL (relational)",tag:"ACID, SQL, joins — the default for structured, related data.",
 use:["Transactions: payments, orders, inventory","Complex queries & joins","Strong consistency, mature tooling"],
@@ -236,19 +228,19 @@ tools:"PostgreSQL · MySQL · PgBouncer",ask:"When pick Mongo over Postgres and 
 use:["Evolving / semi-structured data (catalogs, content, profiles)","Nested documents matching access patterns","Rapid prototyping"],
 avoid:["Multi-record transactions are the core of the app","Heavy cross-entity joins / aggregations","You actually need rigid schema + foreign keys"],
 over:"Choosing it 'to avoid migrations', then rebuilding schema validation and joins in app code.",
-tools:"MongoDB · (compare: DynamoDB)",ask:"How do you model one-to-many in Mongo vs SQL? When do embedded docs hurt?"},
+tools:"MongoDB · (compare: DynamoDB)",ask:"How model one-to-many in Mongo vs SQL? When do embedded docs hurt?"},
 {id:"replicas",cat:"Storage",pri:"important",title:"Read Replicas",tag:"Copy the database; serve reads from the copies.",
 use:["Read-heavy load (e.g. 90% reads)","Primary CPU-hot on reads","Offloading analytics / reporting queries"],
 avoid:["You can't tolerate stale reads (replication lag)","Write-bound systems — replicas don't help writes","Before caching & indexing (cheaper wins first)"],
 over:"Replicas for a DB doing 5 QPS; adding replicas to fix a missing-index problem.",
-tools:"Postgres streaming replication · Mongo secondaries",ask:"How do you handle replication lag? What if a replica falls far behind?"},
+tools:"Postgres streaming replication · Mongo secondaries",ask:"How handle replication lag? What if a replica falls far behind?"},
 {id:"shard",cat:"Storage",pri:"important",title:"Sharding",tag:"Split one dataset across many DB nodes by shard key.",
 use:["Data / write volume beyond one machine after vertical scaling","Throughput a single node physically can't give"],
 avoid:["Before indexes, archiving, replicas, caching","No good shard key exists","Cross-shard queries / transactions are the norm"],
-over:"THE classic interview red flag: 'we'll shard' at 20 GB. Sharding adds resharding pain, hot shards, and kills cross-shard joins.",
+over:"THE classic interview red flag: 'we'll shard' at 20 GB. Sharding adds resharding pain, hot shards, kills cross-shard joins.",
 tools:"Citus · Vitess · Mongo sharding · consistent hashing",ask:"How pick a shard key? How handle hot spots and resharding?"},
 {id:"wide",cat:"Storage",pri:"nice",title:"Cassandra / DynamoDB",tag:"Distributed wide-column / KV: massive writes, predictable latency, always-on.",
-use:["Huge scale, high write throughput (time-series, events, telemetry)","Multi-region active-active","You accept eventual consistency for availability"],
+use:["Huge scale, high write throughput (time-series, events, telemetry)","Multi-region active-active","Accept eventual consistency for availability"],
 avoid:["Ad-hoc queries & joins (queries must be designed upfront)","Small data","Relational integrity needs"],
 over:"'Netflix uses it' as a reason at startup scale; forcing relational data into wide columns and fighting it forever.",
 tools:"Cassandra · ScyllaDB · DynamoDB · Bigtable",ask:"What's a hot partition? Eventual vs tunable consistency?"},
@@ -303,7 +295,7 @@ avoid:["The whole flow fits in ONE database → use a local ACID transaction, fu
 over:"Orchestrators & sagas for operations a single Postgres transaction already solves; 2PC across services 'for consistency'.",
 tools:"Saga (orchestration vs choreography) · outbox pattern · compensating actions",ask:"How handle partial failure across three services?"},
 {id:"api",cat:"API & Realtime",pri:"must",title:"REST vs gRPC vs GraphQL",tag:"REST for public simplicity; gRPC for internal speed; GraphQL for flexible clients.",
-use:["REST: public CRUD APIs, cacheability, universal tooling","gRPC: internal service-to-service, low latency, streaming, typed codegen","GraphQL: many client shapes (mobile/web/TV) needing different data slices"],
+use:["REST: public CRUD APIs, cacheability, universal tooling","gRPC: internal service-to-service, low latency, streaming, typed codegen","GraphQL: many client shapes needing different data slices"],
 avoid:["GraphQL 'because modern' with one client (caching & N+1 pain)","gRPC from browsers (limited support)","REST dogma when you need bulk / batch ops"],
 over:"GraphQL federation + gateway for 2 clients and 3 services.",
 tools:"OpenAPI · Protobuf · Apollo",ask:"When is GraphQL worse than REST?"},
@@ -313,9 +305,9 @@ avoid:["WebSockets for once-a-minute updates (connection state, sticky sessions,
 over:"'Realtime' push for data users happily refresh by hand; a WS cluster before validating the feature.",
 tools:"Socket.IO · ws · EventSource · long polling",ask:"Design a notification system — WS or SSE, and why?"},
 {id:"mono",cat:"Architecture",pri:"must",title:"Monolith vs Microservices",tag:"Start with a modular monolith; split when the pain is real.",
-use:["Microservices: teams needing independent deploy/scale, clear bounded domains, different tech per part","Monolith: early product, small team, unclear boundaries — one deploy, one DB, easy debugging"],
+use:["Microservices: teams needing independent deploy/scale, clear bounded domains","Monolith: early product, small team, unclear boundaries — one deploy, one DB, easy debugging"],
 avoid:["Microservices before you can run a monolith well (CI, monitoring, tests)","Splitting by technical layer instead of business domain"],
-over:"THE classic: 15 microservices, 2 developers, no users. Distribution multiplies every problem (network, observability, data consistency).",
+over:"THE classic: 15 microservices, 2 developers, no users. Distribution multiplies every problem.",
 tools:"Modular monolith · DDD boundaries · strangler fig",ask:"How decide when to split a monolith?"},
 {id:"k8s",cat:"Ops",pri:"nice",title:"Docker & Kubernetes",tag:"Docker = consistent runtime; K8s = orchestration when scale demands it.",
 use:["Docker: basically always — same env on laptop, CI, prod","K8s: many services, autoscaling / rolling updates, team maturity"],
@@ -326,7 +318,91 @@ tools:"Docker · Compose · K8s · Cloud Run · ECS",ask:"Do you need K8s? What'
 use:["From day one: error rate, latency p95/p99, queue depth, DB connections","Tracing once requests cross service boundaries","Alert on symptoms, not causes"],
 avoid:["100% trace sampling on everything","Building custom metrics pipelines when managed exists"],
 over:"ELK + Jaeger + Grafana + PagerDuty for a side project with 3 users. Start with structured logs + a few golden metrics.",
-tools:"Prometheus · Grafana · OpenTelemetry · ELK · Datadog",ask:"How debug a slow endpoint in production?"}
+tools:"Prometheus · Grafana · OpenTelemetry · ELK · Datadog",ask:"How debug a slow endpoint in production?"},
+
+/* ---------- NEW: DISTRIBUTED SYSTEMS THEORY ---------- */
+{id:"cap",cat:"Distributed Systems",pri:"must",title:"CAP & Consistency Models",tag:"During a network partition you pick availability or consistency — and partitions are rare; the everyday trade-off is latency vs consistency.",
+use:["Explaining any distributed DB choice (Postgres ≈ CP, Cassandra ≈ AP)","Picking consistency per operation: read-your-writes for profile page, eventual for feeds","Answering 'what happens when a node loses the network?'"],
+avoid:["Treating CAP as an everyday dial — the P is not optional during a partition","Quoting CAP without naming exactly what you give up"],
+over:"Designing for constant partitions when your real problem is latency; name-dropping PACELC before you can explain CAP simply.",
+tools:"CP-ish: Postgres · etcd · ZooKeeper | AP-ish: Cassandra · DynamoDB · Riak",ask:"Explain CAP in plain words. Is Postgres CP or AP? What about S3?"},
+{id:"quorum",cat:"Distributed Systems",pri:"important",title:"Quorum Reads & Writes",tag:"W + R > N means reads overlap the latest write → fresh reads.",
+use:["Tunable stores (Cassandra, DynamoDB): choose consistency per request","Explaining how replicated data stays fresh","Configuring replica-set read behavior"],
+avoid:["Single-leader SQL DBs — the leader decides, not you","Needing serializable correctness: quorum is about freshness, not isolation"],
+over:"Quorum math for a system with one replica; strict quorums everywhere that kill availability.",
+tools:"Cassandra · DynamoDB · Riak",ask:"N=3, W=2, R=2 — do you always read fresh data? What if a write partially fails?"},
+{id:"consensus",cat:"Distributed Systems",pri:"nice",title:"Consensus & Leader Election",tag:"Nodes agreeing despite failures — Raft/Paxos power etcd, ZooKeeper, Kafka's controller.",
+use:["Understanding leader election in Kafka & Postgres replication","Config / coordination stores (etcd inside Kubernetes)","Why 'just take a distributed lock' is non-trivial"],
+avoid:["Implementing your own consensus — ever","Running ZooKeeper/etcd just for a simple lock when Redis or a Postgres advisory lock works"],
+over:"A ZK/etcd cluster for a 3-service app 'for coordination'.",
+tools:"Raft · etcd · ZooKeeper · Consul",ask:"How does Kafka elect a controller? What is split brain?"},
+{id:"hashing",cat:"Distributed Systems",pri:"important",title:"Consistent Hashing",tag:"Map keys to nodes so adding/removing a node moves only ~1/N of the keys.",
+use:["Sharding a cache across many Redis/memcached nodes","Dynamo-style partitioning","Any cluster where nodes join/leave and resharding hurts"],
+avoid:["Tiny stable clusters where hash-mod-N is fine","Skewed keys — hashing doesn't fix hot keys (add virtual nodes)"],
+over:"Consistent-hash rings before you have more than one node.",
+tools:"Used inside: DynamoDB · Cassandra · memcached clients · Redis Cluster (slots)",ask:"Why not hash mod N? How do virtual nodes help skew?"},
+{id:"locks",cat:"Distributed Systems",pri:"important",title:"Distributed Locks",tag:"Coordinate work across processes — every option has a failure mode.",
+use:["Prevent duplicate work across workers (cron, report generation)","Single-writer / leader-style jobs","Postgres advisory locks (strong, tied to DB); Redis SET NX + TTL (fast, weaker)"],
+avoid:["Locks held across long operations — the lease expires while you're still working","Redlock as the only guard for money-critical uniqueness — prefer a DB unique constraint"],
+over:"Redlock + fencing tokens for a once-per-minute cron job; locking where an idempotent upsert would do.",
+tools:"Postgres advisory locks · Redis SETNX/Redlock · ZooKeeper",ask:"The lock expires mid-processing — what happens? What are fencing tokens?"},
+{id:"delivery",cat:"Distributed Systems",pri:"must",title:"Delivery Semantics (exactly-once is a myth)",tag:"End-to-end you get at-least-once + idempotency. Nobody gets true exactly-once across systems.",
+use:["Designing any queue consumer: assume duplicates, dedupe","Kafka transactions / idempotent producer for stronger guarantees inside Kafka","Justifying idempotency keys in your design"],
+avoid:["Trusting 'exactly-once' marketing for end-to-end flows","At-most-once for anything you can't afford to lose"],
+over:"Custom exactly-once machinery instead of boring idempotent handlers.",
+tools:"Kafka transactions · idempotency keys · unique constraints",ask:"Can you achieve exactly-once end-to-end? Prove why not."},
+{id:"clocks",cat:"Distributed Systems",pri:"important",title:"Clocks & Ordering",tag:"Wall clocks lie and distributed 'now' doesn't exist — ordering needs logic, not timestamps.",
+use:["Understanding last-write-wins conflicts (S3, DynamoDB, Cassandra)","Lamport clocks / vector clocks / sequence numbers for ordering","Why DB-generated sequences beat app-server clocks"],
+avoid:["Comparing timestamps from different machines to decide order","Time-based uniqueness (clocks skew and jump)"],
+over:"Vector clocks everywhere when a single-leader sequence number would do.",
+tools:"TrueTime is Spanier's flex (skip) — practically: DB sequences · ULIDs · Lamport clocks",ask:"Two writes hit two replicas 'at the same time' — who wins? How would you order events?"},
+
+/* ---------- NEW: REAL PRODUCTION CASE STUDIES ---------- */
+{id:"cs-linkedin",cat:"Case Studies",pri:"important",cs:true,title:"🏭 LinkedIn → invented Kafka",tag:"Why the log was created: activity streams + metrics across dozens of systems.",
+use:["~20 teams were building duplicate pipelines moving the same data","They built Kafka: one durable, replayable commit log, many producers/consumers","Today Kafka carries trillions of messages/day industry-wide"],
+avoid:["A log is not a task queue — consumer offsets & groups had to be built on top","Every team now owns part of the pipeline's operational burden"],
+over:"When asked about event streaming, tell this story: shared log, replay, many consumers — that's the 'why' behind Kafka.",
+tools:"Kafka was born here (2011)",ask:"Why a log instead of a queue? What does replay unlock?"},
+{id:"cs-netflix",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Netflix → design for failure",tag:"Circuit breakers, chaos engineering, multi-region Cassandra.",
+use:["Built Hystrix circuit breakers + bulkheads + fallbacks for every remote call","Chaos Monkey kills instances in production on purpose","Cassandra & EVCache multi-region; Eureka for service discovery"],
+avoid:["This is a resilience investment only justified at Netflix scale","Copying every pattern blindly without their traffic"],
+over:"Quote Netflix in reliability answers: assume anything can fail, degrade gracefully instead of going dark.",
+tools:"Hystrix (legacy) · Resilience4j · Chaos Monkey · Eureka",ask:"How would you keep checkout alive when a dependency dies?"},
+{id:"cs-discord",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Discord → trillions of messages",tag:"Billions of messages/day: data modeling decided everything.",
+use:["Stored messages in Cassandra keyed by channel (bucketed by time)","Hot channels + JVM pauses caused latency spikes","Migrated to ScyllaDB (C++ Cassandra-compatible) to fix tail latency"],
+avoid:["Partition-key design created hot spots on huge channels","Migration took months of dual-running and careful moves"],
+over:"The lesson: in NoSQL, modeling (partition keys) matters more than the tool — say this in interviews.",
+tools:"Cassandra → ScyllaDB",ask:"Why did hot partitions happen? How would you fix a hot channel?"},
+{id:"cs-twitter",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Twitter → timeline fan-out",tag:"THE feed-design case: fan-out on write vs on read.",
+use:["Fan-out on write: each tweet is pre-pushed into followers' home caches (Redis list)","Celebrities break it: 1 tweet → millions of writes","Hybrid: pre-compute normal users, fetch celebrity tweets at read time"],
+avoid:["Write amplification is the core cost","When fan-out lags, home timeline serves stale data"],
+over:"This IS the 'design a feed' interview question. Know fan-out on write / on read / hybrid cold.",
+tools:"Pre-computed home timelines in Redis",ask:"Design Twitter's timeline. How do you handle a user with 100M followers?"},
+{id:"cs-amazon",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Amazon → Dynamo & the cart",tag:"The cart must be 'always writable' — so they picked availability.",
+use:["Dynamo paper (2007): consistent hashing + quorum + vector clocks + eventual consistency","Cart conflicts resolved app-side (merge items) — better than refusing writes","This design became DynamoDB"],
+avoid:["Eventual consistency pushed conflict handling into application code","Tuning all those knobs is real operational cost"],
+over:"The canonical example of choosing availability over strict consistency — name it when explaining AP trade-offs.",
+tools:"Dynamo paper → DynamoDB",ask:"Why did Amazon accept eventual consistency for carts? What breaks if they didn't?"},
+{id:"cs-stripe",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Stripe → idempotency keys",tag:"The production reference for safe payments over unreliable networks.",
+use:["Public API accepts an Idempotency-Key header on charge requests","Server stores the result keyed by it; retries return the stored result","Money movement on an immutable, double-entry ledger"],
+avoid:["Keys + responses must be stored durably with an expiry policy","Requires discipline across every mutating endpoint"],
+over:"The go-to real example for payment/idempotency questions — mention Stripe by name.",
+tools:"Idempotency-Key header · ledger design",ask:"Client retries a payment after a timeout — what exactly happens server-side?"},
+{id:"cs-slack",cat:"Case Studies",pri:"nice",cs:true,title:"🏭 Slack → sharding the message store",tag:"MySQL + Vitess, sharded by workspace — and hot-customer pain.",
+use:["Messages in MySQL sharded via Vitess, keyed by team/workspace","Hot channel reads handled with denormalization + caching"],
+avoid:["Giant workspaces became hot shards","Resharding as teams grow is genuinely painful"],
+over:"A clean example of shard-by-tenant and its classic weakness: one huge tenant dominates a shard.",
+tools:"MySQL · Vitess",ask:"Your biggest customer is 100x everyone else — how does your sharding survive?"},
+{id:"cs-uber",cat:"Case Studies",pri:"nice",cs:true,title:"🏭 Uber → microservices hangover",tag:"Kafka as the backbone… and ~4000 services as the cautionary tale.",
+use:["Kafka is the central nervous system; Schema Registry enforces contracts","Grew to thousands of microservices at peak"],
+avoid:["Dependencies cascaded into a 'distributed monolith'","Uber publicly wrote about consolidating back into 'macro-services'"],
+over:"Perfect evidence for 'when NOT to split': decomposition faster than org maturity creates more problems than it solves.",
+tools:"Kafka · uReplica · internal platforms",ask:"What signals would tell you a service should be merged back?"},
+{id:"cs-revert",cat:"Case Studies",pri:"important",cs:true,title:"🏭 The Great Reverts → back to monoliths",tag:"Segment, Uber, Amazon Prime Video: real teams undid microservices.",
+use:["Segment (2017): 120+ services → back to a monolith, productivity went UP","Amazon Prime Video (2023): audio/video monitoring service consolidated to a monolith","Uber: macro-services consolidation"],
+avoid:["All three cite distributed-system complexity, deploy pain, and cost as reasons","None of them reverted their data layer — only service boundaries"],
+over:"Cite these when asked 'when are microservices wrong?' — real receipts beat opinions.",
+tools:"Modular monolith wins",ask:"Why do teams revert? What would you check before splitting a monolith?"}
 ];
 
 const HELP=[
@@ -340,7 +416,9 @@ const HELP=[
 {t:"Users upload files / media",s:["Never through the app server if avoidable","Presigned URL → straight to S3","Serve via CDN; scan / resize async via a queue"],w:"Blobs inside Postgres / Mongo bloat your DB — avoid."},
 {t:"API abuse / one noisy client",s:["Rate limit at the edge (token bucket in Redis)","Per-key limits for APIs; per-IP for anonymous","Return 429 + Retry-After"],w:"Rate limits don't fix an under-scaled system — they just hide it."},
 {t:"Flow spans services (order → payment → stock)",s:["Can it fit in one DB? → local ACID transaction (boring = good)","Otherwise: saga with compensating actions + outbox pattern","Design for eventual consistency & idempotent steps"],w:"2PC / distributed locks across services = pain. Avoid."},
-{t:"App is growing — split into microservices?",s:["Start with a modular monolith; draw internal boundaries","Split when: team contention, independent scale / deploy needs","Strangler fig: extract one service at a time"],w:"Microservices before CI / monitoring maturity multiplies every problem."}
+{t:"App is growing — split into microservices?",s:["Start with a modular monolith; draw internal boundaries","Split when: team contention, independent scale / deploy needs","Strangler fig: extract one service at a time"],w:"Microservices before CI / monitoring maturity multiplies every problem."},
+{t:"Need exactly-once processing",s:["Accept it: end-to-end exactly-once is impossible in general","Deliver at-least-once","Dedupe at the consumer: idempotency keys / unique constraints / upserts","Kafka transactions help inside Kafka, not beyond it"],w:"Custom 'exactly-once' frameworks = weeks of pain for a property you can't guarantee."},
+{t:"Two workers might process the same thing",s:["First: make the operation idempotent (unique constraint / upsert)","Then: Postgres advisory lock or SELECT FOR UPDATE SKIP LOCKED","Redis SET NX + TTL if there's no shared DB","Only then think about Redlock / ZooKeeper"],w:"Reaching for Redlock before trying a database constraint."}
 ];
 
 const CHECK=[
@@ -348,16 +426,19 @@ const CHECK=[
 "Sharding before maxing out indexes & replicas","GraphQL gateway + federation for one client app",
 "Microservices with a 2-person team","Multi-region before product–market fit",
 "Custom-built API gateway / framework","Caching every query 'just in case'",
-"Event sourcing + CQRS for a CRUD app","Service mesh (Istio) before basic monitoring"];
+"Event sourcing + CQRS for a CRUD app","Service mesh (Istio) before basic monitoring",
+"Custom 'exactly-once' machinery instead of idempotency","Distributed locks where a DB unique constraint would do"];
 
 const $=s=>document.querySelector(s);
 const li=x=>`<li>${x}</li>`;
 let mastered=new Set(); try{mastered=new Set(JSON.parse(localStorage.getItem("sdg-mastered")||"[]"))}catch(e){}
 let F={q:"",cat:"all",pri:"all"};
 
-/* render cards */
-$("#grid").innerHTML=CARDS.map(c=>`
-<article class="card ${mastered.has(c.id)?"done":""}" id="c-${c.id}" data-cat="${c.cat}" data-pri="${c.pri}" data-search="${(c.title+" "+c.tag+" "+c.tools+" "+c.cat).toLowerCase()}">
+function cardHTML(c){
+  const L=c.cs
+    ?{u:"🏭 WHAT THEY DID",a:"💸 WHAT IT COST / BIT THEM",o:"🎓 YOUR INTERVIEW LESSON",ask:"🎤 Talk about:"}
+    :{u:"✅ USE WHEN",a:"⛔ AVOID WHEN",o:"⚠️ OVER-ENGINEERING TELL",ask:"🎤 Interview spin:"};
+  return `<article class="card ${mastered.has(c.id)?"done":""}" id="c-${c.id}" data-cat="${c.cat}" data-pri="${c.pri}" data-search="${(c.title+" "+c.tag+" "+c.tools+" "+c.cat+" "+c.use.join(" ")+" "+c.avoid.join(" ")).toLowerCase()}">
   <div class="top" tabindex="0" role="button" aria-expanded="false">
     <div class="badges">
       <span class="cat" style="--c:${CATS[c.cat]}">${c.cat}</span>
@@ -368,16 +449,16 @@ $("#grid").innerHTML=CARDS.map(c=>`
   </div>
   <div class="body"><div class="inner">
     <div class="cols">
-      <div class="use"><h4>✅ USE WHEN</h4><ul>${c.use.map(li).join("")}</ul></div>
-      <div class="avoid"><h4>⛔ AVOID WHEN</h4><ul>${c.avoid.map(li).join("")}</ul></div>
+      <div class="use"><h4>${L.u}</h4><ul>${c.use.map(li).join("")}</ul></div>
+      <div class="avoid"><h4>${L.a}</h4><ul>${c.avoid.map(li).join("")}</ul></div>
     </div>
-    <div class="over"><h4>⚠️ OVER-ENGINEERING TELL</h4>${c.over}</div>
-    <p class="tools">🧰 <b>Tools:</b> ${c.tools}</p>
-    <p class="ask">🎤 <b>Interview spin:</b> ${c.ask}</p>
-  </div></div>
-</article>`).join("");
+    <div class="over"><h4>${L.o}</h4>${c.over}</div>
+    <p class="tools">🧰 <b>${c.cs?"Stack:":"Tools:"}</b> ${c.tools}</p>
+    <p class="ask"><b>${L.ask}</b> ${c.ask}</p>
+  </div></div></article>`;
+}
+$("#grid").innerHTML=CARDS.map(cardHTML).join("");
 
-/* chips */
 $("#chips").innerHTML=`<button class="chip on" data-c="all">All</button>`+Object.keys(CATS).map(k=>`<button class="chip" data-c="${k}">${k}</button>`).join("");
 
 function apply(){
@@ -416,7 +497,6 @@ $("#rnd").onclick=()=>{
   setTimeout(()=>c.classList.remove("flash"),1600);
 };
 
-/* helper */
 $("#helpSel").innerHTML+=HELP.map((h,i)=>`<option value="${i}">${h.t}</option>`).join("");
 $("#helpSel").addEventListener("change",e=>{
   const h=HELP[e.target.value]; const out=$("#helpOut");
@@ -426,13 +506,12 @@ $("#helpSel").addEventListener("change",e=>{
   $("#helpStop").textContent=h.w;
 });
 
-/* checklist */
 $("#checklist").innerHTML=CHECK.map((c,i)=>`<label><input type="checkbox" data-i="${i}"> ${c}</label>`).join("");
 function verdict(n){
   const v=$("#verdict");
   if(n===0)v.innerHTML="🏆 <b>Lean machine.</b> You add complexity only when it hurts. Interviewers will love you.";
   else if(n<=3)v.innerHTML="🌶️ <b>Mild spice.</b> Defensible if traffic proves it — keep measuring.";
-  else if(n<=6)v.innerHTML="🚧 <b>Complexity creep.</b> Half of these solve problems you don't have yet.";
+  else if(n<=7)v.innerHTML="🚧 <b>Complexity creep.</b> Half of these solve problems you don't have yet.";
   else v.innerHTML="🚨 <b>Resume-driven development.</b> Your biggest risk isn't scale — it's shipping at all.";
 }
 $("#checklist").addEventListener("change",()=>{verdict(document.querySelectorAll("#checklist input:checked").length);});
