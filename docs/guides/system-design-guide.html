@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>System Design Field Guide — Interactive Cards</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+    --accent:#4f46e5; --green:#15803d; --greenbg:#f0fdf4; --red:#b91c1c; --redbg:#fef2f2;
+    --amber:#92400e; --amberbg:#fffbeb; --r:14px;
+  }
+  html{scroll-behavior:smooth}
+  body{font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+  section{scroll-margin-top:90px;margin:34px 0}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 18px}
+  .brand{font-size:17px}
+  nav{display:flex;gap:4px;flex-wrap:wrap}
+  nav a{color:var(--muted);text-decoration:none;font-size:13.5px;padding:6px 10px;border-radius:8px}
+  nav a:hover{background:#eef2ff;color:var(--accent)}
+  .prog{display:flex;align-items:center;gap:8px;margin-left:auto;min-width:170px}
+  .progress{flex:1;height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width .4s}
+  #ptext{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+  .hero h1{font-size:clamp(22px,3.4vw,32px);line-height:1.2}
+  .hero p{color:var(--muted);margin-top:8px;max-width:760px}
+
+  h2{font-size:21px;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:14px;max-width:820px}
+
+  /* ---------- decision helper ---------- */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  select,input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff;color:var(--ink)}
+  select:focus,input:focus{outline:2px solid #c7d2fe;border-color:var(--accent)}
+  #helpOut{margin-top:14px;display:none}
+  #helpOut ol{margin:10px 0 10px 4px;list-style:none;counter-reset:st}
+  #helpOut ol li{counter-increment:st;position:relative;padding:8px 10px 8px 40px;margin:6px 0;background:#f8fafc;border:1px solid var(--line);border-radius:10px;font-size:14.5px}
+  #helpOut ol li::before{content:counter(st);position:absolute;left:10px;top:9px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .stop{background:var(--redbg);border:1px solid #fecaca;color:var(--red);border-radius:10px;padding:10px 12px;font-size:14px}
+  .stop b::before{content:"🛑 "}
+
+  /* ---------- controls ---------- */
+  .controls{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .seg button{border:0;background:none;padding:7px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+  .seg button.on{background:#111827;color:#fff}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  #count{font-size:12.5px;color:var(--muted);margin-left:auto}
+
+  /* ---------- cards ---------- */
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.05);transition:border-color .2s}
+  .card.flash{border-color:var(--accent);box-shadow:0 0 0 3px #c7d2fe}
+  .card .top{padding:14px 16px 12px;cursor:pointer;position:relative}
+  .badges{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+  .cat{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--c);background:color-mix(in srgb,var(--c) 12%, #fff);border:1px solid color-mix(in srgb,var(--c) 35%, #fff);border-radius:99px;padding:2px 9px}
+  .pri{font-size:11px;border-radius:99px;padding:2px 9px;font-weight:600}
+  .pri.must{background:#ffe4e6;color:#be123c}
+  .pri.important{background:#fef3c7;color:#92400e}
+  .pri.nice{background:#f1f5f9;color:#475569}
+  .got{margin-left:auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:transparent;cursor:pointer;font-size:14px;line-height:1}
+  .got:hover{border-color:#22c55e}
+  .card.done{border-color:#86efac}
+  .card.done .got{background:#16a34a;border-color:#16a34a;color:#fff}
+  .card h3{font-size:16.5px}
+  .tag{color:var(--muted);font-size:13.5px;margin-top:3px;padding-right:18px}
+  .chev{position:absolute;right:14px;bottom:12px;color:var(--muted);transition:transform .3s;font-size:13px}
+  .card.open .chev{transform:rotate(180deg)}
+  .body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
+  .card.open .body{grid-template-rows:1fr}
+  .inner{overflow:hidden}
+  .inner>div,.inner>p{margin:0 16px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:4px}
+  @media(max-width:430px){.cols{grid-template-columns:1fr}}
+  .use,.avoid{border-radius:10px;padding:10px 12px;font-size:13.5px}
+  .use{background:var(--greenbg);border:1px solid #bbf7d0}
+  .avoid{background:var(--redbg);border:1px solid #fecaca}
+  .use h4{color:var(--green);font-size:12.5px;margin-bottom:6px}
+  .avoid h4{color:var(--red);font-size:12.5px;margin-bottom:6px}
+  .use ul,.avoid ul{list-style:none}
+  .use li,.avoid li{padding:3px 0 3px 16px;position:relative}
+  .use li::before{content:"•";position:absolute;left:2px;color:#22c55e}
+  .avoid li::before{content:"•";position:absolute;left:2px;color:#f87171}
+  .over{background:var(--amberbg);border:1px solid #fde68a;border-radius:10px;padding:10px 12px;margin-top:10px !important;font-size:13.5px}
+  .over h4{color:var(--amber);font-size:12.5px;margin-bottom:4px}
+  .tools{margin-top:10px !important;font-size:13px;color:var(--muted)}
+  .ask{margin:8px 16px 16px !important;font-size:13px;color:var(--accent);background:#eef2ff;border-radius:10px;padding:8px 10px}
+
+  /* ---------- over-engineering ---------- */
+  .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:16px}
+  .three div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;font-size:14px}
+  .three b{display:block;margin-bottom:2px}
+  #checklist{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+  #checklist label{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;cursor:pointer}
+  #checklist input{margin-top:2px;accent-color:#dc2626;width:16px;height:16px}
+  #verdict{margin-top:14px;border-radius:var(--r);padding:14px 16px;font-size:15px;border:1px solid var(--line);background:var(--card)}
+
+  /* ---------- playbook ---------- */
+  #playbook ol{list-style:none;counter-reset:pb;display:grid;gap:10px}
+  #playbook ol li{counter-increment:pb;position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 12px 52px;font-size:14.5px}
+  #playbook ol li::before{content:counter(pb);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .gold{margin-top:14px;display:grid;gap:8px}
+  .gold div{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:10px;padding:10px 12px;font-size:14px}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:26px 0 34px}
+</style>
+</head>
+<body>
+
+<header><div class="wrap head">
+  <div class="brand">🧭 <b>System Design Field Guide</b></div>
+  <nav>
+    <a href="#helper">Decision Helper</a><a href="#cards">Cards</a>
+    <a href="#overeng">Over-engineering</a><a href="#playbook">Playbook</a>
+  </nav>
+  <div class="prog"><div class="progress"><i id="pbar"></i></div><span id="ptext">0/0 mastered</span></div>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>What to use, when — and when it's over-engineering.</h1>
+    <p>Interactive learning cards for system design interviews. Click a card to open it. Hit <b>✓</b> once you can explain it out loud — your progress is saved in this browser.</p>
+  </section>
+
+  <section id="helper">
+    <h2>🎯 Decision helper — "I have this problem…"</h2>
+    <p class="sub">Pick a symptom. Get the <b>boring-first</b> order of solutions, plus the over-engineering trap to avoid.</p>
+    <div class="panel">
+      <select id="helpSel"><option value="">— choose your problem —</option></select>
+      <div id="helpOut"><ol id="helpSteps"></ol><div class="stop"><b>Over-engineering trap: </b><span id="helpStop"></span></div></div>
+    </div>
+  </section>
+
+  <section id="cards">
+    <h2>🃏 Learning cards</h2>
+    <p class="sub">Green = reach for it. Red = think twice. Amber = the tell that you're over-engineering.</p>
+    <div class="controls">
+      <div class="row"><input type="text" id="q" placeholder="🔍 Search (e.g. cache, shard, kafka, replay, latency…)"/></div>
+      <div class="row">
+        <div class="chips" id="chips"></div>
+        <div class="seg" id="seg">
+          <button data-p="all" class="on">All</button><button data-p="must">🔥 Must</button>
+          <button data-p="important">⭐ Important</button><button data-p="nice">💡 Nice</button>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="expAll">⊞ Expand all</button>
+        <button class="btn" id="colAll">⊟ Collapse all</button>
+        <button class="btn" id="rnd">🎲 Quiz me (random card)</button>
+        <span id="count"></span>
+      </div>
+    </div>
+    <div id="grid"></div>
+  </section>
+
+  <section id="overeng">
+    <h2>🚩 Over-engineering radar</h2>
+    <p class="sub">Before adding <i>any</i> component, answer these three:</p>
+    <div class="three">
+      <div><b>1. What problem does it solve?</b>If you can't name a current, real pain — wait.</div>
+      <div><b>2. What does it cost?</b>Ops burden, latency, consistency, debugging difficulty.</div>
+      <div><b>3. What breaks without it?</b>If the answer is "nothing today", it's a luxury, not a need.</div>
+    </div>
+    <p class="sub">Now the honest check — tick everything that's true about your (planned) system:</p>
+    <div id="checklist"></div>
+    <div id="verdict"></div>
+  </section>
+
+  <section id="playbook">
+    <h2>🎤 The 6-step interview playbook</h2>
+    <p class="sub">Use this exact order in the room. It keeps you from jumping to tools too fast.</p>
+    <ol>
+      <li><b>Clarify requirements.</b> Functional + non-functional. Ask about scale: users, QPS, data size, read/write ratio.</li>
+      <li><b>Estimate.</b> Back-of-envelope: storage per year, requests/sec, cache size. Numbers justify architecture.</li>
+      <li><b>High-level design.</b> Client → LB → services → DB, with cache and queue where needed. Draw before deep-diving.</li>
+      <li><b>Data model & APIs.</b> Sketch schemas and 2–3 endpoint contracts. SQL vs NoSQL choice with reasons.</li>
+      <li><b>Scale the bottlenecks.</b> Reads → index, cache, replicas. Writes → async queues, batching. Only last: sharding.</li>
+      <li><b>Reliability & ops.</b> Failure modes, idempotency, DLQs, monitoring, rollouts. End with trade-offs you accept.</li>
+    </ol>
+    <div class="gold">
+      <div>💬 <b>Trade-offs &gt; tools.</b> Always say what you give up when you pick something.</div>
+      <div>🧱 <b>Start boring.</b> Monolith, one DB, one cache, one queue. Scale only when forced.</div>
+      <div>🙋 <b>Call out red flags yourself.</b> "I would NOT shard here because…" scores points.</div>
+      <div>🔢 <b>Estimate first.</b> "10 GB fits one Postgres easily, so no sharding" beats hand-waving.</div>
+    </div>
+  </section>
+</main>
+
+<footer>Trade-offs &gt; tools. Built for interview prep — good luck! 🍀</footer>
+
+<script>
+const CATS={"Scaling":"#2563eb","Caching":"#ea580c","Storage":"#7c3aed","Messaging":"#0d9488","Reliability":"#e11d48","API & Realtime":"#db2777","Architecture":"#4f46e5","Ops":"#64748b"};
+const PRI={must:"🔥 Must-know",important:"⭐ Important",nice:"💡 Nice-to-have"};
+
+const CARDS=[
+{id:"lb",cat:"Scaling",pri:"must",title:"Load Balancer",tag:"Spread traffic across servers — no single point of failure.",
+use:["You run 2+ instances of a service","You need high availability & zero-downtime deploys","One machine can't take all the traffic","You want health checks to route around bad nodes"],
+avoid:["You have one server and no plan for a second","Hobby project with a few users — a single VPS is fine"],
+over:"Adding a service mesh / fancy L7 rules before you have real traffic. Sticky sessions everywhere instead of making the app stateless.",
+tools:"Nginx · HAProxy · AWS ALB/NLB · Envoy",ask:"L4 vs L7? How do health checks work? What happens to in-flight requests when a node dies?"},
+{id:"cdn",cat:"Scaling",pri:"must",title:"CDN",tag:"Cache static content at edge locations close to users.",
+use:["Static assets: images, CSS, JS, video","Global audience → cut latency","Shrinking origin load & bandwidth cost"],
+avoid:["Fully dynamic, per-user responses (little to cache)","Internal tools with local users"],
+over:"Edge-compute / worker logic everywhere before you actually have global users.",
+tools:"Cloudflare · CloudFront · Fastly",ask:"What can and can't go on a CDN? How do you invalidate a cached asset?"},
+{id:"scale",cat:"Scaling",pri:"must",title:"Vertical vs Horizontal Scaling",tag:"Bigger machine (up) vs more machines (out).",
+use:["Vertical first: early stage, stateful single node (DB), simplest win","Horizontal: stateless services, need elasticity & fault tolerance, beyond one box's limit"],
+avoid:["Horizontal before the app is stateless","Vertical when you need failover with zero downtime"],
+over:"Autoscaling groups + K8s for traffic that fits one box. 'Scale early' is a myth — measure first.",
+tools:"Cloud autoscaling · K8s HPA",ask:"When scale-up vs scale-out? Why does statelessness matter for horizontal scaling?"},
+{id:"gw",cat:"Scaling",pri:"important",title:"API Gateway",tag:"One entry point: routing, auth, throttling across services.",
+use:["Many microservices behind one door","Cross-cutting concerns (auth, rate limits, CORS) in one place","Hide internal topology from clients"],
+avoid:["Monolith or 1–3 services — a plain reverse proxy (Nginx) is enough","When it's becoming a bottleneck / god-object"],
+over:"Rolling your own gateway framework; stacking gateway + service mesh + GraphQL federation on a tiny system.",
+tools:"Kong · AWS API Gateway · Nginx · Envoy",ask:"Gateway vs load balancer — the difference?"},
+{id:"cache",cat:"Caching",pri:"must",title:"Caching (Redis)",tag:"Keep hot data in fast memory; hit the DB less, answer faster.",
+use:["Read-heavy, repeated expensive queries","Sessions, rate limits, locks (Redis shines)","Slow join results that tolerate TTL staleness"],
+avoid:["Data that must never be stale (balance right after a write)","Write-heavy, constantly changing data","When the DB is already fast — add an index first!"],
+over:"Three cache layers (local + Redis + CDN logic) for a small app; caching 'everything' without measuring hit rate; complex invalidation where a TTL would do.",
+tools:"Redis · Memcached",ask:"Cache-aside vs write-through? What is cache stampede and how do you prevent it?"},
+{id:"pg",cat:"Storage",pri:"must",title:"PostgreSQL (relational)",tag:"ACID, SQL, joins — the default for structured, related data.",
+use:["Transactions: payments, orders, inventory","Complex queries & joins","Strong consistency, mature tooling"],
+avoid:["Unknown / fast-changing schema (documents fit better)","Horizontal write scale beyond one node","Simple hot key-value data (that's Redis)"],
+over:"Sharding Postgres before trying indexes + EXPLAIN + read replicas + connection pooling (PgBouncer).",
+tools:"PostgreSQL · MySQL · PgBouncer",ask:"When pick Mongo over Postgres and vice versa?"},
+{id:"mongo",cat:"Storage",pri:"must",title:"MongoDB (document)",tag:"Flexible-schema document store — iterate fast, nest naturally.",
+use:["Evolving / semi-structured data (catalogs, content, profiles)","Nested documents matching access patterns","Rapid prototyping"],
+avoid:["Multi-record transactions are the core of the app","Heavy cross-entity joins / aggregations","You actually need rigid schema + foreign keys"],
+over:"Choosing it 'to avoid migrations', then rebuilding schema validation and joins in app code.",
+tools:"MongoDB · (compare: DynamoDB)",ask:"How do you model one-to-many in Mongo vs SQL? When do embedded docs hurt?"},
+{id:"replicas",cat:"Storage",pri:"important",title:"Read Replicas",tag:"Copy the database; serve reads from the copies.",
+use:["Read-heavy load (e.g. 90% reads)","Primary CPU-hot on reads","Offloading analytics / reporting queries"],
+avoid:["You can't tolerate stale reads (replication lag)","Write-bound systems — replicas don't help writes","Before caching & indexing (cheaper wins first)"],
+over:"Replicas for a DB doing 5 QPS; adding replicas to fix a missing-index problem.",
+tools:"Postgres streaming replication · Mongo secondaries",ask:"How do you handle replication lag? What if a replica falls far behind?"},
+{id:"shard",cat:"Storage",pri:"important",title:"Sharding",tag:"Split one dataset across many DB nodes by shard key.",
+use:["Data / write volume beyond one machine after vertical scaling","Throughput a single node physically can't give"],
+avoid:["Before indexes, archiving, replicas, caching","No good shard key exists","Cross-shard queries / transactions are the norm"],
+over:"THE classic interview red flag: 'we'll shard' at 20 GB. Sharding adds resharding pain, hot shards, and kills cross-shard joins.",
+tools:"Citus · Vitess · Mongo sharding · consistent hashing",ask:"How pick a shard key? How handle hot spots and resharding?"},
+{id:"wide",cat:"Storage",pri:"nice",title:"Cassandra / DynamoDB",tag:"Distributed wide-column / KV: massive writes, predictable latency, always-on.",
+use:["Huge scale, high write throughput (time-series, events, telemetry)","Multi-region active-active","You accept eventual consistency for availability"],
+avoid:["Ad-hoc queries & joins (queries must be designed upfront)","Small data","Relational integrity needs"],
+over:"'Netflix uses it' as a reason at startup scale; forcing relational data into wide columns and fighting it forever.",
+tools:"Cassandra · ScyllaDB · DynamoDB · Bigtable",ask:"What's a hot partition? Eventual vs tunable consistency?"},
+{id:"es",cat:"Storage",pri:"important",title:"Elasticsearch / Search",tag:"Inverted-index engine: real search, typo tolerance, facets, analytics.",
+use:["Product / content search with relevance & typos","Autocomplete / suggestions","Log & analytics pipelines"],
+avoid:["As a primary database — it's not a system of record","Small-scale simple search: Postgres tsvector / ILIKE is enough"],
+over:"An ES cluster for a search box over 10k rows; self-hosting ES for logs when a managed service exists.",
+tools:"Elasticsearch · OpenSearch · Typesense · Meilisearch (light)",ask:"How does an inverted index work? How keep ES in sync with the DB?"},
+{id:"s3",cat:"Storage",pri:"important",title:"Object Storage (S3)",tag:"Durable, cheap blob storage: files, images, video, backups.",
+use:["User uploads & media (serve via CDN + signed URLs)","Backups & archives","Anything bigger than a few MB"],
+avoid:["Blobs inside the DB (bloats and slows it)","When you need transactional partial updates of files"],
+over:"Elaborate multi-bucket lifecycle / replication policies on day one.",
+tools:"S3 · GCS · MinIO (self-host)",ask:"How handle uploads without touching your app server? (presigned URLs!)"},
+{id:"rmq",cat:"Messaging",pri:"must",title:"RabbitMQ",tag:"Classic broker: smart routing, per-message acks, work queues.",
+use:["Background tasks & work queues","Complex routing (topic / fanout exchanges)","Each message processed once, then gone","Per-message ack / visibility control"],
+avoid:["You need replay / event history / huge throughput → Kafka","Simple Node jobs on existing Redis → BullMQ is lighter"],
+over:"Elaborate exchange topologies (DLX chains, priority queues everywhere) for a plain FIFO need.",
+tools:"RabbitMQ · (compare: SQS, ActiveMQ)",ask:"Queue vs exchange vs binding? What is a dead-letter queue?"},
+{id:"kafka",cat:"Messaging",pri:"important",title:"Kafka",tag:"Durable partitioned log: high-throughput streaming with replay.",
+use:["Event pipelines with many consumers","Replay / audit / event sourcing / CDC","Throughput beyond classic brokers"],
+avoid:["Simple job queues / delayed jobs (RabbitMQ / BullMQ simpler)","Two-service app with no replay need","Team without ops maturity"],
+over:"'Event-driven everything' at small scale; using Kafka as a task queue and rebuilding delays & retries yourself.",
+tools:"Kafka · Redpanda · Pulsar",ask:"Kafka vs RabbitMQ? Consumer groups, partitions, ordering guarantees?"},
+{id:"bull",cat:"Messaging",pri:"must",title:"BullMQ",tag:"Node.js job queue on Redis: retries, priorities, delays, cron.",
+use:["Node background jobs (emails, thumbnails, webhooks)","You already run Redis","Moderate throughput is fine"],
+avoid:["Strong durability guarantees required (Redis is memory-first)","Heavy polyglot pipelines","Need replay → Kafka; advanced routing → RabbitMQ"],
+over:"Jumping to Kafka when BullMQ handles your load comfortably; a second Redis instance just for queues at tiny scale.",
+tools:"BullMQ · (compare: Agenda, Bee-Queue)",ask:"How guarantee a job isn't lost? What happens when a worker crashes mid-job?"},
+{id:"rl",cat:"Reliability",pri:"must",title:"Rate Limiter",tag:"Cap requests per user / IP / key to protect from abuse & overload.",
+use:["Public APIs & login endpoints","Expensive endpoints","Multi-tenant fairness","Bot / abuse protection"],
+avoid:["As a substitute for real scaling / caching","Internal trusted service-to-service calls (usually)"],
+over:"Distributed sliding-window Lua scripts for an internal admin tool; 50 per-endpoint limits before you have users.",
+tools:"Redis + token bucket · Nginx limit_req · API gateway",ask:"Token bucket vs sliding window? Where enforce limits — edge or service?"},
+{id:"idem",cat:"Reliability",pri:"must",title:"Idempotency",tag:"Same request twice → same effect. Makes retries safe.",
+use:["Consumers on at-least-once queues","Payments & order creation","Public POST/PUT APIs where clients retry"],
+avoid:["Pure reads","Operations where duplicates are impossible or harmless"],
+over:"Idempotency-key infrastructure on every internal call that has no retry path.",
+tools:"Idempotency keys · unique constraints · upserts · dedupe tables",ask:"How make a payment flow idempotent? At-least-once vs exactly-once?"},
+{id:"retry",cat:"Reliability",pri:"important",title:"Retries + Circuit Breaker",tag:"Retry transient errors with backoff; stop hammering a dying dependency.",
+use:["Network calls & 3rd-party APIs with transient failures","When a fallback / degraded mode exists"],
+avoid:["Retrying permanent errors (4xx, validation)","Non-idempotent ops without idempotency keys","Infinite retries without jitter → retry storms"],
+over:"Circuit breakers on every function call inside a monolith; a resilience framework before you've observed one real failure.",
+tools:"Exponential backoff + jitter · circuit breaker · bulkhead · timeouts",ask:"What is a retry storm? How does a breaker decide to open?"},
+{id:"dlq",cat:"Reliability",pri:"important",title:"Dead-Letter Queue",tag:"Parking lot for messages that failed after retries — nothing lost silently.",
+use:["Every real consumer: poison messages must be visible & inspectable","Alerting on DLQ depth"],
+avoid:["When dropping failed events is an explicit, accepted business decision (rare)"],
+over:"Building auto-replay / reprocessing platforms before you've ever manually inspected a DLQ.",
+tools:"RabbitMQ DLX · Kafka DLQ topic · BullMQ failed jobs",ask:"A message keeps failing — walk me through your handling."},
+{id:"saga",cat:"Reliability",pri:"nice",title:"Saga / Distributed Transactions",tag:"Coordinate multi-service writes with compensating actions, not 2PC locks.",
+use:["Business flows spanning services (order → payment → inventory)","You've accepted eventual consistency"],
+avoid:["The whole flow fits in ONE database → use a local ACID transaction, full stop"],
+over:"Orchestrators & sagas for operations a single Postgres transaction already solves; 2PC across services 'for consistency'.",
+tools:"Saga (orchestration vs choreography) · outbox pattern · compensating actions",ask:"How handle partial failure across three services?"},
+{id:"api",cat:"API & Realtime",pri:"must",title:"REST vs gRPC vs GraphQL",tag:"REST for public simplicity; gRPC for internal speed; GraphQL for flexible clients.",
+use:["REST: public CRUD APIs, cacheability, universal tooling","gRPC: internal service-to-service, low latency, streaming, typed codegen","GraphQL: many client shapes (mobile/web/TV) needing different data slices"],
+avoid:["GraphQL 'because modern' with one client (caching & N+1 pain)","gRPC from browsers (limited support)","REST dogma when you need bulk / batch ops"],
+over:"GraphQL federation + gateway for 2 clients and 3 services.",
+tools:"OpenAPI · Protobuf · Apollo",ask:"When is GraphQL worse than REST?"},
+{id:"ws",cat:"API & Realtime",pri:"important",title:"WebSockets vs SSE vs Polling",tag:"Push to clients: WS = both ways, SSE = server→client, polling = simple.",
+use:["WebSockets: chat, games, live cursors — true bidirectional","SSE: notifications, feeds, dashboards — simpler, HTTP-friendly","Polling: rare updates, simple clients, cacheable responses"],
+avoid:["WebSockets for once-a-minute updates (connection state, sticky sessions, reconnect logic = hidden cost)","WS when SSE + short polling covers it"],
+over:"'Realtime' push for data users happily refresh by hand; a WS cluster before validating the feature.",
+tools:"Socket.IO · ws · EventSource · long polling",ask:"Design a notification system — WS or SSE, and why?"},
+{id:"mono",cat:"Architecture",pri:"must",title:"Monolith vs Microservices",tag:"Start with a modular monolith; split when the pain is real.",
+use:["Microservices: teams needing independent deploy/scale, clear bounded domains, different tech per part","Monolith: early product, small team, unclear boundaries — one deploy, one DB, easy debugging"],
+avoid:["Microservices before you can run a monolith well (CI, monitoring, tests)","Splitting by technical layer instead of business domain"],
+over:"THE classic: 15 microservices, 2 developers, no users. Distribution multiplies every problem (network, observability, data consistency).",
+tools:"Modular monolith · DDD boundaries · strangler fig",ask:"How decide when to split a monolith?"},
+{id:"k8s",cat:"Ops",pri:"nice",title:"Docker & Kubernetes",tag:"Docker = consistent runtime; K8s = orchestration when scale demands it.",
+use:["Docker: basically always — same env on laptop, CI, prod","K8s: many services, autoscaling / rolling updates, team maturity"],
+avoid:["K8s for small team / few services — managed containers (Cloud Run, ECS, Fly.io) give 90% of value at 10% of the ops"],
+over:"K8s + service mesh + GitOps for a 3-service MVP. Resume-driven infrastructure is real.",
+tools:"Docker · Compose · K8s · Cloud Run · ECS",ask:"Do you need K8s? What's the simpler alternative, and when?"},
+{id:"obs",cat:"Ops",pri:"important",title:"Observability",tag:"Logs, metrics, traces, alerts — know what your system is doing.",
+use:["From day one: error rate, latency p95/p99, queue depth, DB connections","Tracing once requests cross service boundaries","Alert on symptoms, not causes"],
+avoid:["100% trace sampling on everything","Building custom metrics pipelines when managed exists"],
+over:"ELK + Jaeger + Grafana + PagerDuty for a side project with 3 users. Start with structured logs + a few golden metrics.",
+tools:"Prometheus · Grafana · OpenTelemetry · ELK · Datadog",ask:"How debug a slow endpoint in production?"}
+];
+
+const HELP=[
+{t:"Reads are slow / DB CPU is hot",s:["Add the right index + EXPLAIN the query (free, do first)","Cache hot reads in Redis (cache-aside + TTL)","Add read replicas if reads still overwhelm","Only then think about sharding"],w:"Sharding first = over-engineering. It's the last resort, not the first."},
+{t:"Writes / ingestion overwhelm the DB",s:["Accept fast, process async via a queue (BullMQ / RabbitMQ)","Batch writes; archive or purge old rows","Scale the DB vertically — one box goes far","Last resort: shard, or move hot writes to Cassandra / DynamoDB"],w:"Reaching for a distributed DB before async + batching."},
+{t:"Need background jobs (emails, PDFs, thumbnails)",s:["On Node + Redis already? → BullMQ","Need routing / retries across languages? → RabbitMQ","Need replay & streams? → Kafka (rarely for simple jobs)"],w:"Kafka for a simple job queue = heavy ops for no gain."},
+{t:"Several services need the same events",s:["Few consumers, no replay → RabbitMQ fan-out","Replay / many consumers / high throughput → Kafka","Keep events small and schema-versioned"],w:"'Event-driven everything' without ops maturity creates chaos."},
+{t:"Users are far away → high latency",s:["Static assets → CDN","Cache at the edge where possible","Then, and only then: multi-region + geo DNS (big step!)"],w:"Multi-region before you have a global audience = classic overkill."},
+{t:"UI needs live updates",s:["Updates every few seconds or more → polling (simplest)","Server→client pushes (feeds, alerts) → SSE","Bidirectional (chat, games) → WebSockets"],w:"WebSockets for data users would happily refresh = hidden complexity."},
+{t:"Need search / autocomplete",s:["Under ~100k rows → Postgres tsvector / ILIKE","Real relevance, typos, facets → Elasticsearch / Typesense","Keep index in sync via CDC or queue events"],w:"An ES cluster for a 10k-row search box is overkill."},
+{t:"Users upload files / media",s:["Never through the app server if avoidable","Presigned URL → straight to S3","Serve via CDN; scan / resize async via a queue"],w:"Blobs inside Postgres / Mongo bloat your DB — avoid."},
+{t:"API abuse / one noisy client",s:["Rate limit at the edge (token bucket in Redis)","Per-key limits for APIs; per-IP for anonymous","Return 429 + Retry-After"],w:"Rate limits don't fix an under-scaled system — they just hide it."},
+{t:"Flow spans services (order → payment → stock)",s:["Can it fit in one DB? → local ACID transaction (boring = good)","Otherwise: saga with compensating actions + outbox pattern","Design for eventual consistency & idempotent steps"],w:"2PC / distributed locks across services = pain. Avoid."},
+{t:"App is growing — split into microservices?",s:["Start with a modular monolith; draw internal boundaries","Split when: team contention, independent scale / deploy needs","Strangler fig: extract one service at a time"],w:"Microservices before CI / monitoring maturity multiplies every problem."}
+];
+
+const CHECK=[
+"Kubernetes for a project with no users","Kafka with fewer than 3 services",
+"Sharding before maxing out indexes & replicas","GraphQL gateway + federation for one client app",
+"Microservices with a 2-person team","Multi-region before product–market fit",
+"Custom-built API gateway / framework","Caching every query 'just in case'",
+"Event sourcing + CQRS for a CRUD app","Service mesh (Istio) before basic monitoring"];
+
+const $=s=>document.querySelector(s);
+const li=x=>`<li>${x}</li>`;
+let mastered=new Set(); try{mastered=new Set(JSON.parse(localStorage.getItem("sdg-mastered")||"[]"))}catch(e){}
+let F={q:"",cat:"all",pri:"all"};
+
+/* render cards */
+$("#grid").innerHTML=CARDS.map(c=>`
+<article class="card ${mastered.has(c.id)?"done":""}" id="c-${c.id}" data-cat="${c.cat}" data-pri="${c.pri}" data-search="${(c.title+" "+c.tag+" "+c.tools+" "+c.cat).toLowerCase()}">
+  <div class="top" tabindex="0" role="button" aria-expanded="false">
+    <div class="badges">
+      <span class="cat" style="--c:${CATS[c.cat]}">${c.cat}</span>
+      <span class="pri ${c.pri}">${PRI[c.pri]}</span>
+      <button class="got" title="Mark: I can explain this" aria-label="mark mastered">✓</button>
+    </div>
+    <h3>${c.title}</h3><p class="tag">${c.tag}</p><span class="chev">▾</span>
+  </div>
+  <div class="body"><div class="inner">
+    <div class="cols">
+      <div class="use"><h4>✅ USE WHEN</h4><ul>${c.use.map(li).join("")}</ul></div>
+      <div class="avoid"><h4>⛔ AVOID WHEN</h4><ul>${c.avoid.map(li).join("")}</ul></div>
+    </div>
+    <div class="over"><h4>⚠️ OVER-ENGINEERING TELL</h4>${c.over}</div>
+    <p class="tools">🧰 <b>Tools:</b> ${c.tools}</p>
+    <p class="ask">🎤 <b>Interview spin:</b> ${c.ask}</p>
+  </div></div>
+</article>`).join("");
+
+/* chips */
+$("#chips").innerHTML=`<button class="chip on" data-c="all">All</button>`+Object.keys(CATS).map(k=>`<button class="chip" data-c="${k}">${k}</button>`).join("");
+
+function apply(){
+  let n=0;
+  document.querySelectorAll(".card").forEach(el=>{
+    const ok=(F.cat==="all"||el.dataset.cat===F.cat)&&(F.pri==="all"||el.dataset.pri===F.pri)&&(!F.q||el.dataset.search.includes(F.q));
+    el.hidden=!ok; if(ok)n++;
+  });
+  $("#count").textContent=`Showing ${n} of ${CARDS.length}`;
+}
+function progress(){$("#pbar").style.width=(mastered.size/CARDS.length*100)+"%";$("#ptext").textContent=`${mastered.size}/${CARDS.length} mastered`;}
+
+$("#grid").addEventListener("click",e=>{
+  const got=e.target.closest(".got");
+  if(got){e.stopPropagation();const id=got.closest(".card").id.slice(2);
+    mastered.has(id)?mastered.delete(id):mastered.add(id);
+    got.closest(".card").classList.toggle("done");
+    localStorage.setItem("sdg-mastered",JSON.stringify([...mastered]));progress();return;}
+  const top=e.target.closest(".top");
+  if(top){top.closest(".card").classList.toggle("open");top.setAttribute("aria-expanded",top.closest(".card").classList.contains("open"));}
+});
+$("#grid").addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("top")){e.preventDefault();e.target.closest(".card").classList.toggle("open");}
+});
+$("#q").addEventListener("input",e=>{F.q=e.target.value.trim().toLowerCase();apply();});
+$("#chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));b.classList.add("on");F.cat=b.dataset.c;apply();});
+$("#seg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#seg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");F.pri=b.dataset.p;apply();});
+$("#expAll").onclick=()=>document.querySelectorAll(".card:not([hidden])").forEach(c=>c.classList.add("open"));
+$("#colAll").onclick=()=>document.querySelectorAll(".card").forEach(c=>c.classList.remove("open"));
+$("#rnd").onclick=()=>{
+  const vis=[...document.querySelectorAll(".card:not([hidden])")];
+  const c=vis[Math.floor(Math.random()*vis.length)]; if(!c)return;
+  c.classList.add("open","flash"); c.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>c.classList.remove("flash"),1600);
+};
+
+/* helper */
+$("#helpSel").innerHTML+=HELP.map((h,i)=>`<option value="${i}">${h.t}</option>`).join("");
+$("#helpSel").addEventListener("change",e=>{
+  const h=HELP[e.target.value]; const out=$("#helpOut");
+  if(!h){out.style.display="none";return;}
+  out.style.display="block";
+  $("#helpSteps").innerHTML=h.s.map(li).join("");
+  $("#helpStop").textContent=h.w;
+});
+
+/* checklist */
+$("#checklist").innerHTML=CHECK.map((c,i)=>`<label><input type="checkbox" data-i="${i}"> ${c}</label>`).join("");
+function verdict(n){
+  const v=$("#verdict");
+  if(n===0)v.innerHTML="🏆 <b>Lean machine.</b> You add complexity only when it hurts. Interviewers will love you.";
+  else if(n<=3)v.innerHTML="🌶️ <b>Mild spice.</b> Defensible if traffic proves it — keep measuring.";
+  else if(n<=6)v.innerHTML="🚧 <b>Complexity creep.</b> Half of these solve problems you don't have yet.";
+  else v.innerHTML="🚨 <b>Resume-driven development.</b> Your biggest risk isn't scale — it's shipping at all.";
+}
+$("#checklist").addEventListener("change",()=>{verdict(document.querySelectorAll("#checklist input:checked").length);});
+verdict(0); apply(); progress();
+</script>
+</body>
+</html>

@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>leetlab · interactive JS/TS judge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#141b23; --panel2:#10161d; --inset:#0d1219;
+    --line:#26313e; --line-soft:#1c2530;
+    --ink:#e8edf4; --mut:#8b98a9; --dim:#5c6877;
+    --amber:#ffa116; --amber2:#ffc25e; --green:#3fb950; --red:#f85149;
+    --yellow:#d29922; --cyan:#58c4dc;
+    --display:'Space Grotesk','Segoe UI',sans-serif;
+    --body:'IBM Plex Sans',system-ui,sans-serif;
+    --mono:'JetBrains Mono','Cascadia Code',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--body); font-size:14px;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  /* ---------- ambient layered background ---------- */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size:26px 26px;
+    mask-image:radial-gradient(ellipse at 50% 30%, #000 30%, transparent 85%);
+  }
+  .bgfx{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+  .bgfx i{position:absolute; border-radius:50%; filter:blur(90px); opacity:.09}
+  .bgfx i:nth-child(1){width:520px;height:520px;background:var(--amber);top:-180px;left:-120px;animation:drift 26s ease-in-out infinite alternate}
+  .bgfx i:nth-child(2){width:560px;height:560px;background:#1d6f8a;bottom:-220px;right:-140px;animation:drift 32s ease-in-out infinite alternate-reverse}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.12)}}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#26313e;border-radius:6px;border:2px solid var(--panel)}
+  ::-webkit-scrollbar-thumb:hover{background:#334153}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    position:relative; z-index:5; height:56px; flex:0 0 auto;
+    display:flex; align-items:center; gap:16px; padding:0 18px;
+    background:linear-gradient(180deg,#131a22,#0f151c);
+    border-bottom:1px solid var(--line);
+    animation:fadeDown .5s ease both;
+  }
+  .brand{display:flex;align-items:center;gap:11px}
+  .logo{
+    width:34px;height:34px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(145deg,var(--amber),#e07f00); color:#1b1204;
+    font-family:var(--mono);font-weight:700;font-size:15px;
+    box-shadow:0 4px 18px -4px rgba(255,161,22,.55), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .brand b{font-family:var(--display);font-size:19px;letter-spacing:-.02em}
+  .brand b span{color:var(--amber)}
+  .brand small{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;margin-left:2px}
+  .topbar .spacer{flex:1}
+  .progress{display:flex;align-items:center;gap:10px}
+  .progress .segs{display:flex;gap:4px}
+  .progress .segs i{width:16px;height:7px;border-radius:3px;background:#232e3b;transition:all .5s cubic-bezier(.2,.8,.2,1)}
+  .progress .segs i.on{background:var(--green);box-shadow:0 0 10px -1px rgba(63,185,80,.7)}
+  .progress .cnt{font-family:var(--mono);font-size:12px;color:var(--mut)}
+  .progress .cnt b{color:var(--ink)}
+  .tsbadge{
+    font-family:var(--mono);font-size:10.5px;padding:4px 9px;border-radius:20px;
+    border:1px solid var(--line);color:var(--dim);letter-spacing:.06em;transition:all .4s;
+  }
+  .tsbadge.ok{color:var(--green);border-color:rgba(63,185,80,.4)}
+  .tsbadge.warn{color:var(--yellow);border-color:rgba(210,153,34,.4)}
+
+  /* ---------- shell ---------- */
+  .shell{position:relative;z-index:1;flex:1;display:flex;gap:12px;padding:12px;min-height:0}
+
+  /* ---------- sidebar ---------- */
+  .sidebar{
+    flex:0 0 284px; display:flex; flex-direction:column; min-height:0;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    animation:fadeUp .5s .05s ease both;
+  }
+  .side-head{padding:14px 14px 10px;border-bottom:1px solid var(--line-soft)}
+  .side-head h2{font-family:var(--display);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+  .search{position:relative;margin-bottom:10px}
+  .search input{
+    width:100%;background:var(--inset);border:1px solid var(--line);border-radius:7px;
+    color:var(--ink);font-family:var(--body);font-size:13px;padding:8px 10px 8px 30px;outline:none;transition:border-color .2s, box-shadow .2s;
+  }
+  .search input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,161,22,.12)}
+  .search::before{content:"⌕";position:absolute;left:10px;top:50%;transform:translateY(-52%);color:var(--dim);font-size:15px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{
+    font-family:var(--mono);font-size:10.5px;padding:4px 9px;border-radius:20px;cursor:pointer;
+    border:1px solid var(--line);color:var(--mut);background:transparent;transition:all .18s;
+  }
+  .chip:hover{color:var(--ink);transform:translateY(-1px)}
+  .chip.on{border-color:var(--amber);color:var(--amber);background:rgba(255,161,22,.08)}
+  .plist{list-style:none;overflow-y:auto;flex:1;padding:6px}
+  .p-item{
+    display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:8px;cursor:pointer;
+    border-left:3px solid transparent;transition:background .18s, transform .18s, border-color .18s;
+    animation:fadeUp .35s ease both;
+  }
+  .p-item:hover{background:rgba(255,255,255,.035);transform:translateX(3px)}
+  .p-item.active{background:rgba(255,161,22,.07);border-left-color:var(--amber)}
+  .p-status{width:16px;height:16px;flex:0 0 16px;border-radius:50%;border:2px solid #33405040;display:grid;place-items:center;font-size:9px;color:transparent;transition:all .3s}
+  .p-item.solved .p-status{border-color:var(--green);color:var(--green);background:rgba(63,185,80,.12)}
+  .p-meta{flex:1;min-width:0}
+  .p-title{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .p-title em{font-style:normal;color:var(--dim);font-family:var(--mono);font-size:11px;margin-right:6px}
+  .p-tags{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+  .pill{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:20px;letter-spacing:.04em}
+  .pill.Easy{color:var(--green);background:rgba(63,185,80,.12)}
+  .pill.Medium{color:var(--yellow);background:rgba(210,153,34,.13)}
+  .pill.Hard{color:var(--red);background:rgba(248,81,73,.12)}
+
+  /* ---------- workspace ---------- */
+  .workspace{flex:1;display:flex;min-width:0;min-height:0}
+  .pane{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  }
+  .desc-pane{flex:0 0 44%;min-width:320px;animation:fadeUp .5s .12s ease both}
+  .editor-pane{flex:1;min-width:380px;animation:fadeUp .5s .2s ease both}
+  .divider{flex:0 0 12px;cursor:col-resize;position:relative;display:grid;place-items:center}
+  .divider::before{content:"";width:3px;height:44px;border-radius:3px;background:var(--line);transition:background .2s,height .2s}
+  .divider:hover::before,.divider.drag::before{background:var(--amber);height:70px}
+
+  .pane-tabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid var(--line-soft);flex:0 0 auto}
+  .ptab{
+    background:none;border:none;color:var(--mut);font-family:var(--body);font-weight:600;font-size:13px;
+    padding:9px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:color .18s;display:flex;gap:7px;align-items:center;
+  }
+  .ptab:hover{color:var(--ink)}
+  .ptab.on{color:var(--ink);border-bottom-color:var(--amber)}
+  .ptab .badge{font-family:var(--mono);font-size:10px;background:#232e3b;border-radius:10px;padding:1px 7px;color:var(--mut)}
+  .ptab.on .badge{background:rgba(255,161,22,.15);color:var(--amber)}
+  .pane-scroll{flex:1;overflow-y:auto;min-height:0}
+
+  /* description */
+  .desc-body{padding:22px 24px 40px}
+  .d-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .d-num{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .solved-badge{font-family:var(--mono);font-size:10px;color:var(--green);border:1px solid rgba(63,185,80,.4);border-radius:20px;padding:3px 9px;background:rgba(63,185,80,.08)}
+  .desc-body h1{font-family:var(--display);font-size:27px;letter-spacing:-.02em;margin-bottom:14px}
+  .d-tags{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+  .d-tags span{font-family:var(--mono);font-size:10.5px;color:var(--cyan);border:1px solid rgba(88,196,220,.3);border-radius:20px;padding:3px 10px}
+  .desc-body p{line-height:1.7;color:#c6d1dd;margin-bottom:12px;font-size:14px}
+  .desc-body code{font-family:var(--mono);font-size:12.5px;background:#1b2430;border:1px solid var(--line-soft);border-radius:4px;padding:1px 6px;color:var(--amber2)}
+  .desc-body strong{color:var(--ink)}
+  .ex{background:var(--inset);border:1px solid var(--line-soft);border-left:3px solid #33415380;border-radius:8px;padding:12px 15px;margin:12px 0;font-family:var(--mono);font-size:12.5px;line-height:1.8}
+  .ex b{color:var(--mut);font-weight:500;margin-right:6px}
+  .ex .exp{color:var(--mut);font-family:var(--body);font-size:13px}
+  .desc-body h4{font-family:var(--display);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:20px 0 10px}
+  .desc-body ul{list-style:none;margin-bottom:12px}
+  .desc-body ul li{padding:3px 0 3px 18px;position:relative;color:#aab7c4;font-size:13.5px;font-family:var(--mono)}
+  .desc-body ul li::before{content:"▸";position:absolute;left:2px;color:var(--amber)}
+  details.hint{border:1px solid var(--line-soft);border-radius:8px;margin-bottom:8px;background:var(--inset);overflow:hidden}
+  details.hint summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:13px;color:var(--amber2);list-style:none;display:flex;gap:8px;align-items:center;transition:background .2s}
+  details.hint summary:hover{background:rgba(255,161,22,.05)}
+  details.hint summary::before{content:"◇";transition:transform .25s}
+  details.hint[open] summary::before{transform:rotate(45deg)}
+  details.hint p{padding:0 14px 12px;margin:0;font-size:13px}
+  .note{border:1px dashed rgba(88,196,220,.35);border-radius:8px;padding:10px 14px;background:rgba(88,196,220,.05);font-size:13px !important;color:#9fc9d8 !important}
+
+  /* submissions */
+  .subs{padding:18px 22px}
+  .subs table{width:100%;border-collapse:collapse;font-size:13px}
+  .subs th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  .subs td{padding:9px 10px;border-bottom:1px solid var(--line-soft);color:#c6d1dd;font-family:var(--mono);font-size:12.5px}
+  .subs tr{transition:background .15s}
+  .subs tbody tr:hover{background:rgba(255,255,255,.03)}
+  .empty{color:var(--dim);text-align:center;padding:44px 0;font-size:13px}
+  .empty b{display:block;font-family:var(--display);font-size:16px;color:var(--mut);margin-bottom:6px}
+
+  /* ---------- editor ---------- */
+  .editor-head{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-soft);flex:0 0 auto}
+  .seg{position:relative;display:flex;background:var(--inset);border:1px solid var(--line);border-radius:8px;padding:3px}
+  .seg button{
+    position:relative;z-index:1;background:none;border:none;color:var(--mut);font-family:var(--mono);
+    font-size:11.5px;padding:5px 14px;cursor:pointer;border-radius:6px;transition:color .2s;letter-spacing:.03em;
+  }
+  .seg button.on{color:#1b1204;font-weight:700}
+  .seg .thumb{
+    position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border-radius:6px;
+    background:linear-gradient(145deg,var(--amber),#e08a00);transition:transform .28s cubic-bezier(.3,1.4,.4,1);
+    box-shadow:0 2px 10px -2px rgba(255,161,22,.6);
+  }
+  .seg.ts .thumb{transform:translateX(100%)}
+  .autosave{font-family:var(--mono);font-size:10.5px;color:var(--dim);opacity:0;transition:opacity .4s}
+  .autosave.show{opacity:1}
+  .editor-head .spacer{flex:1}
+  .ghost-btn{
+    background:none;border:1px solid var(--line);color:var(--mut);border-radius:7px;cursor:pointer;
+    font-family:var(--mono);font-size:11.5px;padding:6px 12px;transition:all .18s;
+  }
+  .ghost-btn:hover{color:var(--ink);border-color:#3a4859;transform:translateY(-1px)}
+
+  .editor-body{flex:1;display:flex;min-height:150px;background:var(--panel2);position:relative}
+  .gutter{flex:0 0 52px;background:var(--panel2);border-right:1px solid var(--line-soft);overflow:hidden;position:relative}
+  .gutter .nums{position:absolute;top:0;left:0;right:0;padding:14px 0;text-align:right;font-family:var(--mono);font-size:13px;line-height:1.62;color:#3d4a5a;user-select:none}
+  .gutter .nums div{padding-right:12px;transition:color .15s}
+  .gutter .nums div.cur{color:var(--amber)}
+  .code-area{position:relative;flex:1;overflow:hidden}
+  .code-area pre,.code-area textarea{
+    font-family:var(--mono);font-size:13px;line-height:1.62;padding:14px 16px;white-space:pre;
+    tab-size:2;margin:0;border:none;outline:none;width:100%;height:100%;
+  }
+  .code-area pre{position:absolute;inset:0;overflow:hidden;pointer-events:none;color:#dbe4ee;background:transparent}
+  .code-area textarea{
+    position:absolute;inset:0;resize:none;background:transparent;color:transparent;
+    caret-color:var(--amber2);overflow:auto;white-space:pre;
+  }
+  .code-area textarea::selection{background:rgba(88,196,220,.25)}
+  .tk-kw{color:#ffab24}.tk-str{color:#6fce7f}.tk-num{color:#6cb6ff}
+  .tk-com{color:#5d6b7d;font-style:italic}.tk-lit{color:#ff7b72}
+  .tk-fn{color:#53d6c3}.tk-cls{color:#e8935f}
+
+  /* ---------- drawer ---------- */
+  .drawer{flex:0 0 238px;border-top:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel2)}
+  .drawer .pane-tabs{border-bottom:1px solid var(--line-soft)}
+  .drawer-body{flex:1;overflow-y:auto;min-height:0}
+  .tc-view{padding:12px 14px}
+  .case-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .cpill{
+    font-family:var(--mono);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;
+    border:1px solid var(--line);background:var(--inset);color:var(--mut);transition:all .18s;display:flex;gap:6px;align-items:center;
+  }
+  .cpill:hover{color:var(--ink);transform:translateY(-1px)}
+  .cpill.on{border-color:var(--amber);color:var(--amber);background:rgba(255,161,22,.08)}
+  .cpill .mk{width:7px;height:7px;border-radius:50%;background:#33404f}
+  .cpill.pass .mk{background:var(--green)} .cpill.fail .mk{background:var(--red)}
+  .cpill.tle .mk{background:var(--yellow)} .cpill.skip .mk{background:var(--dim)}
+  .cpill-add{border-style:dashed;color:var(--dim)}
+  .cpill-add:hover{color:var(--amber);border-color:var(--amber)}
+  .tc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tc-field label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .tc-field label a{color:var(--red);cursor:pointer;text-decoration:none;opacity:.7}
+  .tc-field label a:hover{opacity:1}
+  .tc-field textarea{
+    width:100%;min-height:64px;resize:vertical;background:var(--inset);border:1px solid var(--line);
+    border-radius:7px;color:var(--ink);font-family:var(--mono);font-size:12px;padding:9px 11px;outline:none;transition:border-color .2s, box-shadow .2s;line-height:1.55;
+  }
+  .tc-field textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(88,196,220,.1)}
+  .tc-field textarea.bad{border-color:var(--red)}
+  .parse-err{font-family:var(--mono);font-size:11px;color:var(--red);margin-top:5px;min-height:14px}
+  .drawer-tools{display:flex;gap:8px;margin-top:12px}
+
+  /* result */
+  .res-view{padding:12px 14px}
+  .res-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .rchip{font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:20px;border:1px solid var(--line);color:var(--mut);background:var(--inset)}
+  .rchip.good{color:var(--green);border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.07)}
+  .rchip.bad{color:var(--red);border-color:rgba(248,81,73,.4);background:rgba(248,81,73,.07)}
+  .rchip.warn{color:var(--yellow);border-color:rgba(210,153,34,.4)}
+  .rrow{
+    border:1px solid var(--line-soft);border-radius:8px;margin-bottom:8px;overflow:hidden;
+    animation:rowIn .3s ease both;background:var(--inset);
+  }
+  @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .rrow-h{display:flex;align-items:center;gap:12px;padding:9px 13px;cursor:pointer;transition:background .15s}
+  .rrow-h:hover{background:rgba(255,255,255,.03)}
+  .rrow-h .ic{font-size:13px;width:18px;text-align:center}
+  .rrow.pass .ic{color:var(--green)} .rrow.fail .ic{color:var(--red)}
+  .rrow.err .ic{color:var(--amber2)} .rrow.tle .ic{color:var(--yellow)} .rrow.skip .ic{color:var(--dim)}
+  .rrow-h .nm{font-weight:600;font-size:13px}
+  .rrow-h .vd{font-family:var(--mono);font-size:11px;color:var(--mut)}
+  .rrow.pass .vd{color:var(--green)} .rrow.fail .vd{color:var(--red)}
+  .rrow-h .ms{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .rrow-b{display:none;border-top:1px solid var(--line-soft);padding:10px 13px;font-family:var(--mono);font-size:12px;line-height:1.7}
+  .rrow.open .rrow-b{display:block}
+  .rrow-b b{color:var(--dim);font-weight:500;display:inline-block;min-width:76px}
+  .rrow-b .row-line{word-break:break-all;color:#b8c4d2}
+  .rrow-b .row-line.bad-val{color:var(--red)}
+  .rrow-b .row-line.good-val{color:var(--green)}
+  .rrow-b .errmsg{color:var(--red)}
+  .compile-banner{
+    border:1px solid rgba(248,81,73,.4);background:rgba(248,81,73,.07);border-radius:8px;
+    padding:13px 16px;font-family:var(--mono);font-size:12.5px;color:#ffb4ae;line-height:1.7;margin-bottom:10px;animation:rowIn .3s both;
+  }
+  .compile-banner b{color:var(--red)}
+  .console-block{margin-top:12px;border:1px solid var(--line-soft);border-radius:8px;background:#0a0e13;padding:10px 14px;font-family:var(--mono);font-size:12px;line-height:1.75}
+  .console-block .ch{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .console-block .cl{white-space:pre-wrap;word-break:break-all;color:#c3cedb}
+  .console-block .cl::before{content:"› ";color:var(--dim)}
+  .console-block .cl.warn{color:var(--yellow)} .console-block .cl.error{color:var(--red)} .console-block .cl.info{color:var(--cyan)}
+
+  /* ---------- editor foot ---------- */
+  .editor-foot{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);flex:0 0 auto;background:var(--panel)}
+  .kbd-hint{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .kbd-hint kbd{border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:10px;background:var(--inset)}
+  .verdict-chip{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;display:none}
+  .verdict-chip.show{display:inline-block;animation:rowIn .3s both}
+  .editor-foot .spacer{flex:1}
+  .btn{
+    font-family:var(--body);font-weight:600;font-size:13.5px;border-radius:8px;padding:9px 20px;cursor:pointer;
+    transition:all .18s;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;
+  }
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-run{background:transparent;border-color:var(--amber);color:var(--amber)}
+  .btn-run:hover:not(:disabled){background:rgba(255,161,22,.1);transform:translateY(-1px)}
+  .btn-submit{
+    background:linear-gradient(145deg,var(--amber),#e88f00);color:#1b1204;border:none;
+    box-shadow:0 4px 16px -4px rgba(255,161,22,.5);
+  }
+  .btn-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 22px -4px rgba(255,161,22,.65)}
+  .btn .spin{width:13px;height:13px;border:2px solid rgba(0,0,0,.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;display:none}
+  .btn.busy .spin{display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- statusbar ---------- */
+  .statusbar{
+    flex:0 0 auto;height:30px;display:flex;align-items:center;gap:18px;padding:0 16px;
+    border-top:1px solid var(--line);background:#0d1319;font-family:var(--mono);font-size:11px;color:var(--dim);
+    position:relative;z-index:5;animation:fadeUp .5s .3s ease both;
+  }
+  .led{display:inline-flex;align-items:center;gap:7px}
+  .led i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}50%{box-shadow:0 0 0 5px rgba(63,185,80,0)}}
+  .statusbar .spacer{flex:1}
+
+  /* toast + fx */
+  #toast{
+    position:fixed;bottom:48px;left:50%;transform:translateX(-50%) translateY(16px);z-index:50;
+    background:#1c2530;border:1px solid var(--line);color:var(--ink);font-size:13px;
+    padding:9px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 10px 30px -8px rgba(0,0,0,.6);
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #fx{position:fixed;inset:0;pointer-events:none;z-index:60}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+
+  @media (max-width:980px){
+    .shell{flex-direction:column;overflow-y:auto}
+    .sidebar{flex:0 0 auto;max-height:210px}
+    .workspace{flex-direction:column;min-height:800px}
+    .desc-pane{flex:0 0 340px;min-width:0}
+    .divider{display:none}
+    body{overflow:auto}
+  }
+</style>
+</head>
+<body>
+<div class="bgfx" aria-hidden="true"><i></i><i></i></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">{ }</div>
+    <div><b>leet<span>lab</span></b> <small>in-browser judge</small></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="progress">
+    <div class="segs" id="progressSegs"></div>
+    <div class="cnt"><b id="solvedCount">0</b>/<span id="totalCount">0</span> solved</div>
+  </div>
+  <div class="tsbadge" id="tsBadge" title="TypeScript compiler status">TS · loading…</div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="side-head">
+      <h2>Problem Set</h2>
+      <div class="search"><input id="search" type="text" placeholder="Search problems, tags…" autocomplete="off"></div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <ul class="plist" id="problemList"></ul>
+  </aside>
+
+  <main class="workspace" id="workspace">
+    <section class="pane desc-pane" id="descPane">
+      <div class="pane-tabs">
+        <button class="ptab on" id="tabDesc">Description</button>
+        <button class="ptab" id="tabSubs">Submissions <span class="badge" id="subsCount">0</span></button>
+      </div>
+      <div class="pane-scroll" id="descView"><div class="desc-body" id="descBody"></div></div>
+      <div class="pane-scroll" id="subsView" hidden><div class="subs" id="subsBody"></div></div>
+    </section>
+
+    <div class="divider" id="divider" title="Drag to resize"></div>
+
+    <section class="pane editor-pane">
+      <div class="editor-head">
+        <div class="seg" id="langSeg">
+          <div class="thumb"></div>
+          <button data-lang="js" class="on">JavaScript</button>
+          <button data-lang="ts">TypeScript</button>
+        </div>
+        <span class="autosave" id="autosave">✓ autosaved</span>
+        <div class="spacer"></div>
+        <button class="ghost-btn" id="btnCopy" title="Copy code">⧉ Copy</button>
+        <button class="ghost-btn" id="btnReset" title="Restore starter code">↺ Reset</button>
+      </div>
+
+      <div class="editor-body">
+        <div class="gutter"><div class="nums" id="lineNums"></div></div>
+        <div class="code-area">
+          <pre id="hl" aria-hidden="true"></pre>
+          <textarea id="ta" wrap="off" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+        </div>
+      </div>
+
+      <div class="drawer">
+        <div class="pane-tabs">
+          <button class="ptab on" id="tabTest">Testcases</button>
+          <button class="ptab" id="tabResult">Result <span class="badge" id="resBadge" hidden></span></button>
+        </div>
+        <div class="drawer-body">
+          <div class="tc-view" id="testCaseView">
+            <div class="case-pills" id="casePills"></div>
+            <div class="tc-grid">
+              <div class="tc-field">
+                <label><span id="inputLabel">Input · JSON args</span><a id="btnDeleteCase" hidden>delete case</a></label>
+                <textarea id="taInput" spellcheck="false"></textarea>
+                <div class="parse-err" id="errInput"></div>
+              </div>
+              <div class="tc-field">
+                <label><span>Expected · JSON</span></label>
+                <textarea id="taExpected" spellcheck="false" placeholder="leave empty for output-only custom cases"></textarea>
+                <div class="parse-err" id="errExpected"></div>
+              </div>
+            </div>
+            <div class="drawer-tools">
+              <button class="ghost-btn" id="btnRestoreCases">Restore default cases</button>
+            </div>
+          </div>
+          <div class="res-view" id="resultView" hidden></div>
+        </div>
+      </div>
+
+      <div class="editor-foot">
+        <span class="kbd-hint"><kbd>Ctrl</kbd>+<kbd>↵</kbd> run · <kbd>Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>↵</kbd> submit · <kbd>Ctrl</kbd>+<kbd>/</kbd> comment</span>
+        <span class="verdict-chip" id="verdictChip"></span>
+        <div class="spacer"></div>
+        <button class="btn btn-run" id="btnRun"><span class="spin"></span>Run Code</button>
+        <button class="btn btn-submit" id="btnSubmit"><span class="spin"></span>Submit</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="statusbar">
+  <span id="sbPos">Ln 1, Col 1</span>
+  <span id="sbLang">javascript</span>
+  <span class="led"><i></i>sandbox · worker ready</span>
+  <div class="spacer"></div>
+  <span>code runs 100% locally in your browser</span>
+</footer>
+
+<div id="toast"></div>
+<canvas id="fx"></canvas>
+
+<script>
+/* =====================================================================
+   leetlab — modular interactive judge (Refactored)
+   Architecture: DDD / SOLID / KISS / DRY
+   ===================================================================== */
+'use strict';
+
+/* =========================================
+   1. UTILITIES
+   ========================================= */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const fmtJSON = (v) => {
+    if (v === undefined) return 'undefined';
+    try { return JSON.stringify(v); } catch { return String(v); }
+};
+const debounce = (fn, ms) => {
+    let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+};
+
+/* =========================================
+   2. EVENT BUS (Decoupling UI and Logic)
+   ========================================= */
+class EventBus {
+    constructor() { this.events = {}; }
+    on(event, callback) {
+        if (!this.events[event]) this.events[event] = [];
+        this.events[event].push(callback);
+    }
+    emit(event, data) {
+        if (this.events[event]) this.events[event].forEach(cb => cb(data));
+    }
+}
+const bus = new EventBus();
+
+/* =========================================
+   3. DOMAIN MODELS
+   ========================================= */
+class Problem {
+    constructor(data) { Object.assign(this, data); }
+}
+
+class TestCase {
+    constructor(inputText, expectedText, builtin = false) {
+        this.inputText = inputText;
+        this.expectedText = expectedText;
+        this.builtin = builtin;
+    }
+}
+
+/* =========================================
+   4. INFRASTRUCTURE (Persistence & Sandbox)
+   ========================================= */
+class LocalStorageStore {
+    constructor(key) {
+        this.key = key;
+        this.data = this.load();
+    }
+    load() {
+        try {
+            const raw = localStorage.getItem(this.key);
+            return raw ? JSON.parse(raw) : this.getDefault();
+        } catch { return this.getDefault(); }
+    }
+    getDefault() {
+        return { version: 1, lang: 'js', split: 0.44, last: 'two-sum', problems: {} };
+    }
+    save() {
+        try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch {}
+    }
+    getProblemState(slug) {
+        if (!this.data.problems[slug]) {
+            this.data.problems[slug] = { subs: [], cases: null, js: null, ts: null, solvedAt: null };
+        }
+        return this.data.problems[slug];
+    }
+}
+
+class SandboxWorker {
+    constructor() {
+        const blob = new Blob([this.getWorkerCode()], { type: 'text/javascript' });
+        this.url = URL.createObjectURL(blob);
+    }
+    
+    execute(code, problem, cases) {
+        return new Promise((resolve, reject) => {
+            const worker = new Worker(this.url);
+            const timeout = setTimeout(() => {
+                worker.terminate();
+                reject({ type: 'timeout' });
+            }, 6000);
+
+            const results = new Array(cases.length);
+            const logs = [];
+            
+            worker.onmessage = (e) => {
+                const m = e.data;
+                if (m.type === 'compile') {
+                    clearTimeout(timeout); worker.terminate();
+                    reject({ type: 'compile', error: m.error, logs: m.logs });
+                } else if (m.type === 'case') {
+                    results[m.i] = m;
+                    if (m.logs) logs.push(...m.logs);
+                } else if (m.type === 'done') {
+                    clearTimeout(timeout); worker.terminate();
+                    resolve({ results, logs });
+                }
+            };
+            
+            worker.onerror = (e) => {
+                clearTimeout(timeout); worker.terminate();
+                reject({ type: 'sandbox_error', error: e.message });
+            };
+
+            const payload = cases.map(c => {
+                const out = {};
+                if (problem.mode === 'class') out.calls = c.calls; else out.input = c.input;
+                if ('expected' in c) out.expected = c.expected;
+                return out;
+            });
+
+            worker.postMessage({ code, name: problem.fnName, mode: problem.mode, cases: payload });
+        });
+    }
+
+    parseCase(tc, problem) {
+        const out = {};
+        try {
+            const j = JSON.parse(tc.inputText);
+            if (!Array.isArray(j)) throw new Error('Input must be a JSON array');
+            if (problem.mode === 'class') out.calls = j; else out.input = j;
+        } catch (e) {
+            out.parseError = `Input: ${e.message}`; return out;
+        }
+        if (tc.expectedText.trim() !== '') {
+            try { out.expected = JSON.parse(tc.expectedText); } 
+            catch (e) { out.parseError = `Expected: invalid JSON`; return out; }
+        }
+        return out;
+    }
+
+    getWorkerCode() {
+        return `'use strict';
+function safeOut(v){ if(v===undefined) return 'undefined'; try{ return JSON.stringify(v); }catch(e){ return String(v); } }
+function deepEq(a,b){
+  if(Object.is(a,b)) return true;
+  if(typeof a==='number'&&typeof b==='number'&&Number.isNaN(a)&&Number.isNaN(b)) return true;
+  if(a===null||b===null||typeof a!=='object'||typeof b!=='object') return a===b;
+  if(Array.isArray(a)!==Array.isArray(b)) return false;
+  var ka=Object.keys(a), kb=Object.keys(b);
+  if(ka.length!==kb.length) return false;
+  for(var i=0;i<ka.length;i++){ var k=ka[i];
+    if(!Object.prototype.hasOwnProperty.call(b,k)) return false;
+    if(!deepEq(a[k],b[k])) return false; }
+  return true;
+}
+function errInfo(e){ return { name:(e&&e.name)||'Error', message:(e&&e.message)||String(e) }; }
+var LOG=[];
+function drain(){ return LOG.splice(0, LOG.length); }
+function fmtArg(a){ if(typeof a==='string') return a; if(a instanceof Error) return a.name+': '+a.message; return safeOut(a); }
+function mkLog(lvl){ return function(){ var parts=[]; for(var i=0;i<arguments.length;i++) parts.push(fmtArg(arguments[i])); LOG.push({l:lvl, t:parts.join(' ')}); }; }
+var cns={ log:mkLog('log'), info:mkLog('info'), warn:mkLog('warn'), error:mkLog('error'), debug:mkLog('debug') };
+
+self.onmessage = function(ev){
+  var m = ev.data;
+  var moduleObj = { exports:{} };
+  function req(){ throw new Error('require() is not available in the sandbox — keep the solution self-contained'); }
+  var proc = { env:{}, argv:['node','sandbox'], platform:'linux', version:'v20.x (web-sandbox)' };
+  var entry;
+  try {
+    var factory = new Function('console','module','exports','require','process',
+      m.code + '\\n;return (typeof ' + m.name + ' !== "undefined") ? ' + m.name +
+      ' : (module.exports && (module.exports["' + m.name + '"] || module.exports.default));');
+    entry = factory(cns, moduleObj, moduleObj.exports, req, proc);
+  } catch(e){
+    postMessage({type:'compile', error:errInfo(e), logs:drain()});
+    return;
+  }
+  if (m.mode === 'class') runClass(entry, m); else runFn(entry, m);
+};
+function runFn(fn, m){
+  if (typeof fn !== 'function'){
+    postMessage({type:'compile', error:{name:'ReferenceError',
+      message:'No callable "'+m.name+'" found. Define function '+m.name+'(...) or export it via module.exports.', stack:''}, logs:drain()});
+    return;
+  }
+  for (var i=0;i<m.cases.length;i++){
+    var c = m.cases[i], t0 = performance.now();
+    try {
+      var out = fn.apply(null, c.input);
+      var ms = performance.now() - t0;
+      var hasExp = Object.prototype.hasOwnProperty.call(c,'expected');
+      postMessage({type:'case', i:i, ms:ms, ok:true, hasExp:hasExp,
+        pass: hasExp ? deepEq(out, c.expected) : null, output:safeOut(out), logs:drain()});
+    } catch(e){
+      postMessage({type:'case', i:i, ms:performance.now()-t0, ok:false, hasExp:true, pass:false,
+        error:errInfo(e), logs:drain()});
+    }
+  }
+  postMessage({type:'done'});
+}
+function runClass(Cls, m){
+  if (typeof Cls !== 'function'){
+    postMessage({type:'compile', error:{name:'ReferenceError', message:'No class "'+m.name+'" found.', stack:''}, logs:drain()});
+    return;
+  }
+  for (var i=0;i<m.cases.length;i++){
+    var c = m.cases[i], t0 = performance.now(), inst = null, results = [], err = null;
+    try {
+      for (var j=0;j<c.calls.length;j++){
+        var name = c.calls[j][0], args = c.calls[j][1] || [];
+        if (j === 0){ inst = new (Function.prototype.bind.apply(Cls, [null].concat(args)))(); results.push(null); }
+        else results.push(inst[name].apply(inst, args) === undefined ? null : inst[name].apply(inst, args));
+      }
+    } catch(e){ err = e; }
+    var ms = performance.now() - t0;
+    if (err) postMessage({type:'case', i:i, ms:ms, ok:false, hasExp:true, pass:false, error:errInfo(err), logs:drain()});
+    else {
+      var hasExp = Object.prototype.hasOwnProperty.call(c,'expected');
+      postMessage({type:'case', i:i, ms:ms, ok:true, hasExp:hasExp,
+        pass: hasExp ? deepEq(results, c.expected) : null, output:safeOut(results), logs:drain()});
+    }
+  }
+  postMessage({type:'done'});
+}`;
+    }
+}
+
+class TypeScriptCompiler {
+    constructor() {
+        this.ready = false;
+        this.load();
+    }
+    load() {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/typescript@5.4.5/lib/typescript.min.js';
+        script.onload = () => { this.ready = true; bus.emit('ts:status', 'ready'); };
+        script.onerror = () => { this.ready = false; bus.emit('ts:status', 'fallback'); };
+        document.head.appendChild(script);
+    }
+    compile(src) {
+        if (this.ready && window.ts) {
+            try {
+                return window.ts.transpileModule(src, {
+                    compilerOptions: { target: window.ts.ScriptTarget.ES2021, module: window.ts.ModuleKind.CommonJS }
+                }).outputText;
+            } catch (e) { throw new Error(`TS Error: ${e.message}`); }
+        }
+        return this.stripTypes(src);
+    }
+    stripTypes(src) {
+        return src
+            .replace(/^\s*(?:export\s+)?interface\s+[^\n{]*\{[\s\S]*?\n\}/gm, '')
+            .replace(/^\s*(?:export\s+)?type\s+[^\n=]+=[^\n;]+;\s*$/gm, '')
+            .replace(/\b(?:public|private|protected|readonly|declare|override|implements)\s+/g, '')
+            .replace(/(\))\s*:\s*[A-Za-z_$][\w$<>\[\]|& ,.]*(?=\s*\{)/g, '$1')
+            .replace(/\bas\s+[A-Za-z_$][\w$<>\[\]|& .]*/g, '');
+    }
+}
+
+class ToastService {
+    constructor() {
+        this.el = $('toast');
+        this.timer = null;
+    }
+    show(msg) {
+        this.el.textContent = msg;
+        this.el.classList.add('show');
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => this.el.classList.remove('show'), 2500);
+    }
+}
+
+/* =========================================
+   5. PROBLEM BANK (Add new tasks here)
+   ========================================= */
+const PROBLEM_BANK = [
+{
+  slug:'two-sum', num:1, title:'Two Sum', difficulty:'Easy', tags:['Array','Hash Table'],
+  fnName:'twoSum', mode:'fn',
+  starter:{
+    js:"/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nfunction twoSum(nums, target) {\n  \n}\n",
+    ts:"function twoSum(nums: number[], target: number): number[] {\n  \n}\n"
+  },
+  tests:[
+    {in:[[2,7,11,15],9], out:[0,1]}, {in:[[3,2,4],6], out:[1,2]}, {in:[[3,3],6], out:[0,1]},
+    {in:[[1,5,3,9,2],7], out:[1,4]}, {in:[[-3,4,3,90],0], out:[0,2]}
+  ],
+  hints:[
+    "A brute-force O(n²) double loop passes here — but what value do you actually need at each step?",
+    "For each x you need target − x. Walk the array once, keeping a Map of value → index for everything seen so far."
+  ],
+  desc:`<p>Given an array of integers <code>nums</code> and an integer <code>target</code>, return <em>the indices of the two numbers</em> that add up to <code>target</code>.</p><p>Each input has <strong>exactly one solution</strong>, you may not use the same element twice, and the indices must be returned in <strong>ascending order</strong>.</p><h4>Examples</h4><div class="ex"><div><b>Input:</b>nums = [2,7,11,15], target = 9</div><div><b>Output:</b>[0,1]</div><div class="exp">Because nums[0] + nums[1] == 9, we return [0, 1].</div></div><div class="ex"><div><b>Input:</b>nums = [3,2,4], target = 6</div><div><b>Output:</b>[1,2]</div></div><div class="ex"><div><b>Input:</b>nums = [3,3], target = 6</div><div><b>Output:</b>[0,1]</div></div><h4>Constraints</h4><ul><li>2 ≤ nums.length ≤ 10<sup>4</sup></li><li>-10<sup>9</sup> ≤ nums[i] ≤ 10<sup>9</sup></li><li>-10<sup>9</sup> ≤ target ≤ 10<sup>9</sup></li><li>Only one valid answer exists</li></ul>`
+},
+{
+  slug:'longest-substring', num:3, title:'Longest Substring Without Repeating Characters', difficulty:'Medium', tags:['Hash Table','String','Sliding Window'],
+  fnName:'lengthOfLongestSubstring', mode:'fn',
+  starter:{
+    js:"/**\n * @param {string} s\n * @return {number}\n */\nfunction lengthOfLongestSubstring(s) {\n  \n}\n",
+    ts:"function lengthOfLongestSubstring(s: string): number {\n  \n}\n"
+  },
+  tests:[
+    {in:["abcabcbb"], out:3}, {in:["bbbbb"], out:1}, {in:["pwwkew"], out:3},
+    {in:[""], out:0}, {in:["dvdf"], out:3}, {in:["abba"], out:2}
+  ],
+  hints:[
+    "Grow a window [left, right] while all characters inside it are unique.",
+    "When a duplicate appears, jump left past the previous occurrence — a Map of char → last index lets you skip in O(1)."
+  ],
+  desc:`<p>Given a string <code>s</code>, find the length of the <strong>longest substring</strong> without repeating characters.</p><p>A substring is a contiguous <strong>non-empty</strong> sequence of characters within the string.</p><h4>Examples</h4><div class="ex"><div><b>Input:</b>s = "abcabcbb"</div><div><b>Output:</b>3</div><div class="exp">The answer is "abc", with a length of 3.</div></div><div class="ex"><div><b>Input:</b>s = "bbbbb"</div><div><b>Output:</b>1</div><div class="exp">The answer is "b".</div></div><div class="ex"><div><b>Input:</b>s = "pwwkew"</div><div><b>Output:</b>3</div><div class="exp">The answer is "wke" — "pwke" is a subsequence, not a substring.</div></div><h4>Constraints</h4><ul><li>0 ≤ s.length ≤ 5 × 10<sup>4</sup></li><li>s consists of English letters, digits, symbols and spaces</li></ul>`
+},
+{
+  slug:'valid-parentheses', num:20, title:'Valid Parentheses', difficulty:'Easy', tags:['String','Stack'],
+  fnName:'isValid', mode:'fn',
+  starter:{
+    js:"/**\n * @param {string} s\n * @return {boolean}\n */\nfunction isValid(s) {\n  \n}\n",
+    ts:"function isValid(s: string): boolean {\n  \n}\n"
+  },
+  tests:[
+    {in:["()"], out:true}, {in:["()[]{}"], out:true}, {in:["(]"], out:false},
+    {in:["([)]"], out:false}, {in:["{[]}"], out:true}, {in:["]"], out:false}
+  ],
+  hints:[
+    "Think about the most recent unmatched opening bracket — which data structure tracks “latest first”?",
+    "Push openers; on a closer, pop and compare the pair. Valid ⇔ the stack is empty at the end."
+  ],
+  desc:`<p>Given a string <code>s</code> containing just the characters <code>(</code>, <code>)</code>, <code>{</code>, <code>}</code>, <code>[</code> and <code>]</code>, determine if the input string is valid.</p><p>An input string is valid if open brackets are closed by the <strong>same type</strong> of brackets and in the <strong>correct order</strong>, and every close bracket has a corresponding open bracket of the same type.</p><h4>Examples</h4><div class="ex"><div><b>Input:</b>s = "()[]{}"</div><div><b>Output:</b>true</div></div><div class="ex"><div><b>Input:</b>s = "(]"</div><div><b>Output:</b>false</div></div><div class="ex"><div><b>Input:</b>s = "([)]"</div><div><b>Output:</b>false</div></div><h4>Constraints</h4><ul><li>1 ≤ s.length ≤ 10<sup>4</sup></li><li>s consists of parentheses only: <code>()[]{}</code></li></ul>`
+},
+{
+  slug:'trapping-rain-water', num:42, title:'Trapping Rain Water', difficulty:'Hard', tags:['Array','Two Pointers','Dynamic Programming','Monotonic Stack'],
+  fnName:'trap', mode:'fn',
+  starter:{
+    js:"/**\n * @param {number[]} height\n * @return {number}\n */\nfunction trap(height) {\n  \n}\n",
+    ts:"function trap(height: number[]): number {\n  \n}\n"
+  },
+  tests:[
+    {in:[[0,1,0,2,1,0,1,3,2,1,2,1]], out:6}, {in:[[4,2,0,3,2,5]], out:9},
+    {in:[[2,0,2]], out:2}, {in:[[1]], out:0}, {in:[[3,0,1,3,0,5]], out:8}
+  ],
+  hints:[
+    "The water above bar i equals min(maxLeft, maxRight) − height[i].",
+    "Precompute prefix maxima from both sides for an O(n) time / O(n) space solution — or squeeze inward with two pointers for O(1) space."
+  ],
+  desc:`<p>Given <code>n</code> non-negative integers representing an elevation map where the width of each bar is <code>1</code>, compute <em>how much water it can trap</em> after raining.</p><h4>Examples</h4><div class="ex"><div><b>Input:</b>height = [0,1,0,2,1,0,1,3,2,1,2,1]</div><div><b>Output:</b>6</div><div class="exp">Six units of rain water are trapped between the bars.</div></div><div class="ex"><div><b>Input:</b>height = [4,2,0,3,2,5]</div><div><b>Output:</b>9</div></div><h4>Constraints</h4><ul><li>n == height.length</li><li>0 ≤ n ≤ 2 × 10<sup>4</sup></li><li>0 ≤ height[i] ≤ 10<sup>5</sup></li></ul>`
+},
+{
+  slug:'merge-intervals', num:56, title:'Merge Intervals', difficulty:'Medium', tags:['Array','Sorting'],
+  fnName:'merge', mode:'fn',
+  starter:{
+    js:"/**\n * @param {number[][]} intervals\n * @return {number[][]}\n */\nfunction merge(intervals) {\n  \n}\n",
+    ts:"function merge(intervals: number[][]): number[][] {\n  \n}\n"
+  },
+  tests:[
+    {in:[[[1,3],[2,6],[8,10],[15,18]]], out:[[1,6],[8,10],[15,18]]},
+    {in:[[[1,4],[4,5]]], out:[[1,5]]}, {in:[[[1,4],[0,4]]], out:[[0,4]]},
+    {in:[[[1,4],[2,3]]], out:[[1,4]]}, {in:[[[1,4],[0,0]]], out:[[0,0],[1,4]]}
+  ],
+  hints:[
+    "Sort intervals by start — after that, overlaps can only happen between neighbours.",
+    "Keep the last merged interval; if next.start ≤ current.end, extend with max(end₁, end₂), otherwise push a new one."
+  ],
+  desc:`<p>Given an array of <code>intervals</code> where <code>intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]</code>, merge all overlapping intervals and return an array of the non-overlapping intervals that cover all the intervals in the input.</p><h4>Examples</h4><div class="ex"><div><b>Input:</b>intervals = [[1,3],[2,6],[8,10],[15,18]]</div><div><b>Output:</b>[[1,6],[8,10],[15,18]]</div><div class="exp">[1,3] and [2,6] overlap → merged into [1,6].</div></div><div class="ex"><div><b>Input:</b>intervals = [[1,4],[4,5]]</div><div><b>Output:</b>[[1,5]]</div><div class="exp">Intervals touching at an endpoint count as overlapping.</div></div><h4>Constraints</h4><ul><li>1 ≤ intervals.length ≤ 10<sup>4</sup></li><li>intervals[i].length == 2</li><li>0 ≤ start<sub>i</sub> ≤ end<sub>i</sub> ≤ 10<sup>4</sup></li></ul>`
+},
+{
+  slug:'min-stack', num:155, title:'Min Stack', difficulty:'Medium', tags:['Stack','Design'],
+  fnName:'MinStack', mode:'class',
+  starter:{
+    js:"class MinStack {\n  constructor() {\n    \n  }\n\n  /** @param {number} val */\n  push(val) {\n    \n  }\n\n  /** @return {void} */\n  pop() {\n    \n  }\n\n  /** @return {number} */\n  top() {\n    \n  }\n\n  /** @return {number} */\n  getMin() {\n    \n  }\n}\n",
+    ts:"class MinStack {\n  constructor() {\n    \n  }\n\n  push(val: number): void {\n    \n  }\n\n  pop(): void {\n    \n  }\n\n  top(): number {\n    return 0;\n  }\n\n  getMin(): number {\n    return 0;\n  }\n}\n"
+  },
+  tests:[
+    {calls:[["MinStack",[]],["push",[-2]],["push",[0]],["push",[-3]],["getMin",[]],["pop",[]],["top",[]],["getMin",[]]], out:[null,null,null,null,-3,null,0,-2]},
+    {calls:[["MinStack",[]],["push",[10]],["push",[5]],["top",[]],["getMin",[]],["pop",[]],["getMin",[]]], out:[null,null,null,5,5,null,10]},
+    {calls:[["MinStack",[]],["push",[2]],["getMin",[]],["push",[0]],["getMin",[]],["pop",[]],["getMin",[]]], out:[null,null,2,null,0,null,2]}
+  ],
+  hints:[
+    "A plain stack can't answer getMin in O(1) after pops — the minimum might have just been removed.",
+    "Store pairs [value, minSoFar] on the stack; the current minimum is always minSoFar of the top pair."
+  ],
+  desc:`<p>Design a stack that supports <code>push</code>, <code>pop</code>, <code>top</code>, and retrieving the minimum element in <strong>constant time O(1)</strong>.</p><ul><li><code>MinStack()</code> initializes the stack object</li><li><code>void push(val)</code> pushes the element onto the stack</li><li><code>void pop()</code> removes the element on the top</li><li><code>int top()</code> gets the top element</li><li><code>int getMin()</code> retrieves the minimum element</li></ul><p class="note">Judge protocol: your class is instantiated with <code>new MinStack()</code>, then each <code>[method, args]</code> call below is applied in order. <code>undefined</code> return values are normalised to <code>null</code> before comparison.</p><h4>Example</h4><div class="ex"><div><b>Calls:</b>["MinStack","push","push","push","getMin","pop","top","getMin"]</div><div><b>Args:</b>[[],[-2],[0],[-3],[],[],[],[]]</div><div><b>Output:</b>[null,null,null,null,-3,null,0,-2]</div></div><h4>Constraints</h4><ul><li>-2<sup>31</sup> ≤ val ≤ 2<sup>31</sup> − 1</li><li>pop, top and getMin are always called on non-empty stacks</li><li>At most 2 × 10<sup>4</sup> calls in total</li></ul>`
+}
+];
+
+/* =========================================
+   6. APP ORCHESTRATOR (Presentation Layer)
+   ========================================= */
+class App {
+    constructor() {
+        this.store = new LocalStorageStore('leetlab.v1');
+        this.compiler = new TypeScriptCompiler();
+        this.sandbox = new SandboxWorker();
+        this.toast = new ToastService();
+        
+        this.problems = PROBLEM_BANK.map(p => new Problem(p));
+        this.problemMap = new Map(this.problems.map(p => [p.slug, p]));
+        
+        this.currentProblem = null;
+        this.currentCases = [];
+        this.selectedCaseIdx = 0;
+        this.caseMarks = [];
+        this.isRunning = false;
+        this.currentFilter = 'All';
+        this.currentSearch = '';
+        
+        this.initUI();
+        this.bindEvents();
+        this.loadLastSession();
+    }
+
+    initUI() {
+        // Editor
+        this.ta = $('ta');
+        this.hl = $('hl');
+        this.lineNums = $('lineNums');
+        
+        // Sizing FX Canvas
+        this.sizeFx();
+        window.addEventListener('resize', () => this.sizeFx());
+    }
+
+    bindEvents() {
+        // Sidebar
+        $('chips').addEventListener('click', (e) => {
+            const btn = e.target.closest('.chip');
+            if (btn) { this.currentFilter = btn.dataset.f; this.renderSidebar(); }
+        });
+        $('search').addEventListener('input', (e) => {
+            this.currentSearch = e.target.value.toLowerCase();
+            this.renderSidebar();
+        });
+        $('problemList').addEventListener('click', (e) => {
+            const item = e.target.closest('.p-item');
+            if (item) this.selectProblem(item.dataset.slug);
+        });
+
+        // Editor
+        this.ta.addEventListener('input', debounce(() => this.onCodeChange(), 300));
+        this.ta.addEventListener('scroll', () => this.syncScroll());
+        ['keyup', 'click', 'focus'].forEach(ev => this.ta.addEventListener(ev, () => this.updateCursor()));
+        this.ta.addEventListener('keydown', (e) => this.handleEditorKeys(e));
+        
+        $('langSeg').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-lang]');
+            if (btn && btn.dataset.lang !== this.store.data.lang) this.setLang(btn.dataset.lang);
+        });
+        $('btnCopy').addEventListener('click', () => this.copyCode());
+        $('btnReset').addEventListener('click', () => this.resetCode());
+
+        // Testcases
+        $('tabTest').addEventListener('click', () => this.switchDrawer('test'));
+        $('tabResult').addEventListener('click', () => this.switchDrawer('result'));
+        
+        $('casePills').addEventListener('click', (e) => this.handleCasePillClick(e));
+        $('btnDeleteCase').addEventListener('click', () => this.deleteCase());
+        $('btnRestoreCases').addEventListener('click', () => this.restoreCases());
+        
+        $('taInput').addEventListener('input', debounce(() => this.updateCase('inputText', $('taInput').value), 300));
+        $('taExpected').addEventListener('input', debounce(() => this.updateCase('expectedText', $('taExpected').value), 300));
+
+        // Tabs
+        $('tabDesc').addEventListener('click', () => this.switchDescTab('desc'));
+        $('tabSubs').addEventListener('click', () => this.switchDescTab('subs'));
+
+        // Actions
+        $('btnRun').addEventListener('click', () => this.runAll(false));
+        $('btnSubmit').addEventListener('click', () => this.runAll(true));
+
+        // Resizer
+        this.initResizer();
+
+        // Global Shortcuts
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                this.runAll(e.shiftKey);
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                this.saveAll();
+                this.toast.show('Progress saved locally ✓');
+            }
+        });
+
+        // Event Bus Listeners
+        bus.on('ts:status', (status) => this.updateTsBadge(status));
+        bus.on('split:changed', (pct) => { this.store.data.split = pct; this.store.save(); });
+        bus.on('code:changed', (code) => {
+            const state = this.store.getProblemState(this.currentProblem.slug);
+            state[this.store.data.lang] = code;
+            this.showAutosave();
+            this.store.save();
+        });
+    }
+
+    /* --- State & Session Management --- */
+    loadLastSession() {
+        this.setLang(this.store.data.lang || 'js', true);
+        const lastSlug = this.store.data.last;
+        this.selectProblem(this.problemMap.has(lastSlug) ? lastSlug : this.problems[0].slug);
+    }
+
+    selectProblem(slug) {
+        if (this.currentProblem) this.saveCases();
+        
+        this.currentProblem = this.problemMap.get(slug);
+        this.currentCases = this.loadCases(this.currentProblem);
+        this.selectedCaseIdx = 0;
+        this.caseMarks = [];
+        
+        this.store.data.last = slug;
+        this.store.save();
+        
+        this.renderSidebar();
+        this.renderDescription();
+        this.switchDescTab('desc');
+        this.loadCode();
+        this.renderCases();
+        this.switchDrawer('test');
+        this.clearResults();
+    }
+
+    saveAll() {
+        this.saveCases();
+        const state = this.store.getProblemState(this.currentProblem.slug);
+        state[this.store.data.lang] = this.ta.value;
+        this.store.save();
+    }
+
+    /* --- UI Rendering --- */
+    renderSidebar() {
+        const filter = this.currentFilter;
+        const search = this.currentSearch;
+        
+        const counts = { All: this.problems.length, Easy: 0, Medium: 0, Hard: 0 };
+        this.problems.forEach(p => counts[p.difficulty]++);
+        
+        $('chips').innerHTML = Object.keys(counts).map(k =>
+            `<button class="chip ${filter === k ? 'on' : ''}" data-f="${k}">${k} · ${counts[k]}</button>`
+        ).join('');
+        
+        const filtered = this.problems.filter(p =>
+            (filter === 'All' || p.difficulty === filter) &&
+            (!search || (p.title + ' ' + p.tags.join(' ')).toLowerCase().includes(search))
+        );
+        
+        $('problemList').innerHTML = filtered.map((p, i) => {
+            const solved = !!this.store.getProblemState(p.slug).solvedAt;
+            return `<li class="p-item ${p.slug === this.currentProblem?.slug ? 'active' : ''} ${solved ? 'solved' : ''}" data-slug="${p.slug}" style="animation-delay:${i * 35}ms">
+                <span class="p-status">✓</span>
+                <div class="p-meta">
+                    <div class="p-title"><em>${p.num}</em>${esc(p.title)}</div>
+                    <div class="p-tags">${p.tags.join(' · ')}</div>
+                </div>
+                <span class="pill ${p.difficulty}">${p.difficulty}</span>
+            </li>`;
+        }).join('') || '<li class="empty">No matches</li>';
+        
+        this.updateProgress();
+    }
+
+    updateProgress() {
+        $('progressSegs').innerHTML = this.problems.map(p => 
+            `<i class="${this.store.getProblemState(p.slug).solvedAt ? 'on' : ''}" title="${p.num}. ${esc(p.title)}"></i>`
+        ).join('');
+        const solved = this.problems.filter(p => this.store.getProblemState(p.slug).solvedAt).length;
+        $('solvedCount').textContent = solved;
+        $('totalCount').textContent = this.problems.length;
+    }
+
+    renderDescription() {
+        const p = this.currentProblem;
+        if (!p) return;
+        const st = this.store.getProblemState(p.slug);
+        
+        $('descBody').innerHTML = `
+            <div class="d-top">
+                <span class="d-num">#${p.num}</span>
+                <span class="pill ${p.difficulty}">${p.difficulty}</span>
+                ${st.solvedAt ? `<span class="solved-badge">✓ ACCEPTED · ${new Date(st.solvedAt).toLocaleDateString()}</span>` : ''}
+            </div>
+            <h1>${esc(p.title)}</h1>
+            <div class="d-tags">${p.tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>
+            ${p.desc}
+            <h4>Hints</h4>
+            ${p.hints.map((h, i) => `<details class="hint"><summary>Hint ${i + 1}</summary><p>${h}</p></details>`).join('')}
+        `;
+        $('descView').scrollTop = 0;
+    }
+
+    renderSubs() {
+        const subs = (this.store.getProblemState(this.currentProblem.slug).subs || []).slice().reverse();
+        $('subsCount').textContent = subs.length;
+        $('subsBody').innerHTML = subs.length ? `
+            <table><thead><tr><th>When</th><th>Language</th><th>Verdict</th><th>Cases</th><th>Runtime</th></tr></thead>
+            <tbody>${subs.map(s => `<tr>
+                <td>${new Date(s.t).toLocaleString()}</td>
+                <td>${s.lang === 'ts' ? 'TypeScript' : 'JavaScript'}</td>
+                <td style="color:${s.verdict === 'Accepted' ? 'var(--green)' : (s.verdict === 'Compile Error' ? 'var(--amber2)' : 'var(--red)')}">${s.verdict}</td>
+                <td>${s.passed}/${s.total}</td>
+                <td>${s.ms != null ? s.ms.toFixed(1) + ' ms' : '—'}</td>
+            </tr>`).join('')}</tbody></table>`
+        : `<div class="empty"><b>No submissions yet</b>Press Submit to record your first attempt.</div>`;
+    }
+
+    switchDescTab(tab) {
+        $('tabDesc').classList.toggle('on', tab === 'desc');
+        $('tabSubs').classList.toggle('on', tab === 'subs');
+        $('descView').hidden = tab !== 'desc';
+        $('subsView').hidden = tab !== 'subs';
+        if (tab === 'subs') this.renderSubs();
+    }
+
+    /* --- Editor Logic --- */
+    setLang(lang, keepCode = false) {
+        this.store.data.lang = lang;
+        $('langSeg').classList.toggle('ts', lang === 'ts');
+        document.querySelectorAll('#langSeg button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
+        $('sbLang').textContent = lang === 'ts' ? 'typescript' : 'javascript';
+        if (!keepCode) this.loadCode();
+        this.store.save();
+    }
+
+    loadCode() {
+        const st = this.store.getProblemState(this.currentProblem.slug);
+        this.ta.value = st[this.store.data.lang] || this.currentProblem.starter[this.store.data.lang];
+        this.refreshEditor();
+    }
+
+    refreshEditor() {
+        this.hl.innerHTML = this.highlight(this.ta.value) + '\n';
+        this.updateLineNumbers();
+        this.updateCursor();
+    }
+
+    onCodeChange() {
+        this.refreshEditor();
+        bus.emit('code:changed', this.ta.value);
+    }
+
+    showAutosave() {
+        const a = $('autosave');
+        a.classList.add('show');
+        clearTimeout(a._t);
+        a._t = setTimeout(() => a.classList.remove('show'), 1400);
+    }
+
+    highlight(src) {
+        const HL_RE = /(\/\/[^\n]*)|(\/\*[\s\S]*?(?:\*\/|$))|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\b(const|let|var|function|return|if|else|for|while|do|switch|case|default|break|continue|new|class|extends|super|import|export|from|try|catch|finally|throw|async|await|yield|delete|void|typeof|instanceof|in|of|static|get|set|this|interface|type|enum|implements|declare|readonly|public|private|protected|namespace|as|keyof|infer|abstract|is)\b|\b(true|false|null|undefined|NaN|Infinity)\b|(\b\d[\w]*(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z_$][\w$]*)(?=\s*\()|(\b[A-Z][A-Za-z0-9_$]*\b)/g;
+        const HL_CLS = ['tk-com', 'tk-com', 'tk-str', 'tk-kw', 'tk-lit', 'tk-num', 'tk-fn', 'tk-cls'];
+        const re = new RegExp(HL_RE.source, 'g');
+        let out = '', last = 0, m;
+        while ((m = re.exec(src)) !== null) {
+            if (m.index > last) out += esc(src.slice(last, m.index));
+            let cls = '';
+            for (let g = 1; g <= 8; g++) { if (m[g] !== undefined) { cls = HL_CLS[g - 1]; break; } }
+            out += `<span class="${cls}">${esc(m[0])}</span>`;
+            last = re.lastIndex;
+            if (m[0] === '') re.lastIndex++;
+        }
+        if (last < src.length) out += esc(src.slice(last));
+        return out;
+    }
+
+    updateLineNumbers() {
+        const n = this.ta.value.split('\n').length;
+        let html = '';
+        for (let i = 1; i <= n; i++) html += `<div>${i}</div>`;
+        this.lineNums.innerHTML = html;
+    }
+
+    updateCursor() {
+        const s = this.ta.selectionStart;
+        const before = this.ta.value.slice(0, s);
+        const ln = before.split('\n').length;
+        const col = s - before.lastIndexOf('\n');
+        $('sbPos').textContent = `Ln ${ln}, Col ${col}`;
+        
+        const kids = this.lineNums.children;
+        if (kids[ln - 1]) {
+            if (this.lineNums._cur) this.lineNums._cur.classList.remove('cur');
+            kids[ln - 1].classList.add('cur');
+            this.lineNums._cur = kids[ln - 1];
+        }
+    }
+
+    syncScroll() {
+        this.hl.scrollTop = this.ta.scrollTop;
+        this.hl.scrollLeft = this.ta.scrollLeft;
+        this.lineNums.style.transform = `translateY(${-this.ta.scrollTop}px)`;
+    }
+
+    insertText(text) {
+        this.ta.focus();
+        if (!document.execCommand('insertText', false, text)) {
+            const s = this.ta.selectionStart;
+            this.ta.setRangeText(text, s, this.ta.selectionEnd, 'end');
+            this.ta.dispatchEvent(new Event('input'));
+        }
+    }
+
+    handleEditorKeys(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const s = this.ta.selectionStart, en = this.ta.selectionEnd, v = this.ta.value;
+            if (s !== en && v.slice(s, en).includes('\n')) {
+                const ls = v.lastIndexOf('\n', s - 1) + 1;
+                let le = v.indexOf('\n', en); if (le === -1) le = v.length;
+                const block = v.slice(ls, le);
+                const mod = e.shiftKey ? block.replace(/^ {1,2}/gm, '') : block.replace(/^/gm, '  ');
+                this.ta.setRangeText(mod, ls, le, 'select');
+                this.ta.dispatchEvent(new Event('input'));
+            } else if (e.shiftKey) {
+                const ls = this.ta.value.lastIndexOf('\n', s - 1) + 1;
+                const m = this.ta.value.slice(ls).match(/^ {1,2}/);
+                if (m) { this.ta.setRangeText('', ls, ls + m[0].length, 'end'); this.ta.dispatchEvent(new Event('input')); }
+            } else this.insertText('  ');
+        } else if (e.key === 'Enter' && !e.isComposing && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            const s = this.ta.selectionStart;
+            const before = this.ta.value.slice(0, s);
+            const line = before.slice(before.lastIndexOf('\n') + 1);
+            const indent = (line.match(/^\s*/) || [''])[0];
+            const extra = /[{([:]\s*$/.test(line) ? '  ' : '';
+            this.insertText('\n' + indent + extra);
+        } else if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+            e.preventDefault();
+            this.toggleComment();
+        }
+    }
+
+    toggleComment() {
+        const v = this.ta.value, s = this.ta.selectionStart, en = this.ta.selectionEnd;
+        const ls = v.lastIndexOf('\n', s - 1) + 1;
+        let le = v.indexOf('\n', en); if (le === -1) le = v.length;
+        const lines = v.slice(ls, le).split('\n');
+        const allC = lines.every(l => /^\s*\/\/|^$/.test(l));
+        const mod = lines.map(l => allC
+            ? l.replace(/^(\s*)\/\/ ?/, '$1')
+            : (l.trim() ? l.replace(/^(\s*)/, '$1// ') : l)).join('\n');
+        this.ta.setRangeText(mod, ls, le, 'select');
+        this.ta.dispatchEvent(new Event('input'));
+    }
+
+    copyCode() {
+        navigator.clipboard.writeText(this.ta.value).catch(() => {
+            this.ta.select(); document.execCommand('copy');
+        });
+        this.toast.show('Code copied to clipboard');
+    }
+
+    resetCode() {
+        if (!confirm('Restore starter code? Your current edits for this language will be lost.')) return;
+        this.ta.value = this.currentProblem.starter[this.store.data.lang];
+        this.onCodeChange();
+        this.toast.show('Starter code restored');
+    }
+
+    /* --- Testcases Logic --- */
+    loadCases(problem) {
+        const state = this.store.getProblemState(problem.slug);
+        if (state.cases && state.cases.length > 0) {
+            return state.cases.map(c => new TestCase(c.inputText, c.expectedText, c.builtin));
+        }
+        return this.getDefaultCases(problem);
+    }
+
+    getDefaultCases(problem) {
+        return problem.tests.map(t => new TestCase(
+            JSON.stringify(problem.mode === 'class' ? t.calls : t.in, null, 1),
+            JSON.stringify(t.out),
+            true
+        ));
+    }
+
+    saveCases() {
+        if (!this.currentProblem) return;
+        const state = this.store.getProblemState(this.currentProblem.slug);
+        state.cases = this.currentCases.map(c => ({
+            inputText: c.inputText,
+            expectedText: c.expectedText,
+            builtin: c.builtin
+        }));
+        this.store.save();
+    }
+
+    renderCases() {
+        const prob = this.currentProblem;
+        if (this.selectedCaseIdx >= this.currentCases.length) this.selectedCaseIdx = 0;
+        
+        $('inputLabel').textContent = prob.mode === 'class' ? 'Calls · JSON [[method, args], …]' : 'Input · JSON args array';
+        
+        $('casePills').innerHTML = this.currentCases.map((c, i) => {
+            const mk = this.caseMarks[i] || '';
+            return `<button class="cpill ${i === this.selectedCaseIdx ? 'on' : ''} ${mk}" data-i="${i}"><span class="mk"></span>Case ${i + 1}</button>`;
+        }).join('') + `<button class="cpill cpill-add" id="addCase">+ Add case</button>`;
+        
+        const c = this.currentCases[this.selectedCaseIdx];
+        $('taInput').value = c.inputText;
+        $('taExpected').value = c.expectedText;
+        $('btnDeleteCase').hidden = !!c.builtin;
+        this.validateCaseUI();
+    }
+
+    handleCasePillClick(e) {
+        const add = e.target.closest('#addCase');
+        if (add) {
+            this.saveCases();
+            const prob = this.currentProblem;
+            this.currentCases.push(new TestCase(
+                prob.mode === 'class' ? `[["${prob.fnName}",[]]]` : '[]',
+                '', false
+            ));
+            this.selectedCaseIdx = this.currentCases.length - 1;
+            this.renderCases();
+            return;
+        }
+        const pill = e.target.closest('.cpill');
+        if (pill) {
+            this.selectedCaseIdx = +pill.dataset.i;
+            this.renderCases();
+        }
+    }
+
+    updateCase(key, value) {
+        const c = this.currentCases[this.selectedCaseIdx];
+        if (!c) return;
+        c[key] = value;
+        this.saveCases();
+        this.validateCaseUI();
+    }
+
+    deleteCase() {
+        const c = this.currentCases[this.selectedCaseIdx];
+        if (c && !c.builtin) {
+            this.currentCases.splice(this.selectedCaseIdx, 1);
+            this.selectedCaseIdx = Math.max(0, this.selectedCaseIdx - 1);
+            this.saveCases();
+            this.renderCases();
+            this.toast.show('Custom case deleted');
+        }
+    }
+
+    restoreCases() {
+        if (!confirm('Discard testcase edits and restore the defaults?')) return;
+        this.currentCases = this.getDefaultCases(this.currentProblem);
+        this.saveCases();
+        this.selectedCaseIdx = 0;
+        this.caseMarks = [];
+        this.renderCases();
+        this.toast.show('Default testcases restored');
+    }
+
+    validateCaseUI() {
+        const prob = this.currentProblem, c = this.currentCases[this.selectedCaseIdx];
+        let okIn = true, okEx = true;
+        try {
+            const j = JSON.parse(c.inputText);
+            if (!Array.isArray(j)) throw new Error(prob.mode === 'class' ? 'must be an array of [method, args] pairs' : 'must be a JSON array of arguments');
+            $('errInput').textContent = '';
+        } catch (e) { okIn = false; $('errInput').textContent = '✗ ' + e.message; }
+        
+        if (c.expectedText.trim() === '') $('errExpected').textContent = '';
+        else { try { JSON.parse(c.expectedText); $('errExpected').textContent = ''; } catch (e) { okEx = false; $('errExpected').textContent = '✗ invalid JSON'; } }
+        
+        $('taInput').classList.toggle('bad', !okIn);
+        $('taExpected').classList.toggle('bad', !okEx);
+    }
+
+    switchDrawer(tab) {
+        $('tabTest').classList.toggle('on', tab === 'test');
+        $('tabResult').classList.toggle('on', tab === 'result');
+        $('testCaseView').hidden = tab !== 'test';
+        $('resultView').hidden = tab !== 'result';
+    }
+
+    /* --- Execution & Judging --- */
+    async runAll(isSubmit) {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.setBusy(true);
+        
+        this.saveCases();
+        
+        const parsedCases = this.currentCases.map((c, i) => {
+            const p = this.sandbox.parseCase(c, this.currentProblem);
+            return { ...p, idx: i };
+        });
+        
+        const runnable = parsedCases.filter(c => !c.parseError);
+        if (!runnable.length) {
+            this.toast.show('No valid testcases to run');
+            this.switchDrawer('test');
+            this.setBusy(false);
+            this.isRunning = false;
+            return;
+        }
+        
+        let code = this.ta.value;
+        if (this.store.data.lang === 'ts') {
+            try {
+                code = this.compiler.compile(code);
+            } catch (e) {
+                this.showCompileError({ name: 'TS Error', message: e.message }, isSubmit);
+                this.setBusy(false);
+                this.isRunning = false;
+                return;
+            }
+        }
+        
+        this.switchDrawer('result');
+        $('resultView').innerHTML = '<div class="res-summary"><span class="rchip">running…</span></div><div id="resRows"></div>';
+        this.caseMarks = new Array(this.currentCases.length).fill('');
+        this.renderCasePills();
+        
+        try {
+            const { results, logs } = await this.sandbox.execute(code, this.currentProblem, runnable);
+            this.finishRun(results, runnable, logs, {}, isSubmit);
+        } catch (err) {
+            if (err.type === 'timeout') {
+                this.finishRun(null, runnable, [], { tle: true }, isSubmit);
+            } else if (err.type === 'compile') {
+                this.finishRun(null, runnable, err.logs, { compile: err.error }, isSubmit);
+            } else {
+                this.finishRun(null, runnable, [], { compile: { name: 'Sandbox Error', message: err.error || 'Worker crashed' } }, isSubmit);
+            }
+        } finally {
+            this.setBusy(false);
+            this.isRunning = false;
+        }
+    }
+
+    setBusy(b) {
+        ['btnRun', 'btnSubmit'].forEach(id => {
+            $(id).disabled = b;
+            $(id).classList.toggle('busy', b);
+        });
+    }
+
+    finishRun(rows, runnable, allLogs, meta, isSubmit) {
+        const prob = this.currentProblem;
+        const rv = $('resultView');
+        let html = '';
+
+        if (meta.compile) {
+            html += `<div class="compile-banner"><b>${esc(meta.compile.name)}:</b> ${esc(meta.compile.message)}</div><div id="resRows"></div>`;
+            this.showCompileError(meta.compile, isSubmit);
+            return;
+        }
+
+        let tleHtml = '';
+        runnable.forEach((p, i) => {
+            if (!rows || !rows[i]) {
+                this.caseMarks[p.idx] = 'tle';
+                tleHtml += `<div class="rrow tle"><div class="rrow-h"><span class="ic">⏱</span>
+                    <span class="nm">Case ${p.idx + 1}</span><span class="vd">Time Limit Exceeded</span>
+                    <span class="ms">&gt; 6000 ms budget</span></div></div>`;
+            }
+        });
+        const rowsHtml = (rv.querySelector('#resRows') || {}).innerHTML || '';
+
+        let passed = 0, total = 0, ms = 0;
+        runnable.forEach((p, i) => {
+            const m = rows ? rows[i] : null;
+            const mark = this.getCaseMark(m);
+            this.caseMarks[p.idx] = mark;
+            this.appendCaseRow(m, p);
+            
+            if ('expected' in p) {
+                total++;
+                if (m && m.ok && m.pass === true) passed++;
+                ms += m ? m.ms : 0;
+            }
+        });
+
+        let verdict;
+        if (meta.tle) verdict = 'Time Limit Exceeded';
+        else if (total > 0 && passed === total) verdict = 'Accepted';
+        else if (runnable.some((p, i) => rows && rows[i] && !rows[i].ok)) verdict = 'Runtime Error';
+        else verdict = total === 0 ? 'No Expected Cases' : 'Wrong Answer';
+
+        const vc = verdict === 'Accepted' ? 'good' : (verdict === 'Time Limit Exceeded' ? 'warn' : 'bad');
+        html += `<div class="res-summary">
+            <span class="rchip ${vc}">${verdict}</span>
+            <span class="rchip">${passed}/${total} expected passed</span>
+            <span class="rchip">runtime ${ms.toFixed(2)} ms</span>
+            ${meta.tle ? `<span class="rchip warn">exceeded 6s budget — worker terminated</span>` : ''}
+          </div>
+          <div id="resRows">${rowsHtml}${tleHtml}</div>`;
+
+        if (allLogs.length) {
+            html += `<div class="console-block"><div class="ch">console output · ${allLogs.length} line${allLogs.length > 1 ? 's' : ''}</div>` +
+                allLogs.map(l => `<div class="cl ${l.l === 'log' ? '' : l.l}">${esc(l.t)}</div>`).join('') + '</div>';
+        }
+        rv.innerHTML = html;
+        this.renderCasePills();
+
+        const chip = $('verdictChip');
+        chip.textContent = verdict;
+        chip.className = 'verdict-chip show rchip ' + vc;
+        $('resBadge').hidden = false;
+        $('resBadge').textContent = `${passed}/${total}`;
+
+        if (isSubmit) {
+            const st = this.store.getProblemState(prob.slug);
+            st.subs = st.subs || [];
+            st.subs.push({ t: Date.now(), lang: this.store.data.lang, verdict, passed, total, ms: meta.tle ? null : ms });
+            if (st.subs.length > 60) st.subs = st.subs.slice(-60);
+            if (verdict === 'Accepted' && !st.solvedAt) st.solvedAt = Date.now();
+            this.store.save();
+            this.renderSidebar();
+            this.renderDescription();
+            this.renderSubs();
+            if (verdict === 'Accepted') {
+                this.toast.show('Accepted — nicely done! 🎉');
+                const r = $('btnSubmit').getBoundingClientRect();
+                this.triggerConfetti(r.left + r.width / 2, r.top);
+            } else this.toast.show('Submission recorded: ' + verdict);
+        }
+    }
+
+    getCaseMark(m) {
+        return !m ? 'tle' : (!m.ok ? 'err' : (m.pass === null ? 'pass' : (m.pass ? 'pass' : 'fail')));
+    }
+
+    appendCaseRow(m, parsed) {
+        const mark = this.getCaseMark(m);
+        const [cls, icon, label] = {
+            pass: ['pass', '✓', 'Accepted'], fail: ['fail', '✗', 'Wrong Answer'],
+            err: ['err', '!', 'Runtime Error'], tle: ['tle', '⏱', 'Time Limit Exceeded'],
+            skip: ['skip', '–', 'Invalid Input']
+        }[mark];
+
+        const div = document.createElement('div');
+        div.className = 'rrow ' + cls;
+        let body = '';
+        const inputStr = esc(fmtJSON(parsed.calls !== undefined ? parsed.calls : parsed.input));
+        body += `<div class="row-line"><b>input</b>${inputStr}</div>`;
+        if (!m || !m.ok) {
+            body += `<div class="row-line errmsg"><b>error</b>${esc(m.error.name)}: ${esc(m.error.message)}</div>`;
+        } else {
+            if (m.hasExp) body += `<div class="row-line ${m.pass ? '' : 'bad-val'}"><b>expected</b>${esc(fmtJSON(parsed.expected))}</div>`;
+            body += `<div class="row-line ${m.pass ? 'good-val' : (m.hasExp ? 'bad-val' : '')}"><b>output</b>${esc(m.output)}</div>`;
+        }
+        div.innerHTML = `
+            <div class="rrow-h"><span class="ic">${icon}</span><span class="nm">Case ${parsed.idx + 1}</span>
+              <span class="vd">${label}${m && m.pass === null && m.ok ? ' · output only' : ''}</span>
+              <span class="ms">${m ? m.ms.toFixed(2) + ' ms' : ''}</span></div>
+            <div class="rrow-b">${body}</div>`;
+        div.querySelector('.rrow-h').addEventListener('click', () => div.classList.toggle('open'));
+        const rowsEl = $('resRows');
+        if (rowsEl) rowsEl.appendChild(div);
+    }
+
+    renderCasePills() {
+        document.querySelectorAll('#casePills .cpill[data-i]').forEach(p => {
+            const mk = this.caseMarks[+p.dataset.i];
+            p.classList.remove('pass', 'fail', 'err', 'tle', 'skip');
+            if (mk) p.classList.add(mk);
+        });
+    }
+
+    showCompileError(err, isSubmit) {
+        this.switchDrawer('result');
+        $('resultView').innerHTML = `<div class="compile-banner"><b>${esc(err.name)}:</b> ${esc(err.message)}</div>`;
+        const chip = $('verdictChip');
+        chip.textContent = 'Compile Error'; chip.className = 'verdict-chip show rchip warn';
+        if (isSubmit) {
+            const st = this.store.getProblemState(this.currentProblem.slug);
+            st.subs = st.subs || [];
+            st.subs.push({ t: Date.now(), lang: this.store.data.lang, verdict: 'Compile Error', passed: 0, total: 0, ms: null });
+            this.store.save();
+            this.renderSubs();
+        }
+    }
+
+    clearResults() {
+        $('verdictChip').className = 'verdict-chip';
+        $('resBadge').hidden = true;
+        $('resultView').innerHTML = '';
+    }
+
+    updateTsBadge(status) {
+        const b = $('tsBadge');
+        if (status === 'ready') {
+            b.textContent = 'TS · compiler ready'; b.className = 'tsbadge ok'; b.title = 'TypeScript 5.x loaded from CDN';
+        } else {
+            b.textContent = 'TS · fallback stripper'; b.className = 'tsbadge warn'; b.title = 'CDN unreachable — rough type stripping will be used';
+        }
+    }
+
+    /* --- Visual FX & Utilities --- */
+    initResizer() {
+        const div = $('divider'), ws = $('workspace'), dp = $('descPane');
+        dp.style.flex = `0 0 ${Math.round(this.store.data.split * 1000) / 10}%`;
+        let drag = false;
+        div.addEventListener('pointerdown', e => {
+            drag = true; div.classList.add('drag'); div.setPointerCapture(e.pointerId); document.body.style.userSelect = 'none';
+        });
+        div.addEventListener('pointermove', e => {
+            if (!drag) return;
+            const r = ws.getBoundingClientRect();
+            let pct = (e.clientX - r.left) / r.width;
+            pct = Math.min(.72, Math.max(.26, pct));
+            dp.style.flex = `0 0 ${pct * 100}%`;
+            bus.emit('split:changed', pct);
+        });
+        const end = () => {
+            if (drag) { drag = false; div.classList.remove('drag'); document.body.style.userSelect = ''; }
+        };
+        div.addEventListener('pointerup', end); div.addEventListener('pointercancel', end);
+    }
+
+    sizeFx() {
+        const fx = $('fx');
+        fx.width = innerWidth; fx.height = innerHeight;
+    }
+
+    triggerConfetti(x, y) {
+        const fx = $('fx');
+        const fctx = fx.getContext('2d');
+        const colors = ['#ffa116', '#3fb950', '#58c4dc', '#e8edf4', '#f85149'];
+        const ps = [];
+        for (let i = 0; i < 130; i++) {
+            const a = Math.random() * Math.PI - Math.PI;
+            const sp = 4 + Math.random() * 8;
+            ps.push({
+                x, y, vx: Math.cos(a) * sp * (Math.random() * .6 + .7), vy: Math.sin(a) * sp - 3,
+                g: .22 + Math.random() * .1, s: 3 + Math.random() * 4, r: Math.random() * Math.PI,
+                vr: (Math.random() - .5) * .3, c: colors[i % colors.length], life: 70 + Math.random() * 40
+            });
+        }
+        let frame = 0;
+        (function tick() {
+            frame++;
+            fctx.clearRect(0, 0, fx.width, fx.height);
+            let alive = false;
+            ps.forEach(p => {
+                if (p.life <= 0) return;
+                alive = true; p.life--; p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .99; p.r += p.vr;
+                fctx.save(); fctx.translate(p.x, p.y); fctx.rotate(p.r);
+                fctx.globalAlpha = Math.min(1, p.life / 30);
+                fctx.fillStyle = p.c; fctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * .6);
+                fctx.restore();
+            });
+            if (alive && frame < 200) requestAnimationFrame(tick);
+            else fctx.clearRect(0, 0, fx.width, fx.height);
+        })();
+    }
+}
+
+/* =========================================
+   BOOTSTRAP
+   ========================================= */
+document.addEventListener('DOMContentLoaded', () => {
+    window.app = new App();
+});
+</script>
+</body>
+</html>
