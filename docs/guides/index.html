@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d12" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Engineering Guides · Library</title>
+    <meta
+      name="description"
+      content="A curated library of interactive engineering guides: system design, interview prep, and deep dives."
+    />
+    <style>
+      :root {
+        color-scheme: dark light;
+        --bg: #0b0d12;
+        --bg-elev: rgba(255, 255, 255, 0.04);
+        --bg-card: rgba(255, 255, 255, 0.03);
+        --border: rgba(255, 255, 255, 0.08);
+        --border-strong: rgba(255, 255, 255, 0.16);
+        --fg: #e7eaf0;
+        --fg-dim: #a4abbb;
+        --fg-muted: #6f7588;
+        --accent: #7c9cff;
+        --accent-2: #c084fc;
+        --accent-3: #34d399;
+        --danger: #f87171;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        --radius: 16px;
+        --radius-sm: 10px;
+        --tap: 44px;
+        --container: 1200px;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --bg-elev: rgba(255, 255, 255, 0.7);
+          --bg-card: rgba(255, 255, 255, 0.85);
+          --border: rgba(10, 15, 30, 0.08);
+          --border-strong: rgba(10, 15, 30, 0.16);
+          --fg: #0f1220;
+          --fg-dim: #4a5063;
+          --fg-muted: #6b7080;
+          --accent: #4f46e5;
+          --accent-2: #7c3aed;
+          --accent-3: #059669;
+          --shadow: 0 10px 30px rgba(20, 25, 50, 0.08);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "SF Pro Text",
+          "Inter", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100dvh;
+        background-image:
+          radial-gradient(1200px 600px at 80% -10%, rgba(124, 156, 255, 0.18), transparent 60%),
+          radial-gradient(900px 500px at -10% 10%, rgba(192, 132, 252, 0.14), transparent 55%),
+          radial-gradient(700px 400px at 50% 110%, rgba(52, 211, 153, 0.1), transparent 60%);
+        background-attachment: fixed;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        max-width: var(--container);
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      header.site {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: saturate(160%) blur(14px);
+        -webkit-backdrop-filter: saturate(160%) blur(14px);
+        background: var(--bg-elev);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 0;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        font-size: 17px;
+      }
+      .brand-mark {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 6px 16px rgba(124, 156, 255, 0.35);
+        position: relative;
+      }
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border-radius: 4px;
+        background: var(--bg);
+        opacity: 0.85;
+      }
+      .nav-meta {
+        display: none;
+        color: var(--fg-muted);
+        font-size: 13px;
+      }
+      @media (min-width: 640px) {
+        .nav-meta {
+          display: inline;
+        }
+      }
+
+      /* Hero */
+      .hero {
+        padding: 56px 0 28px;
+      }
+      .hero h1 {
+        font-size: clamp(32px, 7vw, 56px);
+        line-height: 1.05;
+        letter-spacing: -0.025em;
+        margin: 0 0 14px;
+        font-weight: 800;
+        background: linear-gradient(
+          180deg,
+          var(--fg) 0%,
+          var(--fg) 60%,
+          var(--fg-dim) 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero h1 .grad {
+        background: linear-gradient(120deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero p.lede {
+        color: var(--fg-dim);
+        max-width: 60ch;
+        margin: 0 0 24px;
+        font-size: clamp(15px, 3.8vw, 18px);
+      }
+
+      .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        margin-top: 8px;
+      }
+      .stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--fg-dim);
+      }
+      .stat strong {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent-3);
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+      }
+
+      /* Search + filters */
+      .toolbar {
+        margin: 8px 0 28px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      @media (min-width: 720px) {
+        .toolbar {
+          grid-template-columns: 1fr auto;
+          align-items: center;
+        }
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: var(--tap);
+        padding: 0 14px 0 44px;
+        border-radius: 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--fg);
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .search input::placeholder {
+        color: var(--fg-muted);
+      }
+      .search input:focus {
+        border-color: var(--border-strong);
+        box-shadow: 0 0 0 4px rgba(124, 156, 255, 0.18);
+      }
+      .search .icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--fg-muted);
+        pointer-events: none;
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+      }
+      .filters::-webkit-scrollbar {
+        display: none;
+      }
+      .chip {
+        flex: 0 0 auto;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--fg-dim);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .chip:hover {
+        color: var(--fg);
+        border-color: var(--border-strong);
+      }
+      .chip[aria-pressed="true"] {
+        color: var(--fg);
+        background: linear-gradient(135deg, rgba(124, 156, 255, 0.22), rgba(192, 132, 252, 0.22));
+        border-color: rgba(124, 156, 255, 0.5);
+      }
+      .chip .count {
+        font-size: 12px;
+        color: var(--fg-muted);
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      /* Card grid */
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      @media (min-width: 560px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (min-width: 960px) {
+        .grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 18px;
+        }
+      }
+
+      .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        border-radius: var(--radius);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        overflow: hidden;
+        isolation: isolate;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(124, 156, 255, 0.08), transparent 50%);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: -1;
+      }
+      .card:hover,
+      .card:focus-within {
+        transform: translateY(-2px);
+        border-color: var(--border-strong);
+      }
+      .card:hover::before {
+        opacity: 1;
+      }
+      .card:focus-within::before {
+        opacity: 1;
+      }
+
+      .card .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        background: rgba(124, 156, 255, 0.14);
+        color: var(--accent);
+        border: 1px solid rgba(124, 156, 255, 0.3);
+      }
+      .badge.cat-system {
+        background: rgba(52, 211, 153, 0.12);
+        color: var(--accent-3);
+        border-color: rgba(52, 211, 153, 0.3);
+      }
+      .badge.cat-interview {
+        background: rgba(192, 132, 252, 0.14);
+        color: var(--accent-2);
+        border-color: rgba(192, 132, 252, 0.3);
+      }
+      .badge.cat-deepdive {
+        background: rgba(124, 156, 255, 0.14);
+        color: var(--accent);
+        border-color: rgba(124, 156, 255, 0.3);
+      }
+      .badge.cat-tool {
+        background: rgba(248, 113, 113, 0.12);
+        color: var(--danger);
+        border-color: rgba(248, 113, 113, 0.3);
+      }
+
+      .card h3 {
+        margin: 14px 0 8px;
+        font-size: 18px;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+        font-weight: 700;
+        color: var(--fg);
+      }
+      .card p {
+        margin: 0 0 16px;
+        color: var(--fg-dim);
+        font-size: 14px;
+        line-height: 1.55;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .meta {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--border);
+      }
+      .meta .left {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--fg-muted);
+        font-size: 12px;
+      }
+      .meta .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+      }
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .cta svg {
+        transition: transform 0.18s ease;
+      }
+      .card:hover .cta svg {
+        transform: translateX(3px);
+      }
+
+      /* Empty / no-match state */
+      .empty {
+        text-align: center;
+        padding: 60px 16px;
+        color: var(--fg-muted);
+        border: 1px dashed var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-card);
+      }
+      .empty h3 {
+        color: var(--fg);
+        margin: 8px 0 4px;
+        font-size: 18px;
+      }
+      .empty p {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      /* Featured row */
+      .featured {
+        margin-top: 36px;
+      }
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 28px 0 14px;
+      }
+      .section-head h2 {
+        font-size: 18px;
+        margin: 0;
+        letter-spacing: -0.01em;
+        font-weight: 700;
+        color: var(--fg);
+      }
+      .section-head .hint {
+        color: var(--fg-muted);
+        font-size: 12px;
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 56px;
+        padding: 28px 0 36px;
+        border-top: 1px solid var(--border);
+        color: var(--fg-muted);
+        font-size: 13px;
+      }
+      footer .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      footer a {
+        color: var(--fg-dim);
+      }
+      footer a:hover {
+        color: var(--fg);
+      }
+
+      /* Motion preferences */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="container nav">
+        <a class="brand" href="./index.html" aria-label="Guides home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>Guides</span>
+        </a>
+        <span class="nav-meta">Engineering knowledge library</span>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1>
+          Build better systems,<br />
+          one <span class="grad">guide</span> at a time.
+        </h1>
+        <p class="lede">
+          A curated, mobile-first library of interactive engineering guides —
+          from system design deep dives to interview prep dossiers.
+        </p>
+        <div class="hero-stats" id="stats">
+          <span class="stat"><span class="dot"></span><strong id="stat-total">—</strong> guides</span>
+          <span class="stat"><strong id="stat-cat">—</strong> categories</span>
+          <span class="stat"><strong id="stat-newest">—</strong> updated recently</span>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="Search and filter">
+        <div class="search">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            id="q"
+            type="search"
+            inputmode="search"
+            autocomplete="off"
+            placeholder="Search guides…"
+            aria-label="Search guides"
+          />
+        </div>
+        <div class="filters" role="tablist" aria-label="Filter by category">
+          <button class="chip" data-cat="all" aria-pressed="true" type="button">
+            All <span class="count" data-count="all">0</span>
+          </button>
+          <button class="chip" data-cat="system" aria-pressed="false" type="button">
+            System Design <span class="count" data-count="system">0</span>
+          </button>
+          <button class="chip" data-cat="interview" aria-pressed="false" type="button">
+            Interview Prep <span class="count" data-count="interview">0</span>
+          </button>
+          <button class="chip" data-cat="deepdive" aria-pressed="false" type="button">
+            Deep Dive <span class="count" data-count="deepdive">0</span>
+          </button>
+          <button class="chip" data-cat="tool" aria-pressed="false" type="button">
+            Tools <span class="count" data-count="tool">0</span>
+          </button>
+        </div>
+      </section>
+
+      <section aria-label="All guides">
+        <div class="section-head">
+          <h2>Library</h2>
+          <span class="hint">Tap a card to open the guide</span>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="empty" id="empty" hidden>
+          <h3>No guides match your search</h3>
+          <p>Try a different keyword or clear the filters.</p>
+        </div>
+      </section>
+
+      <footer>
+        <div class="row">
+          <span>© Engineering Guides · self-hosted library</span>
+          <span>Last updated · <span id="updated">—</span></span>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+      // --- Catalog ----------------------------------------------------------
+      // Title, summary, category, and updated-at are curated by hand so the
+      // landing page reads as a library, not a raw directory listing.
+      const GUIDES = [
+        {
+          file: "system-design-field-guide-v3.html",
+          title: "System Design Field Guide v3",
+          summary:
+            "Deep-dive edition of the system design field guide — updated with the newest patterns, trade-offs, and worked examples.",
+          cat: "system",
+          updated: "2026-08-14",
+        },
+        {
+          file: "system-design-guide.html",
+          title: "System Design Field Guide v2",
+          summary:
+            "Cards + case studies covering the classic system design playbook: scaling, caching, queues, and sharding.",
+          cat: "system",
+          updated: "2026-08-11",
+        },
+        {
+          file: "Lead Technical Anchor · Interview Prep.html",
+          title: "Lead Technical Anchor · Interview Prep",
+          summary:
+            "Anchor-role dossier: leadership signal, technical depth, architecture scenarios, and behavioral rounds.",
+          cat: "interview",
+          updated: "2026-08-06",
+        },
+        {
+          file: "guide-interview.html",
+          title: "Lead Technical Anchor — Interview Prep Dossier",
+          summary:
+            "Extended dossier variant with deeper scenario walkthroughs and rubric-style self-evaluation.",
+          cat: "interview",
+          updated: "2026-08-06",
+        },
+        {
+          file: "Backend Engineer interview at Flare.html",
+          title: "Flare Backend Engineer · Interview Prep",
+          summary:
+            "Targeted prep for Flare's backend loop — domain deep dives, system design, and coding patterns.",
+          cat: "interview",
+          updated: "2026-08-06",
+        },
+        {
+          file: "dfend-prep-qwen.html",
+          title: "D-Fend Solutions · Senior Backend Prep",
+          summary:
+            "Senior backend engineer prep guide tailored to D-Fend Solutions — Qwen-derived edition.",
+          cat: "interview",
+          updated: "2026-08-05",
+        },
+        {
+          file: "dfend-prep-zai.html",
+          title: "D-Fend Solutions · Senior Backend Prep",
+          summary:
+            "Senior backend engineer prep guide tailored to D-Fend Solutions — Z.ai-derived edition.",
+          cat: "interview",
+          updated: "2026-08-05",
+        },
+        {
+          file: "GraphQL.html",
+          title: "GraphQL × React × TypeScript",
+          summary:
+            "Interactive guide for designing GraphQL APIs with React and TypeScript — schema, resolvers, codegen, and patterns.",
+          cat: "deepdive",
+          updated: "2026-08-06",
+        },
+        {
+          file: "local-leetcode.html",
+          title: "leetlab · Interactive JS/TS Judge",
+          summary:
+            "A self-hosted, interactive JavaScript and TypeScript coding judge for hands-on practice.",
+          cat: "tool",
+          updated: "2026-08-09",
+        },
+      ];
+
+      const CAT_LABEL = {
+        system: "System Design",
+        interview: "Interview Prep",
+        deepdive: "Deep Dive",
+        tool: "Tool",
+      };
+
+      // --- Render -----------------------------------------------------------
+      const grid = document.getElementById("grid");
+      const emptyEl = document.getElementById("empty");
+      const q = document.getElementById("q");
+      const chips = Array.from(document.querySelectorAll(".chip"));
+
+      function fmtDate(iso) {
+        const d = new Date(iso + "T00:00:00");
+        if (isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      function cardTemplate(g) {
+        const label = CAT_LABEL[g.cat] || g.cat;
+        return `
+          <a class="card" href="${encodeURI(g.file)}" data-cat="${g.cat}"
+             data-title="${g.title.toLowerCase()}"
+             data-summary="${g.summary.toLowerCase()}">
+            <span class="badge cat-${g.cat}">${label}</span>
+            <h3>${g.title}</h3>
+            <p>${g.summary}</p>
+            <div class="meta">
+              <span class="left">
+                <span class="pill">${fmtDate(g.updated)}</span>
+              </span>
+              <span class="cta">
+                Open
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="13 6 19 12 13 18"></polyline>
+                </svg>
+              </span>
+            </div>
+          </a>
+        `;
+      }
+
+      function render() {
+        const term = q.value.trim().toLowerCase();
+        const activeCat =
+          chips.find((c) => c.getAttribute("aria-pressed") === "true")?.dataset.cat || "all";
+
+        const filtered = GUIDES.filter((g) => {
+          const matchCat = activeCat === "all" || g.cat === activeCat;
+          const matchQ =
+            !term ||
+            g.title.toLowerCase().includes(term) ||
+            g.summary.toLowerCase().includes(term) ||
+            (CAT_LABEL[g.cat] || "").toLowerCase().includes(term);
+          return matchCat && matchQ;
+        });
+
+        grid.innerHTML = filtered.map(cardTemplate).join("");
+        emptyEl.hidden = filtered.length !== 0;
+      }
+
+      // --- Counts & stats ---------------------------------------------------
+      function refreshCounts() {
+        const total = GUIDES.length;
+        const cats = new Set(GUIDES.map((g) => g.cat));
+        document.getElementById("stat-total").textContent = total;
+        document.getElementById("stat-cat").textContent = cats.size;
+
+        const newest = GUIDES.reduce((acc, g) =>
+          new Date(g.updated) > new Date(acc.updated) ? g : acc
+        );
+        document.getElementById("stat-newest").textContent = fmtDate(newest.updated);
+        document.getElementById("updated").textContent = fmtDate(newest.updated);
+
+        const counts = { all: total };
+        for (const g of GUIDES) counts[g.cat] = (counts[g.cat] || 0) + 1;
+        document.querySelectorAll("[data-count]").forEach((el) => {
+          el.textContent = counts[el.dataset.count] || 0;
+        });
+      }
+
+      // --- Events -----------------------------------------------------------
+      let searchTimer;
+      q.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(render, 80);
+      });
+
+      chips.forEach((c) => {
+        c.addEventListener("click", () => {
+          chips.forEach((x) => x.setAttribute("aria-pressed", "false"));
+          c.setAttribute("aria-pressed", "true");
+          render();
+        });
+      });
+
+      // Keyboard: "/" focuses search, Esc clears.
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement !== q) {
+          e.preventDefault();
+          q.focus();
+        } else if (e.key === "Escape" && document.activeElement === q) {
+          q.value = "";
+          render();
+          q.blur();
+        }
+      });
+
+      // --- Init -------------------------------------------------------------
+      refreshCounts();
+      render();
+    </script>
+  </body>
+</html>

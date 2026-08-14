@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>System Design Field Guide v3 — Deep-Dive Edition</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+    --accent:#4f46e5; --green:#15803d; --greenbg:#f0fdf4; --red:#b91c1c; --redbg:#fef2f2;
+    --amber:#92400e; --amberbg:#fffbeb; --blue:#1e40af; --bluebg:#eff6ff;
+    --purple:#7c3aed; --purplebg:#faf5ff; --r:14px;
+  }
+  html{scroll-behavior:smooth}
+  body{font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 18px}
+  section{scroll-margin-top:90px;margin:40px 0}
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 18px}
+  .brand{font-size:17px}
+  nav{display:flex;gap:4px;flex-wrap:wrap}
+  nav a{color:var(--muted);text-decoration:none;font-size:13.5px;padding:6px 10px;border-radius:8px}
+  nav a:hover{background:#eef2ff;color:var(--accent)}
+  .prog{display:flex;align-items:center;gap:8px;margin-left:auto;min-width:170px}
+  .progress{flex:1;height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width .4s}
+  #ptext{font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .hero h1{font-size:clamp(22px,3.4vw,32px);line-height:1.2}
+  .hero p{color:var(--muted);margin-top:8px;max-width:820px}
+  .new{display:inline-block;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;font-size:12px;border-radius:99px;padding:2px 10px;margin-top:10px;font-weight:600}
+  h2{font-size:22px;margin-bottom:8px}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:16px;max-width:860px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  select,input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff;color:var(--ink)}
+  select:focus,input:focus{outline:2px solid #c7d2fe;border-color:var(--accent)}
+  #helpOut{margin-top:14px;display:none}
+  #helpOut ol{margin:10px 0 10px 4px;list-style:none;counter-reset:st}
+  #helpOut ol li{counter-increment:st;position:relative;padding:10px 12px 10px 44px;margin:8px 0;background:#f8fafc;border:1px solid var(--line);border-radius:10px;font-size:14.5px;line-height:1.6}
+  #helpOut ol li::before{content:counter(st);position:absolute;left:10px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .stop{background:var(--redbg);border:1px solid #fecaca;color:var(--red);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.6}
+  .stop b::before{content:"🛑 "}
+  .controls{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .seg button{border:0;background:none;padding:7px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+  .seg button.on{background:#111827;color:#fff}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  #count{font-size:12.5px;color:var(--muted);margin-left:auto}
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.05);transition:border-color .2s}
+  .card.flash{border-color:var(--accent);box-shadow:0 0 0 3px #c7d2fe}
+  .card .top{padding:14px 16px 12px;cursor:pointer;position:relative}
+  .badges{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+  .cat{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--c);background:color-mix(in srgb,var(--c) 12%, #fff);border:1px solid color-mix(in srgb,var(--c) 35%, #fff);border-radius:99px;padding:2px 9px}
+  .pri{font-size:11px;border-radius:99px;padding:2px 9px;font-weight:600}
+  .pri.must{background:#ffe4e6;color:#be123c}
+  .pri.important{background:#fef3c7;color:#92400e}
+  .pri.nice{background:#f1f5f9;color:#475569}
+  .got{margin-left:auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:transparent;cursor:pointer;font-size:14px;line-height:1}
+  .got:hover{border-color:#22c55e}
+  .card.done{border-color:#86efac}
+  .card.done .got{background:#16a34a;border-color:#16a34a;color:#fff}
+  .card h3{font-size:16.5px}
+  .tag{color:var(--muted);font-size:13.5px;margin-top:3px;padding-right:18px}
+  .chev{position:absolute;right:14px;bottom:12px;color:var(--muted);transition:transform .3s;font-size:13px}
+  .card.open .chev{transform:rotate(180deg)}
+  .body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
+  .card.open .body{grid-template-rows:1fr}
+  .inner{overflow:hidden}
+  .inner>div,.inner>p{margin:0 16px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:4px}
+  @media(max-width:430px){.cols{grid-template-columns:1fr}}
+  .use,.avoid{border-radius:10px;padding:12px 14px;font-size:13.5px}
+  .use{background:var(--greenbg);border:1px solid #bbf7d0}
+  .avoid{background:var(--redbg);border:1px solid #fecaca}
+  .use h4{color:var(--green);font-size:12.5px;margin-bottom:8px}
+  .avoid h4{color:var(--red);font-size:12.5px;margin-bottom:8px}
+  .use ul,.avoid ul{list-style:none}
+  .use li,.avoid li{padding:4px 0 4px 18px;position:relative;line-height:1.5}
+  .use li::before{content:"•";position:absolute;left:2px;color:#22c55e}
+  .avoid li::before{content:"•";position:absolute;left:2px;color:#f87171}
+  .over{background:var(--amberbg);border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-top:12px !important;font-size:13.5px;line-height:1.6}
+  .over h4{color:var(--amber);font-size:12.5px;margin-bottom:6px}
+  .how{background:var(--bluebg);border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;margin-top:12px !important;font-size:13.5px;line-height:1.6}
+  .how h4{color:var(--blue);font-size:12.5px;margin-bottom:6px}
+  .tools{margin-top:12px !important;font-size:13px;color:var(--muted);line-height:1.5}
+  .ask{margin:10px 16px 16px !important;font-size:13px;color:var(--accent);background:#eef2ff;border-radius:10px;padding:10px 12px;line-height:1.6}
+  .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:16px}
+  .three div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;font-size:14px;line-height:1.6}
+  .three b{display:block;margin-bottom:4px}
+  #checklist{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+  #checklist label{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;cursor:pointer;line-height:1.5}
+  #checklist input{margin-top:2px;accent-color:#dc2626;width:16px;height:16px}
+  #verdict{margin-top:14px;border-radius:var(--r);padding:14px 16px;font-size:15px;border:1px solid var(--line);background:var(--card);line-height:1.6}
+  #playbook ol{list-style:none;counter-reset:pb;display:grid;gap:10px}
+  #playbook ol li{counter-increment:pb;position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 14px 14px 52px;font-size:14.5px;line-height:1.6}
+  #playbook ol li::before{content:counter(pb);position:absolute;left:14px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .gold{margin-top:14px;display:grid;gap:8px}
+  .gold div{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.6}
+  .detail-box{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:10px !important;font-size:13.5px;line-height:1.6}
+  .detail-box h4{color:var(--purple);font-size:12.5px;margin-bottom:6px}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:26px 0 34px}
+  .cs-section{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;margin-top:10px !important;font-size:13.5px;line-height:1.6}
+  .cs-section h4{color:var(--green);font-size:12.5px;margin-bottom:6px}
+  .cs-cost{background:var(--redbg);border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-top:10px !important;font-size:13.5px;line-height:1.6}
+  .cs-cost h4{color:var(--red);font-size:12.5px;margin-bottom:6px}
+  .cs-lesson{background:var(--amberbg);border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-top:10px !important;font-size:13.5px;line-height:1.6}
+  .cs-lesson h4{color:var(--amber);font-size:12.5px;margin-bottom:6px}
+  .key-concept{background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:12px 14px;margin-top:10px !important;font-size:13.5px;line-height:1.6}
+  .key-concept h4{color:var(--purple);font-size:12.5px;margin-bottom:6px}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<header><div class="wrap head">
+  <div class="brand">🧭 <b>System Design Field Guide</b> <span style="font-size:11px;color:var(--muted)">v3 Deep-Dive</span></div>
+  <nav>
+    <a href="#helper">Decision Helper</a><a href="#cards">Cards</a>
+    <a href="#overeng">Over-engineering</a><a href="#playbook">Playbook</a>
+  </nav>
+  <div class="prog"><div class="progress"><i id="pbar"></i></div><span id="ptext">0/0 mastered</span></div>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>What to use, when — and when it is over-engineering.</h1>
+    <p>48 deeply-explained interactive cards covering tools, distributed-systems theory, and real production case studies. Each card breaks down <b>how things actually work</b>, not just what they are. Click a card to expand it, hit <b>✓</b> when you can explain it out loud — progress saves locally.</p>
+    <span class="new">✨ v3 Deep-Dive adds: Expanded explanations, "How It Works" sections, Key Concepts, and clearer interview guidance</span>
+  </section>
+
+  <section id="helper">
+    <h2>🎯 Decision helper — "I have this problem…"</h2>
+    <p class="sub">Pick a symptom. Get the <b>boring-first</b> order of solutions, plus the over-engineering trap to avoid. Each step now includes <b>why</b> it works.</p>
+    <div class="panel">
+      <select id="helpSel"><option value="">— choose your problem —</option></select>
+      <div id="helpOut"><ol id="helpSteps"></ol><div class="stop"><b>Over-engineering trap: </b><span id="helpStop"></span></div></div>
+    </div>
+  </section>
+
+  <section id="cards">
+    <h2>🃏 Learning cards</h2>
+    <p class="sub">Green = reach for it. Red = think twice. Amber = over-engineering tell. 🏭 = real production story. Each card now explains the <b>mechanics</b> behind the concept.</p>
+    <div class="controls">
+      <div class="row"><input type="text" id="q" placeholder="🔍 Search (e.g. kafka, cap, quorum, netflix, idempotency, fan-out, consensus…)"/></div>
+      <div class="row">
+        <div class="chips" id="chips"></div>
+        <div class="seg" id="seg">
+          <button data-p="all" class="on">All</button><button data-p="must">🔥 Must</button>
+          <button data-p="important">⭐ Important</button><button data-p="nice">💡 Nice</button>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="expAll">⊞ Expand all</button>
+        <button class="btn" id="colAll">⊟ Collapse all</button>
+        <button class="btn" id="rnd">🎲 Quiz me (random card)</button>
+        <span id="count"></span>
+      </div>
+    </div>
+    <div id="grid"></div>
+  </section>
+
+  <section id="overeng">
+    <h2>🚩 Over-engineering radar</h2>
+    <p class="sub">Before adding <i>any</i> component, answer these three honestly:</p>
+    <div class="three">
+      <div><b>1. What specific problem does it solve?</b>If you cannot name a current, measurable pain point — wait. "We might need it someday" is not a problem.</div>
+      <div><b>2. What does it actually cost?</b>Operational burden, added latency, consistency headaches, debugging complexity, and team learning curve. Every component has a tax.</div>
+      <div><b>3. What breaks if you DON'T add it?</b>If the honest answer is "nothing today, maybe in 6 months," it is a luxury, not a need. Solve tomorrow's problems tomorrow.</div>
+    </div>
+    <p class="sub">Honest check — tick everything that is true about your current (or planned) system:</p>
+    <div id="checklist"></div>
+    <div id="verdict"></div>
+  </section>
+
+  <section id="playbook">
+    <h2>🎤 The 6-step interview playbook</h2>
+    <p class="sub">Use this exact order in the room. It keeps you from jumping to tools too fast and shows structured thinking.</p>
+    <ol>
+      <li><b>Clarify requirements first.</b> Separate functional (what it does) from non-functional (how fast, how reliable, how much data). Always ask about scale: daily active users, peak QPS, data volume, read/write ratio, latency expectations, and geographic distribution. Write these numbers down — they justify every decision later.</li>
+      <li><b>Estimate with back-of-envelope math.</b> Calculate storage per year, requests per second, cache memory needed, and bandwidth. Round aggressively (2.5M seconds/month, 1KB per request). Interviewers care about your reasoning, not calculator precision. Numbers turn vague designs into justified architectures.</li>
+      <li><b>Draw the high-level design first.</b> Client → Load Balancer → API Layer → Services → Database, with cache and queue where needed. Draw the diagram before deep-diving into any single component. This shows you can see the forest before examining trees.</li>
+      <li><b>Define data model & APIs.</b> Sketch table schemas (or document shapes) and define 2–3 critical endpoint contracts. Explicitly justify your SQL vs NoSQL choice with trade-offs. Show you understand access patterns drive schema design, not the other way around.</li>
+      <li><b>Scale the actual bottlenecks.</b> For reads: indexes, cache, read replicas. For writes: async queues, batching, connection pooling. Only as a last resort: sharding. Always tackle the cheapest, simplest optimizations before the expensive, complex ones. Measure, then optimize.</li>
+      <li><b>Discuss reliability & operations.</b> Walk through failure modes: what happens when the database goes down? The cache? A third-party API? Cover idempotency, dead-letter queues, monitoring, graceful degradation, and deployment strategy. End by naming the trade-offs you consciously accept — this shows maturity.</li>
+    </ol>
+    <div class="gold">
+      <div>💬 <b>Trade-offs beat tools.</b> Always say what you give up when you pick something. "I chose X because Y, which means we lose Z — and we accept that because…"</div>
+      <div>🧱 <b>Start boring.</b> Monolith, one SQL database, one cache, one queue. Scale only when forced by real metrics, not hypothetical future load.</div>
+      <div>🏭 <b>Name-drop real systems.</b> "Like Twitter's fan-out problem" or "like Stripe's idempotency keys" shows you understand production reality, not just theory.</div>
+      <div>🙋 <b>Call out red flags yourself.</b> "I would NOT shard here because the data fits on one node and sharding adds operational pain" scores more points than pretending complexity is free.</div>
+    </div>
+  </section>
+</main>
+
+<footer>Trade-offs > tools. Built for interview prep — good luck! 🍀</footer>
+
+<script>
+const CATS={"Scaling":"#2563eb","Caching":"#ea580c","Storage":"#7c3aed","Messaging":"#0d9488",
+"Distributed Systems":"#0891b2","Reliability":"#e11d48","API & Realtime":"#db2777",
+"Architecture":"#4f46e5","Ops":"#64748b","Case Studies":"#4d7c0f"};
+const PRI={must:"🔥 Must-know",important:"⭐ Important",nice:"💡 Nice-to-have"};
+
+const CARDS=[
+/* ---------- SCALING ---------- */
+{id:"lb",cat:"Scaling",pri:"must",title:"Load Balancer",tag:"Spread incoming traffic across multiple backend servers so no single machine collapses under pressure, and failed nodes are automatically removed from rotation.",
+use:["You run 2 or more instances of a service and need traffic distributed evenly","You need high availability — if one server crashes, traffic routes to healthy ones","You want zero-downtime deployments: drain one node, update it, bring it back","Your single server cannot handle all concurrent connections or throughput"],
+avoid:["You literally have one server and no plan to add a second — a load balancer adds complexity with no benefit","Hobby projects or prototypes with a handful of users — a single VPS behind a simple reverse proxy is perfectly fine","You use it as a band-aid for an application that cannot scale horizontally (stateful sessions stuck to one node)"],
+over:"Building a custom service mesh or complex L7 routing rules before you have meaningful traffic. Using sticky sessions everywhere instead of designing stateless applications. Adding multiple load balancer tiers when one simple layer would suffice.",
+tools:"Nginx · HAProxy · AWS ALB/NLB · Envoy · Cloudflare Load Balancing",
+how:"A load balancer sits between clients and your servers. It maintains a list of healthy backend nodes (via health checks — usually HTTP pings every few seconds). When a request arrives, it picks a backend using an algorithm: round-robin (each gets a turn), least-connections (pick the least busy), or IP-hash (same client → same server). If a health check fails, that node is removed. For zero-downtime deploys, you mark a node as 'draining' — existing connections finish, but new ones go elsewhere.",
+ask:"What is the difference between L4 (transport) and L7 (application) load balancing? How do health checks work, and what happens to in-flight requests when a node dies? Why is statelessness critical for effective load balancing?"},
+
+{id:"cdn",cat:"Scaling",pri:"must",title:"CDN (Content Delivery Network)",tag:"Cache static content (images, CSS, JS, videos) at edge locations physically close to your users, dramatically reducing latency and origin server load.",
+use:["You serve static assets (images, CSS, JavaScript, video, fonts) to users globally","Your origin server bandwidth costs are high or latency is unacceptable for distant users","You want DDoS protection and automatic compression at the edge","You need to serve large files without tying up your application servers"],
+avoid:["Fully dynamic, per-user responses that change on every request (a CDN cannot cache personalized data)","Internal tools where all users are in the same office or region","API responses that must be absolutely fresh — caching these incorrectly causes stale data bugs"],
+over:"Running edge-compute workers or complex serverless logic at every CDN node before you actually have a global user base. Over-engineering cache invalidation strategies when a simple TTL (time-to-live) would work fine.",
+tools:"Cloudflare · AWS CloudFront · Fastly · BunnyCDN · KeyCDN",
+how:"A CDN is a network of servers distributed across the world. When a user requests an asset, DNS routes them to the nearest edge server. If that server has the file cached, it serves it directly — often in under 50ms. If not, the edge fetches it from your origin, caches it for a configured TTL, and serves it. You control caching via HTTP headers (Cache-Control) or CDN dashboard rules. For uploads, you use presigned URLs so files go straight to storage, bypassing your app servers entirely.",
+ask:"What types of content can and cannot go on a CDN? How do you invalidate a cached asset when it changes? What is a cache hit ratio and why does it matter?"},
+
+{id:"scale",cat:"Scaling",pri:"must",title:"Vertical vs Horizontal Scaling",tag:"Vertical scaling means buying a bigger, more powerful machine. Horizontal scaling means adding more machines and distributing work across them.",
+use:["Vertical first: early-stage products, stateful databases, or when your problem is simply 'one machine is too small' — it is the simplest win","Horizontal: stateless application servers that need elasticity, fault tolerance, or throughput beyond the biggest single machine","Horizontal: when you need to scale different parts independently (web tier vs processing tier)","Vertical: databases often scale up first because sharding is painful and stateful data is hard to distribute"],
+avoid:["Horizontal scaling before your application is stateless — session data stuck to one server defeats the purpose","Vertical scaling when you need zero-downtime failover — one big machine is still a single point of failure","Horizontal scaling for a problem that a single beefy machine solves easily — distributed systems are harder to debug"],
+over:"Setting up Kubernetes autoscaling groups for traffic that comfortably fits on one box. The 'scale early' myth — measure your actual bottlenecks before distributing them. Horizontal scaling a database before trying read replicas, better queries, and connection pooling.",
+tools:"Cloud autoscaling groups · Kubernetes HPA/VPA · AWS EC2 instance resizing · PgBouncer for DB connections",
+how:"Vertical scaling is straightforward: stop the server, resize to a bigger instance, restart. It works until you hit the ceiling of available hardware or cost becomes absurd. Horizontal scaling requires your application to be stateless (no local session storage, no in-memory state that matters). You add nodes behind a load balancer. The hard part is data: databases cannot simply be duplicated horizontally without sharding or replication strategies, which is why DBs usually scale up first and out last.",
+ask:"When would you scale up versus scale out? Why does statelessness matter for horizontal scaling? What are the limits of vertical scaling for a database?"},
+
+{id:"gw",cat:"Scaling",pri:"important",title:"API Gateway",tag:"A single entry point for all client requests that handles cross-cutting concerns: routing, authentication, rate limiting, request transformation, and SSL termination.",
+use:["You have many microservices and want clients to call one URL, not twenty","Cross-cutting concerns (auth, rate limits, CORS, request logging) should live in one place, not duplicated in every service","You want to hide internal service topology from external clients — services can be moved without breaking clients","You need to transform protocols (e.g., REST external → gRPC internal) or aggregate multiple service calls into one response"],
+avoid:["A monolith or 2–3 services — a plain reverse proxy (Nginx) or cloud load balancer handles routing perfectly","When the gateway becomes a bottleneck or 'god object' containing too much business logic","When adding a gateway introduces a single point of failure without redundancy"],
+over:"Rolling your own gateway framework instead of using battle-tested open source or managed solutions. Stacking API gateway + service mesh + GraphQL federation on a tiny system with minimal traffic. Putting business logic in the gateway instead of keeping it a thin layer.",
+tools:"Kong · AWS API Gateway · Azure API Management · Nginx · Envoy · Zuul",
+how:"An API gateway is essentially a smart reverse proxy. All external traffic hits the gateway first. The gateway authenticates the request (often via JWT validation against an identity provider), checks rate limits (usually in Redis), routes to the correct backend service based on URL path, and may aggregate responses from multiple services. It can also handle SSL termination (decrypting HTTPS so backends speak plain HTTP), caching, and request/response transformation. The gateway should be stateless and horizontally scalable itself.",
+ask:"What is the difference between an API gateway and a load balancer? What belongs in a gateway versus in individual services? How do you prevent the gateway from becoming a bottleneck?"},
+
+/* ---------- CACHING ---------- */
+{id:"cache",cat:"Caching",pri:"must",title:"Caching with Redis/Memcached",tag:"Store frequently-accessed data in ultra-fast memory (RAM) so you do not hit the slow database on every request. A cache hit takes microseconds; a DB query takes milliseconds.",
+use:["Read-heavy workloads where the same data is requested repeatedly (user profiles, product catalogs, home page content)","Session storage, rate-limit counters, distributed locks, or real-time leaderboards — Redis data structures excel here","Expensive query results that can tolerate a few seconds or minutes of staleness (e.g., 'top 10 products')","Reducing database load during traffic spikes — the cache absorbs the burst"],
+avoid:["Data that must never be stale — like an account balance immediately after a withdrawal (cache inconsistency = angry users)","Write-heavy data that changes constantly — you will spend more time invalidating the cache than reading from it","When your database query is already fast — add a database index first before adding cache complexity","Data larger than your cache memory — constant eviction defeats the purpose"],
+over:"Adding three cache layers (local + Redis + CDN) for a small app with negligible traffic. Caching 'everything' without measuring hit rates — if your hit rate is 10%, the cache is useless overhead. Building complex invalidation logic when a simple TTL (time-to-live) expiration would work fine.",
+tools:"Redis (persistent, data structures) · Memcached (simple, pure cache) · KeyDB (Redis fork, multithreaded)",
+how:"Caching works because RAM is roughly 100x faster than disk. In 'cache-aside' (the most common pattern), your app checks the cache first. If present (hit), return it. If absent (miss), query the database, write the result to cache with a TTL, and return it. In 'write-through,' the app writes to cache and DB simultaneously — more consistent but slower. 'Write-behind' writes to cache immediately and flushes to DB asynchronously — fastest but riskiest. Cache stampede happens when a popular key expires and thousands of requests simultaneously hit the DB — prevent it with 'lease' patterns or probabilistic early expiration.",
+ask:"Explain cache-aside versus write-through. What is cache stampede and how do you prevent it? How do you handle cache invalidation when the underlying data changes?"},
+
+/* ---------- STORAGE ---------- */
+{id:"pg",cat:"Storage",pri:"must",title:"PostgreSQL (Relational Database)",tag:"The default choice for structured data that relates to other data. ACID-compliant, mature, with powerful querying via SQL joins and transactions.",
+use:["Transactions are critical: payments, orders, inventory, bookings — anywhere money or inventory moves and must be exact","Complex queries with multiple joins, aggregations, and reporting requirements","Strong consistency requirements: foreign keys enforce referential integrity, and transactions ensure all-or-nothing operations","Mature ecosystem: excellent tooling for backups, monitoring, migrations, and ORMs"],
+avoid:["Schema-less or rapidly evolving data where every document looks different — document stores fit better","Horizontal write scaling beyond what a single powerful node can handle — though read replicas and connection pooling go far","Simple hot key-value access patterns where Redis is faster and simpler","When you need multi-region active-active writes with low latency — relational replication is typically single-leader"],
+over:"Sharding PostgreSQL before exhausting simpler optimizations: proper indexing, EXPLAIN ANALYZE query tuning, read replicas for read load, connection pooling (PgBouncer), and vertical scaling. Sharding adds query complexity, cross-shard join pain, and operational overhead.",
+tools:"PostgreSQL · MySQL · PgBouncer (connection pooling) · pgAdmin · AWS RDS/Aurora",
+how:"PostgreSQL stores data in tables with predefined schemas (columns and types). Rows are stored on disk in pages. Indexes (B-tree by default) speed up lookups. When you run a query, the planner decides whether to use an index or scan the table. Transactions use MVCC (Multi-Version Concurrency Control) — when a transaction starts, it sees a snapshot of data as of that moment, preventing lock contention. Foreign keys ensure related data stays consistent (you cannot delete a customer who still has orders). ACID means: Atomic (all or nothing), Consistent (rules enforced), Isolated (transactions don't interfere), Durable (committed data survives crashes).",
+ask:"When would you pick MongoDB over PostgreSQL and vice versa? How do indexes work, and how do you identify a missing index? What are the isolation levels and why do they matter?"},
+
+{id:"mongo",cat:"Storage",pri:"must",title:"MongoDB (Document Database)",tag:"A flexible-schema database where data is stored as JSON-like documents. Great for evolving data models, nested structures, and rapid iteration.",
+use:["Evolving or semi-structured data: product catalogs with varying attributes, user-generated content, CMS pages","Data that naturally nests: a blog post with comments, a user profile with nested preferences — one document fetch replaces a SQL join","Rapid prototyping where the schema changes weekly — no migration scripts needed for adding fields","Horizontal scaling via sharding is built-in from the ground up, unlike bolt-on sharding for SQL"],
+avoid:["Multi-record transactions are the core of your application — though MongoDB now supports multi-document ACID, it is newer and less mature than SQL","Heavy cross-document aggregations that would be simple SQL joins — MongoDB's $lookup is slower and less flexible","When you need rigid schema enforcement, foreign keys, and complex referential integrity — relational databases handle this natively","Reporting and analytics with complex ad-hoc queries — SQL is far more expressive"],
+over:"Choosing MongoDB 'to avoid migrations,' then spending months rebuilding schema validation, joins, and consistency checks in application code. Using it for financial data where ACID transactions and audit trails are critical.",
+tools:"MongoDB · AWS DocumentDB · Azure Cosmos DB (Mongo API) · Mongoose (Node.js ODM)",
+how:"MongoDB stores data as BSON documents (binary JSON) in collections. Each document can have different fields — flexibility is the selling point. Documents are grouped into collections, and you query them using a JSON-like syntax. For one-to-many relationships, you can either embed documents (fast reads, but large documents) or reference them (like foreign keys, but no built-in join — you fetch separately or use $lookup). Indexes work similarly to SQL (B-tree). Replication uses a primary-secondary model: writes go to the primary, reads can go to secondaries (with potential lag). Sharding distributes documents across shards based on a shard key.",
+ask:"How do you model one-to-many relationships in MongoDB versus SQL? When do embedded documents hurt performance? What is the difference between a replica set and a sharded cluster?"},
+
+{id:"replicas",cat:"Storage",pri:"important",title:"Read Replicas",tag:"Create copies of your primary database and serve read-only queries from them, offloading read traffic from the main database.",
+use:["Read-heavy workloads where reads dominate writes (e.g., 90% reads, 10% writes) — replicas multiply your read capacity","Offloading expensive analytics, reporting, or backup queries so they do not slow down the primary database","Serving read traffic from a replica geographically closer to users (cross-region read replicas)","High availability: if the primary fails, a replica can be promoted to primary (with automatic failover tools)"],
+avoid:["When you cannot tolerate any staleness — replication lag means a replica might be milliseconds to seconds behind the primary. A user who just updated their profile might see the old version","Write-bound systems — replicas do not help write throughput at all; every write still hits the primary","Before trying cheaper optimizations: adding a database index, caching hot queries, or query optimization with EXPLAIN"],
+over:"Adding replicas to a database doing 5 queries per second — the overhead of replication (network, disk, conflict resolution) outweighs the benefit. Using replicas to fix a missing-index problem — if a query is slow, an index is the real fix, not a replica.",
+tools:"PostgreSQL streaming replication · MySQL replication · MongoDB secondaries · AWS RDS read replicas · Azure Database replicas",
+how:"Read replication works by continuously copying the primary database's write-ahead log (WAL) to replica servers. In PostgreSQL, this is called streaming replication — the primary streams changes to replicas in near real-time. Replicas are read-only by default. Your application routes writes to the primary and reads to replicas, either via a connection pooler (PgBouncer with separate pools) or application-level routing. The catch is replication lag: under heavy write load, replicas can fall behind. You must handle the case where a user writes then immediately reads — route that specific read to the primary, or accept brief staleness.",
+ask:"How do you handle replication lag in a read-heavy application? What happens if a replica falls far behind? How do you route reads to replicas while ensuring critical reads go to the primary?"},
+
+{id:"shard",cat:"Storage",pri:"important",title:"Database Sharding",tag:"Split a large database into smaller pieces (shards) spread across multiple servers, each holding a subset of the data based on a shard key.",
+use:["Your data volume or write throughput has exceeded the biggest single machine even after vertical scaling and read replicas","You have a clear shard key that distributes data evenly (e.g., user_id, tenant_id)","You can tolerate cross-shard queries being slower or impossible — most queries should hit a single shard"],
+avoid:["Before exhausting simpler options: indexes, query optimization, archiving old data, caching, and read replicas","When no good shard key exists — if every query needs data from multiple shards, you have made things worse","When cross-shard transactions or joins are common — sharding kills these operations or makes them extremely complex"],
+over:"THE classic interview red flag: proposing sharding at 20 GB of data. Sharding adds resharding pain (when a shard grows too big), hot shard problems (one shard gets all the traffic), kills cross-shard joins, and makes backups and schema changes much harder. It is a last resort, not a starting point.",
+tools:"Citus (Postgres extension) · Vitess (MySQL) · MongoDB sharding · AWS Aurora Limitless · consistent hashing algorithms",
+how:"Sharding partitions your data across multiple database nodes. You pick a shard key — a column whose value determines which shard holds the row. For example, shard = hash(user_id) % number_of_shards. User 123 goes to shard 0, user 456 goes to shard 1. The application or a proxy layer (like Vitess) routes queries to the correct shard. The hard problems: (1) Hot shards — one key gets all traffic (e.g., a celebrity user's data). Fix with better key design or re-sharding. (2) Cross-shard queries — aggregating data across shards requires scatter-gather, which is slow. (3) Resharding — adding shards requires migrating data, usually with dual-write periods. (4) Global tables — small lookup tables must be replicated to every shard or queried cross-shard.",
+ask:"How do you pick a shard key? What is a hot shard and how do you fix it? What makes resharding difficult, and how would you do it without downtime?"},
+
+{id:"wide",cat:"Storage",pri:"nice",title:"Cassandra / DynamoDB (Wide-Column / Key-Value)",tag:"Distributed databases designed for massive write throughput, predictable latency, and always-on availability — at the cost of flexible querying.",
+use:["Extremely high write throughput: time-series data (metrics, logs, IoT sensor readings), event streams, write-heavy telemetry","Multi-region active-active deployments where every region must accept writes with low latency","You need predictable single-digit millisecond latency at any scale, and you can design your queries upfront","You accept eventual consistency in exchange for availability and partition tolerance (AP in CAP theorem)"],
+avoid:["Ad-hoc queries, complex joins, or flexible reporting — these databases require you to design tables around query patterns, not the other way around","Small datasets where PostgreSQL or MongoDB handle the load easily","Relational integrity needs: foreign keys, cascading deletes, and complex transactions are not supported"],
+over:"Choosing Cassandra 'because Netflix uses it' when your startup has 1,000 users. Forcing relational data into wide-column tables and fighting the database forever instead of using the right tool for the job.",
+tools:"Apache Cassandra · ScyllaDB (C++ Cassandra, faster) · AWS DynamoDB · Google Bigtable · Azure Cosmos DB",
+how:"Wide-column stores organize data by partition key and clustering columns. A partition key determines which node stores the data (like a shard key). Within a partition, clustering columns sort the data. You must design tables for specific queries — there are no ad-hoc joins. For example, a messages table might have partition_key = channel_id and clustering = message_id (time-based). Querying all messages in a channel is fast; querying across channels is slow or impossible. DynamoDB adds the concept of 'secondary indexes' for alternative access patterns, but they have their own limitations. Both use consistent hashing to distribute data and replication for durability (typically 3 copies). Tunable consistency: you can request 'quorum' reads for stronger consistency or 'one' reads for speed.",
+ask:"What is a hot partition and how do you avoid it? What is the difference between eventual consistency and tunable consistency? How do you model data when you cannot do joins?"},
+
+{id:"es",cat:"Storage",pri:"important",title:"Elasticsearch / OpenSearch",tag:"An inverted-index search engine that powers full-text search, autocomplete, faceted filtering, and log analytics with relevance scoring.",
+use:["Product search with relevance ranking, typo tolerance, synonyms, and faceted filters (price range, brand, category)","Autocomplete and 'search-as-you-type' suggestions","Log aggregation and analytics: indexing millions of log lines and querying them with filters and aggregations","Any search where exact matching (SQL LIKE) is insufficient — you need stemming, fuzziness, and scoring"],
+avoid:["As a primary database — Elasticsearch is not a system of record. Data can be lost during reindexing or cluster issues. Always have a source of truth (PostgreSQL, S3)","Small-scale simple search: for under ~100k rows, PostgreSQL tsvector, trigram indexes, or even ILIKE may be sufficient","When strong transactional consistency is required — ES is eventually consistent and has no ACID guarantees"],
+over:"Running a self-managed Elasticsearch cluster for a search box over 10,000 rows — the operational overhead (cluster management, JVM tuning, split-brain prevention) dwarfs the benefit. Self-hosting ES for logs when a managed service (Datadog, Splunk, AWS OpenSearch) exists.",
+tools:"Elasticsearch · OpenSearch (AWS fork) · Typesense · Meilisearch (lightweight, easier ops) · Algolia (managed)",
+how:"Elasticsearch uses an 'inverted index' — instead of scanning documents, it maps every word to the documents containing it. When you search 'laptop,' ES instantly knows documents 1, 5, and 12 contain that word. It scores results using TF-IDF (Term Frequency-Inverse Document Frequency) or BM25 — more unique matches rank higher. Documents are stored in shards, and shards are distributed across nodes. Replicas provide redundancy. For autocomplete, ES can index edge n-grams ('l', 'la', 'lap', 'lapt', 'laptop') so partial matches are instant. The challenge is keeping ES in sync with your primary database — use Change Data Capture (CDC) via Debezium, or application-level dual writes, or periodic reindexing.",
+ask:"How does an inverted index work? How do you keep Elasticsearch synchronized with your primary database? What is the difference between a filter and a query in ES?"},
+
+{id:"s3",cat:"Storage",pri:"important",title:"Object Storage (S3 / GCS / MinIO)",tag:"Durable, cheap, virtually infinite storage for files, images, videos, backups, and any blob larger than a few megabytes.",
+use:["User uploads: images, documents, videos — store them in object storage, not your database","Static website hosting, media serving (combined with CDN), and software distribution","Backups, archives, and long-term log retention — object storage is 10-100x cheaper than block storage","Large files that would bloat a database: anything bigger than a few MB belongs here"],
+avoid:["Storing blobs inside a relational database — it bloats tables, slows backups, and makes replication expensive","When you need frequent partial updates to files — object storage is optimized for whole-object replacement, not random access writes","When you need file-system semantics (random seeks, locking, POSIX compliance) — use block storage or a real file system instead"],
+over:"Creating elaborate multi-bucket lifecycle policies, cross-region replication, and versioning strategies on day one. Start simple: one bucket, basic permissions, enable versioning only when you have a real need.",
+tools:"AWS S3 · Google Cloud Storage · Azure Blob Storage · MinIO (self-hosted S3-compatible) · Cloudflare R2",
+how:"Object storage treats each file as an object with data, metadata, and a unique identifier (key). Unlike a file system, there are no directories — just keys that look like paths ('user-uploads/2024/photo.jpg'). Objects are stored redundantly across multiple physical devices (S3 claims 99.999999999% durability). You interact via HTTP REST API. For uploads, never stream files through your application server — use presigned URLs: your app generates a time-limited signed URL, the client uploads directly to S3, and your app receives a callback. For serving, put a CDN in front. S3 also supports lifecycle policies (move old files to cheaper 'glacier' storage) and event notifications (trigger Lambda when a file is uploaded).",
+ask:"How do you handle file uploads without touching your application server? What is the difference between object storage and block storage? How do you secure private files while allowing public access to others?"},
+
+/* ---------- MESSAGING ---------- */
+{id:"rmq",cat:"Messaging",pri:"must",title:"RabbitMQ",tag:"A mature message broker that handles complex routing, guaranteed delivery, and per-message acknowledgment — ideal for job queues and task distribution.",
+use:["Background tasks and work queues: sending emails, generating PDFs, processing images — work that can happen asynchronously","Complex routing: you need topic exchanges (e.g., 'orders.created', 'orders.cancelled' go to different consumers), fanout (broadcast to all), or direct routing","Each message should be processed exactly once by one worker — RabbitMQ handles acknowledgment and redelivery if a worker crashes","You need per-message visibility control: delay a message, set priority, or expire old messages"],
+avoid:["You need to replay old messages or maintain an event history — RabbitMQ deletes messages after acknowledgment; use Kafka for replay","Extremely high throughput (hundreds of thousands of messages/sec) — RabbitMQ is fast but Kafka is faster for streaming","Simple Node.js background jobs where you already run Redis — BullMQ is lighter and easier to operate"],
+over:"Building elaborate exchange topologies with dead-letter exchange chains, priority queues everywhere, and complex routing rules for a simple FIFO work queue. RabbitMQ is powerful — do not use all its power for simple needs.",
+tools:"RabbitMQ · AWS SQS · ActiveMQ · CloudAMQP (managed) · Celery (Python task queue on RabbitMQ)",
+how:"RabbitMQ uses the AMQP protocol. Producers send messages to an exchange (not directly to a queue). The exchange routes messages to queues based on bindings and routing keys. Types: direct (exact match), topic (pattern match like 'orders.*'), fanout (broadcast to all bound queues), and headers. Consumers subscribe to queues and process messages. When a consumer finishes, it sends an 'ack' (acknowledgment). If the consumer crashes before acking, the message returns to the queue for redelivery. You can set a TTL (time-to-live) on messages, limit queue length, and configure dead-letter exchanges (DLX) where rejected or expired messages go for later inspection. RabbitMQ clusters can mirror queues across nodes for high availability.",
+ask:"What is the difference between a queue, an exchange, and a binding? What is a dead-letter queue and when do you use it? How does RabbitMQ handle a worker crash mid-processing?"},
+
+{id:"kafka",cat:"Messaging",pri:"important",title:"Apache Kafka",tag:"A distributed, durable, partitioned log designed for high-throughput event streaming with the ability to replay historical events.",
+use:["Event pipelines where many independent services need to consume the same events (order service publishes, inventory, shipping, analytics all consume)","You need replay capability: reprocess yesterday's events to fix a bug or build a new feature","Event sourcing: storing every state change as an immutable event log that becomes your system of record","Change Data Capture (CDC): streaming database changes to other systems in real-time","Throughput beyond what traditional brokers can handle — Kafka handles millions of events/sec"],
+avoid:["Simple job queues or delayed jobs — RabbitMQ or BullMQ are simpler and better suited","A two-service application with no replay or multi-consumer needs — Kafka's operational complexity is not justified","Teams without operations maturity — Kafka requires understanding partitions, consumer groups, replication, and broker tuning"],
+over:"'Event-driven everything' at small scale — turning a simple CRUD app into a distributed event mesh creates more problems than it solves. Using Kafka as a task queue and then rebuilding delays, retries, and dead-letter handling that RabbitMQ provides out of the box.",
+tools:"Apache Kafka · Redpanda (C++ Kafka-compatible, simpler ops) · Apache Pulsar · Confluent Cloud (managed) · AWS MSK",
+how:"Kafka is not a queue — it is a distributed log. Producers append events to the end of a 'topic,' which is split into 'partitions' (ordered, immutable sequences). Each event gets an offset (like a log line number). Consumers read from partitions at their own pace, tracking their position (offset). A 'consumer group' divides partitions among group members — each partition is read by exactly one consumer in the group, enabling parallel processing. Kafka replicates partitions across brokers for fault tolerance. If a broker dies, a replica takes over. Because the log is retained (configurable: days, weeks, or forever), consumers can 'rewind' and reprocess old events. Ordering is guaranteed only within a partition, not across partitions — so design your partition key carefully (e.g., user_id to ensure all events for one user are ordered).",
+ask:"What is the difference between Kafka and RabbitMQ? How do consumer groups and partitions work? What are the ordering guarantees, and how do you ensure related events stay in order?"},
+
+{id:"bull",cat:"Messaging",pri:"must",title:"BullMQ (Node.js Job Queue)",tag:"A Redis-based job queue for Node.js applications with built-in retries, priorities, delays, cron scheduling, and progress tracking.",
+use:["Node.js background jobs: sending welcome emails, generating thumbnails, processing webhooks, scraping data","You already run Redis for caching or sessions — adding BullMQ requires no new infrastructure","Moderate throughput (thousands of jobs per minute) — perfectly fine for most web applications","You need job features: delayed execution ('send this email in 1 hour'), job priorities, repeatable jobs (cron), and progress reporting"],
+avoid:["When strong durability guarantees are critical — Redis is memory-first; while it can persist to disk, it is not as durable as a database or Kafka","Heavy polyglot pipelines where Python, Go, and Java services all need to enqueue work — BullMQ is Node-specific","When you need replay, event history, or complex stream processing — use Kafka instead"],
+over:"Jumping to Kafka when BullMQ handles your load comfortably. Running a second Redis instance exclusively for queues when your existing Redis has plenty of capacity. Building a custom queue system when BullMQ already exists.",
+tools:"BullMQ · Agenda · Bee-Queue · Node-resque · Bull (v3, predecessor)",
+how:"BullMQ uses Redis lists and sorted sets to manage jobs. When you add a job, BullMQ pushes it to a Redis list. Workers (separate Node.js processes) poll Redis for available jobs, process them, and mark them as completed or failed. For delayed jobs, BullMQ uses Redis sorted sets (ZADD) with timestamps — a scheduler moves them to the active queue when their time arrives. For retries, failed jobs are moved to a delayed set with exponential backoff. BullMQ supports job priorities (higher priority jobs are picked first) and repeatable jobs using cron expressions. Because it is Redis-based, job state is fast to access but lives in memory — enable Redis persistence (AOF or RDB) if you cannot afford to lose jobs during a restart.",
+ask:"How do you guarantee a job is not lost if the worker crashes? What happens when a worker crashes mid-job? How does delayed job scheduling work under the hood?"},
+
+/* ---------- RELIABILITY ---------- */
+{id:"rl",cat:"Reliability",pri:"must",title:"Rate Limiter",tag:"Cap the number of requests a user, IP, or API key can make in a time window to prevent abuse, ensure fairness, and protect your infrastructure from being overwhelmed.",
+use:["Public APIs and login endpoints — prevent brute-force attacks and scraping","Expensive endpoints that consume significant CPU, memory, or database resources","Multi-tenant systems where one customer should not starve others of resources","Bot and abuse protection: stopping a single IP from making thousands of requests per second"],
+avoid:["As a substitute for real scaling or caching — rate limits hide capacity problems but do not fix them","Internal trusted service-to-service calls within your own infrastructure — these usually do not need limiting (use circuit breakers instead)","When the limit is so high it is meaningless, or so low it breaks legitimate usage"],
+over:"Implementing distributed sliding-window rate limiting with complex Lua scripts for an internal admin tool used by 5 people. Setting 50 different per-endpoint limits before you have any users or traffic data to justify them.",
+tools:"Redis + token bucket algorithm · Nginx limit_req module · API Gateway rate limiting · Cloudflare rate limits · Express-rate-limit (Node.js)",
+how:"The most common algorithm is the token bucket: imagine a bucket that holds N tokens. Every request consumes one token. Tokens refill at a fixed rate (e.g., 10 tokens per second). If the bucket is empty, the request is rejected (HTTP 429 Too Many Requests). This allows bursts up to N, then smooths to the refill rate. Alternative: sliding window log (store every request timestamp, count recent ones — accurate but memory-heavy) or fixed window (count requests in the current second/minute — simple but allows burst at window boundaries). Rate limits are usually enforced at the edge (API gateway, CDN, or load balancer) so bad requests never reach your application servers. In distributed systems, use Redis to share the token bucket state across all app instances.",
+ask:"What is the difference between token bucket, sliding window, and fixed window rate limiting? Where should you enforce limits — at the edge or in the service? How do you handle rate limiting in a distributed system with multiple servers?"},
+
+{id:"idem",cat:"Reliability",pri:"must",title:"Idempotency",tag:"Designing operations so that executing them multiple times has the same effect as executing them once. Makes retries safe and prevents duplicate charges, orders, or side effects.",
+use:["Any consumer processing messages from an at-least-once delivery queue — duplicates will arrive, so your handler must handle them gracefully","Payment processing, order creation, inventory reservation — creating two orders because of a retry is a business disaster","Public POST/PUT APIs where clients retry on network timeouts — without idempotency, a retry creates a second resource","Webhook handlers — the sender may retry if they do not receive a 200 OK promptly"],
+avoid:["Pure read operations (GET requests) — these are naturally idempotent","Operations where duplicates are impossible or harmless — e.g., appending to a log where order does not matter","One-time, non-critical operations where the cost of implementation exceeds the risk"],
+over:"Building idempotency-key infrastructure for every internal service call that has no retry path. Over-engineering idempotency for operations that are naturally safe or where the business accepts occasional duplicates.",
+tools:"Idempotency keys (client-generated unique tokens) · Database unique constraints · Upserts (INSERT ... ON CONFLICT) · Deduplication tables · Redis SETNX with TTL",
+how:"Idempotency requires two things: (1) a unique identifier for the operation, and (2) server-side storage of the result keyed by that identifier. The client generates an idempotency key (a UUID) and sends it with the request (e.g., Idempotency-Key header). The server checks a database table or cache: 'Have I seen this key before?' If yes, return the stored result without re-executing the business logic. If no, execute the operation, store the result with the key (with an expiry), and return it. For database operations, unique constraints prevent double-insertion. For updates, use 'upserts' — update if exists, insert if not. The key insight: true exactly-once delivery is impossible across distributed systems, so we make the processing idempotent instead.",
+ask:"How would you make a payment flow idempotent? What is the difference between at-least-once delivery and exactly-once delivery? Why is exactly-once impossible end-to-end, and how does idempotency solve this?"},
+
+{id:"retry",cat:"Reliability",pri:"important",title:"Retries + Circuit Breaker",tag:"Automatically retry transient failures with increasing delays, and stop calling a failing dependency before you make things worse.",
+use:["Network calls to third-party APIs or internal services that fail intermittently (timeouts, 503 Service Unavailable, connection drops)","When a degraded or fallback mode exists — if the recommendation service is down, show generic recommendations instead of failing the whole page","Database connections that occasionally fail due to brief network blips"],
+avoid:["Retrying permanent errors: 4xx client errors (bad request, unauthorized) — these will fail identically every time","Non-idempotent operations without idempotency keys — a retry of 'charge credit card' without protection creates double charges","Infinite retries without backoff or jitter — this creates 'retry storms' that amplify the outage","Retrying within a tight loop without delay — this hammers the already-struggling service"],
+over:"Adding circuit breakers to every function call inside a monolithic application. Using a full resilience framework (Hystrix, Resilience4j) before you have observed a single real failure in production. Retrying every failed request 10 times with no backoff.",
+tools:"Exponential backoff + jitter · Circuit breaker pattern (Hystrix, Resilience4j, Polly) · Bulkhead pattern · Timeouts at every layer",
+how:"Retries: When a request fails with a transient error (5xx, timeout), wait a bit and try again. Use exponential backoff: wait 100ms, then 200ms, then 400ms, then 800ms, capped at a maximum (e.g., 30 seconds). Add 'jitter' (random variation) so that if 1,000 clients fail simultaneously, they do not all retry at exactly the same moment — this prevents thundering herds. Circuit Breaker: Track failure rates in a sliding window. If failures exceed a threshold (e.g., 50% over 30 seconds), the breaker 'opens' — subsequent requests immediately fail fast without hitting the dependency. After a cooldown period, the breaker enters 'half-open' state and allows a test request through. If it succeeds, the breaker closes; if it fails, it opens again. This gives the failing service time to recover instead of being constantly hammered.",
+ask:"What is a retry storm and how does jitter prevent it? How does a circuit breaker decide when to open, half-open, and close? What is the bulkhead pattern and how does it complement circuit breakers?"},
+
+{id:"dlq",cat:"Reliability",pri:"important",title:"Dead-Letter Queue (DLQ)",tag:"A holding area for messages that failed processing after all retries — ensuring no message is silently lost and problematic messages are quarantined for inspection.",
+use:["Every real message consumer should have a DLQ — poison messages (malformed, unprocessable) must be visible, not dropped","Alerting on DLQ depth — if the DLQ grows, something is systematically broken and needs human attention","Debugging: inspecting DLQ messages reveals bad data patterns, schema mismatches, or downstream service failures","Compliance: proving that no message was lost, only parked for later handling"],
+avoid:["When dropping failed events is an explicit, accepted business decision — rare, but some telemetry data is intentionally lossy","When you have no process to ever inspect or reprocess DLQ messages — a DLQ you never check is just a slower trash can"],
+over:"Building elaborate auto-replay and reprocessing platforms before you have ever manually inspected a single DLQ message. Creating DLQs for every queue when some failures are truly harmless and can be logged and dropped.",
+tools:"RabbitMQ Dead-Letter Exchange (DLX) · Kafka DLQ topics · AWS SQS dead-letter queues · BullMQ failed jobs · Azure Service Bus dead-lettering",
+how:"A DLQ is simply another queue or topic where failed messages are sent. In RabbitMQ, you configure a 'dead-letter exchange' on your main queue. When a message is rejected, expires, or exceeds the maximum retry count, it is routed to the DLX instead of being dropped. In Kafka, you publish failed messages to a separate '_dlq' topic. In AWS SQS, you configure a 'dead-letter queue' ARN on your main queue, and after N failed receives, the message moves there. The key operational practice: monitor DLQ depth with an alert. If it is non-zero, investigate. Common causes: schema changes that broke deserialization, downstream API downtime, or bad data from upstream. DLQ messages can be reprocessed manually after fixing the bug, or archived for audit.",
+ask:"A message keeps failing and landing in the DLQ — walk me through your debugging process. How do you prevent DLQ messages from piling up forever? When would you auto-retry from a DLQ versus manual inspection?"},
+
+{id:"saga",cat:"Reliability",pri:"nice",title:"Saga / Distributed Transactions",tag:"Coordinate a business process across multiple services using a sequence of local transactions, with compensating actions to undo steps if something fails.",
+use:["Business flows that naturally span services: 'create order' → 'charge payment' → 'reserve inventory' → 'schedule shipping'","You have accepted that distributed two-phase commit (2PC) is too slow and locking-heavy for your use case","Each step has a well-defined 'undo' operation: cancel order, refund payment, release inventory","You need eventual consistency across services with clear failure handling"],
+avoid:["If the entire flow fits in a single database — use a local ACID transaction, full stop. It is simpler, faster, and stronger","When compensating actions are impossible or extremely complex — if you cannot undo a step, sagas become dangerous","When you need immediate consistency across all services — sagas are eventually consistent by design"],
+over:"Building saga orchestrators and choreography frameworks for operations that a single Postgres transaction already handles perfectly. Attempting two-phase commit (2PC) across microservices 'for consistency' — 2PC locks resources across services and is a known anti-pattern in distributed systems.",
+tools:"Saga pattern (orchestration vs choreography) · Outbox pattern · Compensating transactions · Temporal · Camunda",
+how:"A saga breaks a distributed transaction into a sequence of local transactions, each in its own service. There are two styles: (1) Choreography: each service completes its step and emits an event triggering the next service. No central coordinator — but hard to trace and debug. (2) Orchestration: a central 'saga orchestrator' service commands each step and handles failures. If step 3 fails, the orchestrator triggers compensating actions for steps 2 and 1 (refund, release inventory). The 'outbox pattern' ensures events are published reliably: instead of 'update DB then send event' (which can crash between the two), you write the event to an 'outbox' table in the same database transaction as your business update. A separate process polls the outbox and publishes events to the message bus.",
+ask:"How do you handle partial failure across three services in a saga? What is the difference between orchestration and choreography? What is the outbox pattern and why is it necessary?"},
+
+/* ---------- API & REALTIME ---------- */
+{id:"api",cat:"API & Realtime",pri:"must",title:"REST vs gRPC vs GraphQL",tag:"Three different API paradigms: REST for public simplicity and cacheability; gRPC for internal high-performance service communication; GraphQL for flexible client-driven data fetching.",
+use:["REST: public CRUD APIs, universal tooling, easy debugging via curl/browser, cacheable at HTTP level (CDN-friendly)","gRPC: internal service-to-service calls where low latency matters — uses HTTP/2, binary Protocol Buffers serialization, and supports streaming","GraphQL: when clients need vastly different data shapes (mobile app needs 3 fields, web dashboard needs 30) — clients request exactly what they need"],
+avoid:["GraphQL 'because it is modern' when you have only one client type — the caching complexity and N+1 query problems are not worth it","gRPC from browsers — limited support (requires gRPC-Web proxy), stick to REST/GraphQL for client-facing APIs","REST dogma when you need bulk/batch operations — REST is resource-oriented, batching multiple unrelated operations is awkward"],
+over:"GraphQL federation + gateway architecture for 2 clients and 3 services. Using gRPC for everything including public APIs when REST would be simpler. Building a custom API protocol when established standards exist.",
+tools:"REST + OpenAPI/Swagger · gRPC + Protocol Buffers · GraphQL + Apollo Server/Client · tRPC (type-safe APIs for full-stack TypeScript)",
+how:"REST is architectural style, not a standard. You model resources as URLs (/users/123) and use HTTP verbs (GET, POST, PUT, DELETE) and status codes. It is stateless, cacheable, and universally understood. gRPC uses Protocol Buffers (schema-defined binary format) over HTTP/2. It generates client/server code from .proto files, giving you type safety across languages. It supports unary (request-response), server streaming, client streaming, and bidirectional streaming. GraphQL has a single endpoint. The client sends a query describing the exact shape of data needed, and the server resolves it. The danger: a naive GraphQL resolver makes N database queries (N+1 problem) — use DataLoader for batching and caching. GraphQL also complicates HTTP caching because every request is a POST to the same URL.",
+ask:"When is GraphQL worse than REST? How does gRPC achieve lower latency than REST? What is the N+1 problem in GraphQL and how do you solve it?"},
+
+{id:"ws",cat:"API & Realtime",pri:"important",title:"WebSockets vs SSE vs Polling",tag:"Three strategies for pushing data to clients: WebSockets for true bidirectional communication, Server-Sent Events for one-way server pushes, and polling for simple periodic checks.",
+use:["WebSockets: chat applications, multiplayer games, live collaborative editing, real-time cursors — anything requiring true bidirectional, low-latency communication","SSE (Server-Sent Events): live notifications, activity feeds, stock tickers, dashboards — simpler than WebSockets, works over standard HTTP, auto-reconnects","Polling: rare updates (every 30+ seconds), simple clients, or when cacheability and simplicity matter more than real-time speed"],
+avoid:["WebSockets for once-a-minute updates — the overhead of maintaining persistent connections, handling reconnections, and sticky sessions is not worth it","WebSockets when SSE + occasional client polling covers the use case — SSE is HTTP-based, works through most proxies, and handles reconnection automatically","Long polling as a default — it holds connections open on the server, consuming resources, and is largely obsolete with HTTP/2 and SSE"],
+over:"Building a WebSocket cluster for data that users would happily refresh manually. Adding WebSockets for a simple notification badge when SSE would work. The hidden costs: connection state management, reconnection logic, heartbeat/keepalive, horizontal scaling with sticky sessions, and handling corporate firewalls that block WebSockets.",
+tools:"Socket.IO (WebSockets with fallbacks) · ws (lightweight Node WebSocket library) · EventSource (browser SSE API) · Server-Sent Events (HTTP standard) · Long polling (legacy)",
+how:"Polling: The client asks 'anything new?' every X seconds. Simple, but wasteful — most responses are 'no.' Short polling (fixed interval) is worst; long polling (server holds request open until data arrives) is better but ties up server connections. SSE: The client opens an HTTP connection and the server keeps it open, streaming events as text/event-stream. The browser handles reconnection automatically. One direction only: server → client. Perfect for feeds and alerts. WebSockets: After an HTTP handshake, the connection upgrades to a persistent, full-duplex TCP socket. Both sides can send messages anytime. Requires connection state on the server (which user is on which socket), so scaling horizontally needs a pub/sub backplane (Redis) to broadcast messages across server instances. Corporate proxies and firewalls sometimes block WebSocket traffic.",
+ask:"Design a notification system — would you use WebSockets or SSE, and why? How do you scale WebSockets horizontally across multiple servers? What are the operational costs of maintaining persistent connections?"},
+
+/* ---------- ARCHITECTURE ---------- */
+{id:"mono",cat:"Architecture",pri:"must",title:"Monolith vs Microservices",tag:"Start with a single, cohesive application. Split into independently deployable services only when the organizational and technical pain justifies the distributed-systems complexity.",
+use:["Monolith: early product, small team (< 10 developers), unclear domain boundaries — one deploy, one database, easy local debugging, simple integration testing","Microservices: multiple teams needing independent deploy schedules, clear bounded domains with stable APIs, services that need to scale independently (one is CPU-heavy, another is memory-heavy)","Microservices: when different services genuinely need different technology stacks (e.g., ML service in Python, API in Node.js)","Modular monolith: the middle ground — a single deployable unit with well-defined internal modules that could later become services"],
+avoid:["Microservices before your team can run a monolith well — if you lack CI/CD, monitoring, integration tests, and on-call rotation, microservices multiply every problem","Splitting by technical layer (frontend API, backend API, database service) instead of business domain — this creates tight coupling across services","Microservices for a 2-person team with no users — distribution adds latency, failure modes, and debugging complexity with no benefit"],
+over:"THE classic red flag: 15 microservices, 2 developers, 50 users. Distributed systems are harder to debug, test, deploy, and monitor. The 'microservices because we are serious' fallacy. Also: splitting before boundaries are clear, leading to constant cross-service changes.",
+tools:"Modular monolith · Domain-Driven Design (DDD) bounded contexts · Strangler Fig pattern (gradually extract services)",
+how:"A monolith is a single application where all features live together, sharing one database and one deployment unit. It is simple to develop, test, and debug locally. A microservices architecture splits the application into independently deployable services, each owning its own data and communicating via APIs or messages. The critical rule: services should align with business domains (user service, order service, inventory service), not technical layers. The 'modular monolith' is the pragmatic middle ground: you structure the code as modules with clear boundaries, but deploy as one unit. When a module's deployment needs diverge (different team, different scale, different tech), you extract it into a service using the Strangler Fig pattern: gradually route traffic from the monolith to the new service until the old code can be deleted.",
+ask:"How do you decide when to split a monolith into microservices? What is a bounded context in Domain-Driven Design? What are the hidden costs of microservices that teams often underestimate?"},
+
+/* ---------- OPS ---------- */
+{id:"k8s",cat:"Ops",pri:"nice",title:"Docker & Kubernetes",tag:"Docker packages your application with its dependencies into a consistent, portable container. Kubernetes orchestrates those containers across a cluster of machines.",
+use:["Docker: basically always — it ensures your app runs identically on your laptop, in CI, and in production. Eliminates 'works on my machine'","Kubernetes: many services (10+), need for autoscaling, rolling updates without downtime, complex service discovery, and a team with ops maturity","Managed Kubernetes (EKS, GKE, AKS) when you need K8s but do not want to manage the control plane yourself"],
+avoid:["Kubernetes for a small team with 2–3 services — managed container platforms (AWS ECS, Google Cloud Run, Fly.io, Heroku) give 90% of the value at 10% of the operational complexity","Self-managed Kubernetes without a dedicated platform/DevOps team — the control plane, networking, storage, and upgrades are genuinely complex","Docker for everything including one-line shell scripts — containers add overhead; use them for applications, not trivial utilities"],
+over:"K8s + Istio service mesh + ArgoCD GitOps + custom operators for a 3-service MVP. 'Resume-driven infrastructure' is real — engineers add complexity to pad their CVs. Running a self-managed K8s cluster when a managed platform would suffice.",
+tools:"Docker · Docker Compose (local) · Kubernetes · Helm (K8s package manager) · AWS ECS/Fargate · Google Cloud Run · Fly.io",
+how:"Docker creates a lightweight, isolated environment (container) using Linux kernel features (cgroups for resource limits, namespaces for isolation). A Dockerfile defines the environment: base OS image, dependencies, and startup command. Kubernetes adds orchestration: it decides which machine runs which container, handles rolling updates (replace old containers gradually), auto-scales based on CPU/memory metrics, and manages service discovery (so 'user-service' resolves to the current IP addresses of running pods). The catch: K8s has a steep learning curve (pods, deployments, services, ingresses, configmaps, secrets, RBAC, networking policies). For small teams, 'serverless containers' (Cloud Run, ECS Fargate) abstract most of this away.",
+ask:"Do you actually need Kubernetes? What is the simpler alternative, and when is it sufficient? What is the difference between a pod, a deployment, and a service in K8s?"},
+
+{id:"obs",cat:"Ops",pri:"important",title:"Observability (Logs, Metrics, Traces)",tag:"The ability to understand your system's internal state by examining its outputs: structured logs, time-series metrics, and distributed traces. You cannot fix what you cannot see.",
+use:["From day one: error rate, latency p95/p99, queue depth, database connection pool utilization — these tell you if users are suffering before they complain","Distributed tracing once requests cross service boundaries — trace a single request as it flows through 5 services to find the bottleneck","Alerting on symptoms (users cannot check out) not causes (CPU is high) — symptom-based alerting reduces false positives","Structured logs (JSON) with correlation IDs so you can filter all logs for a single user's session across all services"],
+avoid:["100% trace sampling in production — it creates too much data and overhead. Sample 1% or use adaptive sampling (more traces during errors)","Building custom metrics pipelines when managed solutions exist — Prometheus + Grafana, Datadog, or New Relic are proven","Alerting on every possible metric — alert fatigue causes teams to ignore real emergencies"],
+over:"ELK stack (Elasticsearch, Logstash, Kibana) + Jaeger tracing + Grafana metrics + PagerDuty for a side project with 3 users. Start with structured logs in your application and a few golden metrics (request rate, error rate, duration — the 'RED' method). Add complexity only when you cannot debug with what you have.",
+tools:"Prometheus + Grafana (metrics) · ELK/OpenSearch (logs) · Jaeger/Zipkin (tracing) · OpenTelemetry (unified instrumentation) · Datadog/New Relic (managed)",
+how:"Observability has three pillars: (1) Metrics: numeric data over time (requests/sec, latency, error rate, CPU%). Time-series databases like Prometheus scrape metrics from your services at regular intervals. Grafana visualizes them. (2) Logs: discrete events ('User 123 failed to pay: timeout from Stripe'). Structured logs (JSON) are queryable; plain text logs are painful. Use correlation IDs — when a request enters your system, generate a unique ID and pass it through every service and log entry. (3) Traces: follow a single request across service boundaries. OpenTelemetry instruments your code to automatically create spans (e.g., 'DB query took 45ms', 'HTTP call to payment service took 200ms'). Jaeger or Zipkin collects and visualizes these traces. The 'golden signals' are: latency (how long), traffic (how much), errors (how many failures), and saturation (how full is the resource).",
+ask:"How would you debug a slow endpoint in production? What are the three pillars of observability? What is the difference between monitoring and observability?"},
+
+/* ---------- DISTRIBUTED SYSTEMS THEORY ---------- */
+{id:"cap",cat:"Distributed Systems",pri:"must",title:"CAP Theorem & Consistency Models",tag:"In a distributed database, when a network partition occurs, you must choose between consistency (all nodes see the same data) and availability (every request gets a response). Partitions are rare; the everyday trade-off is latency versus consistency.",
+use:["Explaining any distributed database choice: PostgreSQL leans CP (consistency over availability during partition), Cassandra leans AP (availability over strict consistency)","Picking consistency per operation: use read-your-writes for a profile page (user must see their own update), but eventual consistency for a social media feed (stale by 5 seconds is fine)","Answering 'what happens when a database node loses network connection?' — the system must handle the partition gracefully"],
+avoid:["Treating CAP as an everyday dial you can adjust — the 'P' (partition) is not optional; during a network split, you MUST choose C or A","Quoting CAP without being able to name exactly what your system gives up and why","Applying CAP to single-node databases — it only applies to distributed systems"],
+over:"Designing for constant network partitions when your real problem is query latency. Name-dropping PACELC (an extension of CAP) before you can explain CAP simply. Building a 'CP' system when your users would rather have stale data than an error page.",
+tools:"CP-ish systems: PostgreSQL · etcd · ZooKeeper · Consul | AP-ish systems: Cassandra · DynamoDB · Riak · S3",
+how:"CAP theorem states that a distributed data store cannot simultaneously guarantee all three of Consistency, Availability, and Partition tolerance — you must pick two. In practice, partitions (network splits) happen, so you are really choosing between C and A during a partition. But the more useful everyday framework is the consistency-latency trade-off: strong consistency requires coordination (waiting for acknowledgments from multiple nodes), which adds latency. Eventual consistency is faster because nodes acknowledge immediately and synchronize later. Consistency models, from strongest to weakest: Linearizable (everyone sees the same order, immediately — expensive), Sequential (operations appear in some global order), Causal (related operations are ordered, unrelated ones may not be), and Eventual (if no new writes, all replicas converge — fastest).",
+ask:"Explain CAP theorem in plain words. Is PostgreSQL CP or AP? What about S3? What consistency level would you choose for a bank balance versus a social media feed, and why?"},
+
+{id:"quorum",cat:"Distributed Systems",pri:"important",title:"Quorum Reads & Writes",tag:"In a replicated database with N copies, if you write to W nodes and read from R nodes such that W + R > N, your read is guaranteed to overlap with the latest write — ensuring you read fresh data.",
+use:["Tunable consistency in distributed stores like Cassandra and DynamoDB: choose stronger consistency for critical operations, weaker for speed","Explaining how replicated databases maintain freshness without requiring all nodes to acknowledge every operation","Configuring replica-set read behavior in MongoDB or DynamoDB's consistency levels"],
+avoid:["Single-leader SQL databases — the primary node decides what is latest, not quorum math","When you need serializable isolation — quorum ensures freshness (you see the latest write), not isolation (concurrent transactions do not interfere)","Small clusters where reading from a majority is almost as slow as reading from all"],
+over:"Quorum math for a system with one replica — W+R>1 is trivial and meaningless. Using strict quorums (W=N, R=N) everywhere, which kills the availability benefits of replication. Not understanding that quorum only guarantees overlap, not that the data is correct or consistent with other writes.",
+tools:"Cassandra · DynamoDB · Riak · CockroachDB (uses different consensus, not pure quorum)",
+how:"Imagine you have N=3 replicas of your data. If you write to W=2 replicas and read from R=2 replicas, then W+R=4 which is > N=3. By the pigeonhole principle, at least one node participated in both the write and the read — so the read will see the latest write (or a newer one). This is called a 'strict quorum.' If you relax to W=1, R=1 (W+R ≤ N), you get faster operations but risk reading stale data. Cassandra lets you set consistency per query: QUORUM (majority), ONE (fastest), ALL (slowest but strongest). The trade-off: higher W and R means stronger consistency but higher latency and lower availability (if fewer nodes are up, you cannot meet the quorum).",
+ask:"With N=3, W=2, R=2 — do you always read fresh data? What happens if a write partially fails (only 1 node acknowledges)? How does quorum availability compare to single-leader replication?"},
+
+{id:"consensus",cat:"Distributed Systems",pri:"nice",title:"Consensus & Leader Election",tag:"Getting multiple independent machines to agree on a value or a leader despite crashes and network delays — the foundation of distributed coordination. Raft and Paxos are the main algorithms.",
+use:["Understanding how Kafka elects a controller broker, how PostgreSQL replication chooses a new primary, or how Kubernetes stores cluster state in etcd","Distributed configuration and coordination stores: etcd (used by Kubernetes), ZooKeeper (used by Kafka and Hadoop), Consul","Understanding why 'just take a distributed lock' is far harder than it sounds — consensus is required for any authoritative decision in a distributed system"],
+avoid:["Implementing your own consensus algorithm — ever. This is among the hardest problems in computer science; use proven libraries","Running ZooKeeper or etcd 'for fun' or for a simple lock when a Postgres advisory lock or Redis SETNX would suffice","Adding a consensus dependency to a system that does not actually need distributed coordination"],
+over:"A ZooKeeper or etcd cluster for a 3-service application 'for coordination' when a database lock or simple leader election via TTL would work. Over-engineering leader election when your system has a natural single point anyway.",
+tools:"Raft (simpler, used in etcd, Consul, TiKV) · Paxos (older, used in Chubby, ZooKeeper uses a variant called ZAB) · etcd · ZooKeeper · Consul",
+how:"Consensus algorithms solve the problem: 'How do multiple nodes agree on a single value when some nodes may crash or messages may be lost?' Raft works by electing a leader. The leader accepts writes, appends them to its log, and replicates them to followers. A write is committed only when a majority of nodes acknowledge it. If the leader crashes, followers start an election: each candidate requests votes, and the one with the most up-to-date log wins. Once a new leader is elected, it continues processing. The key safety property: committed writes are never lost, and all nodes see writes in the same order. 'Split brain' happens when two nodes both think they are leader (due to network partition) — consensus algorithms prevent this by requiring a majority quorum, so two partitions cannot both have a leader.",
+ask:"How does Kafka elect a new controller when the current one fails? What is split brain and how do consensus algorithms prevent it? Why is implementing your own consensus algorithm a bad idea?"},
+
+{id:"hashing",cat:"Distributed Systems",pri:"important",title:"Consistent Hashing",tag:"A technique to map data keys to servers such that adding or removing a server causes only a small fraction of keys (about 1/N) to move, rather than rehashing everything.",
+use:["Sharding a cache across many Redis or memcached nodes — when you add a cache server, only ~1/N of keys need to move","Dynamo-style distributed databases (DynamoDB, Cassandra, Voldemort) where nodes join and leave the cluster dynamically","Any distributed system where the set of nodes changes frequently and reshuffling all data would be prohibitively expensive"],
+avoid:["Tiny stable clusters with 2–3 nodes — simple hash-mod-N is fine and easier to understand","When your keys are severely skewed — consistent hashing does not fix hot keys; it only distributes them evenly if the key space is uniform. You need virtual nodes for skew"],
+over:"Implementing consistent hash rings before you have more than one node. Using a full consistent hashing library for a static 2-node setup where hash-mod-2 would work perfectly.",
+tools:"Used internally by: DynamoDB · Cassandra · memcached clients · Redis Cluster (uses hash slots, a variant) · Varnish · CDN load balancing",
+how:"Traditional hashing: server = hash(key) % N. If N changes from 3 to 4, almost every key moves to a different server — terrible for caches and databases. Consistent hashing places both servers and keys on a virtual ring (0 to 2^32-1). A key is assigned to the next server clockwise on the ring. When a server is added, it takes over a slice of the ring; only keys in that slice move. When a server is removed, its neighbor takes over its slice. The problem: if keys are not uniformly distributed, one server gets all the hot keys. Solution: 'virtual nodes' — each physical server appears multiple times on the ring (e.g., 150 virtual nodes per server). This smooths out load even with skewed key distributions.",
+ask:"Why is hash-mod-N problematic when nodes are added or removed? How do virtual nodes help with skewed key distributions? What is the difference between consistent hashing and hash slots (as used in Redis Cluster)?"},
+
+{id:"locks",cat:"Distributed Systems",pri:"important",title:"Distributed Locks",tag:"Coordinate work across multiple processes or servers so that only one does a critical task at a time — but every implementation has failure modes you must understand.",
+use:["Prevent duplicate work across workers: a cron job that must run on only one server, a report that should not be generated twice concurrently","Single-writer / leader-style jobs: one process writes to a file while others read","Postgres advisory locks (strong, tied to DB connection) for short, critical operations","Redis SET NX + TTL for fast, lightweight locking where brief failures are acceptable"],
+avoid:["Locks held across long operations — the lease expires while you are still working, and another process acquires the lock, causing corruption","Redlock (Redis distributed lock algorithm) as the only guard for money-critical uniqueness — prefer a database unique constraint for financial operations","Using distributed locks where an idempotent upsert or database constraint would solve the problem more simply and reliably"],
+over:"Redlock + fencing tokens for a once-per-minute cron job that is harmless if it runs twice. Building a custom distributed lock service when your database already provides advisory locks. Using locks where atomic database operations would suffice.",
+tools:"Postgres advisory locks · Redis SETNX/Redlock · ZooKeeper ephemeral sequential nodes · Consul sessions · etcd leases",
+how:"A distributed lock must work across multiple machines, so it needs a shared coordination point. The simplest: Redis SET key value NX EX 30 — 'set this key only if it does not exist, with a 30-second expiry.' If the SET succeeds, you hold the lock. If it fails, someone else holds it. The critical problem: what if your process crashes while holding the lock? The TTL expires and another process acquires it — good. But what if your process is just slow (GC pause, network hiccup) and the TTL expires while you are still working? This is why you need 'fencing tokens': the lock service gives you a monotonically increasing token. When you write to storage, you include the token. If your write arrives late (after your lock expired), the storage layer rejects it because the token is outdated. Postgres advisory locks avoid this by being tied to the database connection — when the connection closes, the lock releases automatically.",
+ask:"What happens if a distributed lock expires while the holder is still processing? What are fencing tokens and how do they solve this? When is a database unique constraint better than a distributed lock?"},
+
+{id:"delivery",cat:"Distributed Systems",pri:"must",title:"Delivery Semantics (Exactly-Once is a Myth)",tag:"In distributed messaging, you can choose at-most-once (may lose messages), at-least-once (may deliver duplicates), or exactly-once within a single system. True end-to-end exactly-once across independent systems is mathematically impossible.",
+use:["Designing any queue consumer: assume duplicates will arrive and make your handler idempotent","Kafka's idempotent producer and transactions provide exactly-once semantics *within Kafka* — but not across Kafka and your database","Justifying why your payment system uses idempotency keys rather than trusting the message broker's delivery guarantees"],
+avoid:["Trusting 'exactly-once' marketing for end-to-end flows spanning multiple databases and services — it is a lie","Using at-most-once delivery for anything you cannot afford to lose (e.g., payment events)","Building custom exactly-once frameworks instead of accepting at-least-once + idempotency"],
+over:"Custom exactly-once machinery with two-phase commit across your message broker, database, and cache — weeks of pain for a property you cannot actually guarantee. Believing vendor marketing that claims exactly-once delivery across heterogeneous systems.",
+tools:"Kafka transactions (within Kafka) · Idempotency keys · Database unique constraints · Upserts · At-least-once brokers + idempotent consumers",
+how:"At-most-once: send a message and forget. Fast, but if the network drops it, the message is lost forever. Use for metrics or telemetry where loss is acceptable. At-least-once: send a message, and keep retrying until acknowledged. Guarantees delivery, but if the acknowledgment is lost, the sender retries and the message is delivered twice. This is the most common choice. Exactly-once (within a system): Kafka's idempotent producer ensures that even if the producer retries, the broker deduplicates using sequence numbers. Kafka transactions allow publishing to multiple topics atomically. BUT: the moment the message leaves Kafka and hits your application, which then writes to a database, you have two independent systems. If your app crashes after writing to the DB but before acknowledging Kafka, Kafka will redeliver. Hence: end-to-end exactly-once is impossible. The solution is idempotency: design your consumer so that processing the same message twice has the same effect as once.",
+ask:"Can you achieve exactly-once end-to-end across a message broker and a database? Prove why not. What is the difference between Kafka's exactly-once guarantee and end-to-end exactly-once? Why is at-least-once + idempotency the industry standard?"},
+
+{id:"clocks",cat:"Distributed Systems",pri:"important",title:"Clocks & Ordering in Distributed Systems",tag:"Computer clocks drift, jump, and run at slightly different speeds. You cannot rely on timestamps from different machines to determine event order. True ordering requires logical mechanisms, not wall clocks.",
+use:["Understanding why last-write-wins in systems like S3, DynamoDB, and Cassandra can silently lose data — the 'last' write is determined by timestamp, which may be wrong","Lamport timestamps and vector clocks for establishing causal ordering: 'Did event A happen before event B, or were they concurrent?'","Using database-generated sequences or ULIDs (sortable unique IDs) instead of app-server timestamps for ordering","Designing conflict resolution in eventually consistent systems where concurrent writes are possible"],
+avoid:["Comparing timestamps from different machines to decide ordering — clock skew can be milliseconds to seconds, and NTP jumps can go backwards","Using time-based uniqueness (e.g., 'filename = timestamp') — clocks on two servers can produce the same timestamp","Assuming 'now' is a global concept — there is no single 'now' in a distributed system"],
+over:"Vector clocks everywhere when a single-leader sequence number or database auto-increment would suffice. Building complex logical clock systems for problems that a simple counter solves. Ignoring clock skew because 'we use NTP' — NTP is not perfect.",
+tools:"Database sequences / auto-increment IDs · ULIDs (sortable, unique) · Snowflake IDs (Twitter) · Lamport timestamps · Vector clocks · Logical clocks · Spanner TrueTime (Google's specialized hardware clock)",
+how:"Physical clocks (wall time) on different machines drift apart because quartz crystals run at slightly different frequencies. NTP corrects this, but corrections can jump backwards, and network delays make synchronization imperfect. In distributed systems, we care about 'happens-before' relationships, not absolute time. Lamport timestamps assign each event a monotonic counter: if A happens before B, A's timestamp is less than B's. Vector clocks extend this by tracking the counter for every node, allowing you to detect concurrent events (neither happened before the other). In practice, most systems use simpler solutions: database sequences (the single source of truth generates order), Snowflake IDs (time-based but generated by a centralized service with safeguards), or conflict-free replicated data types (CRDTs) where concurrent updates merge automatically.",
+ask:"Two writes hit two different replicas 'at the same time' — who wins? How would you order events across distributed servers? Why is relying on system timestamps dangerous for distributed ordering?"},
+
+/* ---------- CASE STUDIES ---------- */
+{id:"cs-linkedin",cat:"Case Studies",pri:"important",cs:true,title:"🏭 LinkedIn → Invented Kafka",tag:"LinkedIn built Kafka because ~20 teams were building duplicate data pipelines. They needed one durable, replayable log that many teams could consume independently.",
+use:["~20 internal teams were each building separate pipelines to move the same data (user activity, metrics) between systems","They built Kafka: a single durable, append-only commit log where producers write once and many consumers read independently, each at their own pace","Kafka's design — partitions, consumer groups, replayable offsets — solved the 'every team needs the same data' problem elegantly","Today Kafka carries trillions of messages per day across the industry, not just at LinkedIn"],
+avoid:["A log is not a task queue — consumer offsets and retry logic had to be built on top; do not use Kafka for simple job queues","Every team that consumes from Kafka owns part of the operational burden: monitoring consumer lag, handling rebalances, managing offsets"],
+over:"When asked about event streaming in an interview, tell this story: the problem was duplicated pipelines, the solution was a shared replayable log, and the key benefit is many independent consumers. This shows you understand the 'why,' not just the tool.",
+tools:"Apache Kafka was born at LinkedIn (2011) · Confluent (company founded by Kafka creators)",
+how:"Before Kafka, LinkedIn had a mess of point-to-point integrations: the metrics team built a pipeline from the activity database, the search team built another, the analytics team built a third. All were fragile and duplicated effort. Kafka introduced the 'log' abstraction: an ordered, immutable sequence of events. Producers append events to topics. Consumers read from topics, maintaining their own offset (position in the log). This decouples producers from consumers — a new consumer can start from the beginning and replay history. Consumer groups allow parallel processing: partitions are divided among group members. The key insight: a log is a simpler, more durable abstraction than a queue because nothing is deleted until retention expires.",
+ask:"Why did LinkedIn choose a log architecture instead of a traditional message queue? What does replay capability unlock for downstream consumers? How does the log abstraction simplify system integration?"},
+
+{id:"cs-netflix",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Netflix → Design for Failure",tag:"Netflix assumes everything will fail and builds resilience into every layer: circuit breakers, chaos engineering, and multi-region active-active data stores.",
+use:["Netflix built Hystrix (circuit breakers), bulkheads, and fallbacks for every remote service call — if recommendations are down, show generic popular titles instead of failing the whole page","Chaos Monkey randomly terminates production instances during business hours to force teams to build fault-tolerant systems","Cassandra and EVCache (memcached) are deployed multi-region, active-active — every region can serve traffic independently","Eureka service discovery helps clients find healthy instances automatically when others fail"],
+avoid:["This is a resilience investment justified only at massive scale — copying every Netflix pattern for a small app is overkill","Hystrix is now in maintenance mode; modern alternatives are Resilience4j or Polly"],
+over:"Quoting Netflix patterns without understanding their scale. Using circuit breakers on every internal function call in a monolith. Running chaos engineering before you have basic monitoring and alerting.",
+tools:"Hystrix (legacy, Java) · Resilience4j (modern replacement) · Chaos Monkey · Eureka · Cassandra · EVCache",
+how:"Netflix's philosophy: 'Everything fails all the time.' They do not hope things stay up; they engineer for constant failure. The circuit breaker pattern (Hystrix) wraps every outbound call. If failures exceed a threshold, the breaker opens and subsequent calls fail fast, triggering a fallback (cached data, default response, degraded experience). This prevents cascading failures where one slow service exhausts all your threads. Chaos Monkey (part of the Simian Army) randomly kills instances in production during peak hours. If your service cannot handle an instance dying, you find out immediately and fix it. Multi-region active-active means data is written to multiple regions simultaneously, so if an entire AWS region fails, traffic fails over seamlessly. This is expensive and complex — Netflix's scale justifies it.",
+ask:"How would you keep a checkout flow alive when a non-critical dependency (e.g., recommendations) dies? What is the difference between a circuit breaker and a retry? How does chaos engineering improve reliability?"},
+
+{id:"cs-discord",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Discord → Trillions of Messages",tag:"Discord stores billions of messages per day. Their data modeling decisions — specifically partition key design — determined whether the system survived or collapsed under hot channels.",
+use:["Messages were stored in Cassandra keyed by channel_id, bucketed by time windows (e.g., channel_id + week) to keep partition sizes manageable","Hot channels (like the official Fortnite channel with millions of users) created 'hot partitions' — one partition received all writes, overwhelming a single Cassandra node","JVM garbage collection pauses in Cassandra caused latency spikes during these hot periods","They migrated to ScyllaDB, a C++ rewrite of Cassandra compatible with the same protocol, which eliminated GC pauses and dramatically improved tail latency"],
+avoid:["Partition-key design created hot spots on huge channels — a fundamental data modeling problem, not a tool problem","Migration took months of dual-running both systems and carefully moving data without losing messages"],
+over:"The lesson: in NoSQL databases, data modeling (partition keys, clustering columns) matters more than the database brand. Say this in interviews: 'Discord's problem was not Cassandra; it was hot partitions from poor key design.'",
+tools:"Apache Cassandra → ScyllaDB (C++ Cassandra-compatible, no JVM/GC)",
+how:"Discord's message store used Cassandra with a partition key of (channel_id, bucket). Messages in a channel for a given week were stored together. This works for normal channels, but a channel with 10 million users generates massive write traffic to one partition. In Cassandra, one partition lives on one node (plus replicas). That node becomes a bottleneck. Additionally, Cassandra runs on the JVM, and large partitions trigger long garbage collection pauses, causing latency spikes (tail latency). Discord's fix was twofold: (1) they improved data modeling where possible (smaller buckets), and (2) they migrated to ScyllaDB, which is API-compatible with Cassandra but written in C++ without a garbage collector. This eliminated GC pauses and improved p99 latency significantly. The key takeaway: understand your access patterns and partition key design before blaming the database.",
+ask:"Why did hot partitions happen at Discord? How would you fix a hot partition problem without changing databases? What is tail latency, and why is it often more important than average latency?"},
+
+{id:"cs-twitter",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Twitter → Timeline Fan-Out Problem",tag:"THE classic feed-design case study. Twitter pre-computes home timelines by 'fanning out' tweets to followers' caches — but celebrities break this model.",
+use:["Fan-out on write: when a user tweets, the system pushes that tweet into the home timeline caches (Redis lists) of every follower. Normal users have hundreds of followers — this is fast and makes reads instant","Celebrities break it: if a user has 100 million followers, one tweet triggers 100 million cache writes — this is slow and can overload the system","Hybrid approach: pre-compute timelines for normal users (fan-out on write), but for celebrity tweets, fetch them at read time and merge them into the timeline","This hybrid design balances read speed for most users with write feasibility for celebrities"],
+avoid:["Write amplification is the core cost — every follower gets a copy in their timeline cache","When fan-out lags, home timelines serve stale data until the write propagates"],
+over:"This IS the 'design a news feed' interview question. Know fan-out on write, fan-out on read, and the hybrid approach cold. Do not propose fan-out on write for a system with celebrities without addressing the write amplification problem.",
+tools:"Pre-computed home timelines in Redis · Fan-out service · Timeline merger at read time",
+how:"Twitter's timeline system has two paths. For normal users (< few thousand followers): when they tweet, the 'fan-out' service pushes the tweet ID into a Redis list for each follower. When a follower opens their timeline, it is a simple, fast Redis LRANGE (get latest 800 tweet IDs), then a multi-get from the tweet cache for the full tweet data. For celebrities (> few thousand followers): their tweets are NOT fanned out. Instead, when a follower requests their timeline, the system fetches their normal pre-computed timeline AND separately fetches recent tweets from celebrities they follow, then merges and sorts them. This hybrid approach means normal users get instant reads, but celebrities do not overwhelm the write path. The trade-off: celebrity tweets may have slightly higher read latency because they are fetched at read time, but this is acceptable.",
+ask:"Design Twitter's timeline. How do you handle a user with 100 million followers? What are the trade-offs between fan-out on write and fan-out on read? How would you handle a celebrity who tweets every 30 seconds?"},
+
+{id:"cs-amazon",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Amazon → Dynamo & The Shopping Cart",tag:"Amazon's shopping cart must remain writable even during network partitions and server failures. They chose availability over strict consistency, accepting that conflicting cart updates would be resolved later.",
+use:["The Dynamo paper (2007) introduced consistent hashing, quorum reads/writes, vector clocks, and eventual consistency — all to ensure the cart is always writable","Cart conflicts are resolved application-side: if two devices add different items concurrently, the cart merges both item sets rather than rejecting one write","This design became the foundation for AWS DynamoDB, one of the most widely used cloud databases","The canonical example of choosing availability (AP) over consistency (CP) in CAP theorem discussions"],
+avoid:["Eventual consistency pushes conflict resolution into application code — you must handle merge logic, not the database","Tuning consistency knobs (N, W, R) is real operational cost and requires deep understanding"],
+over:"The canonical example for explaining AP trade-offs in interviews. Name it when asked: 'When would you accept eventual consistency?' The answer: when availability is more important than immediate consistency, and conflicts can be resolved meaningfully.",
+tools:"Dynamo paper (2007) → Amazon DynamoDB · Consistent hashing · Vector clocks · Quorum consensus",
+how:"Amazon's problem: the shopping cart is the most critical part of the site. If a customer cannot add an item to their cart because a server is down, Amazon loses a sale. Traditional relational databases would lock the cart row during updates, ensuring consistency but reducing availability. Dynamo's approach: replicate cart data across multiple nodes. Accept writes from any node (even if some replicas are unreachable). Use vector clocks to detect concurrent updates. If two devices update the cart simultaneously while partitioned, both writes succeed locally. When the partition heals, the system detects the conflict (divergent vector clocks) and calls application-specific merge logic: 'both items are in the cart.' This is 'last-write-wins' but with smart merging. The trade-off: the application must handle conflicts. The database will not enforce a single global order.",
+ask:"Why did Amazon accept eventual consistency for shopping carts? What breaks if they used strict consistency instead? How does application-side conflict resolution work, and when is it acceptable?"},
+
+{id:"cs-stripe",cat:"Case Studies",pri:"important",cs:true,title:"🏭 Stripe → Idempotency Keys for Payments",tag:"The industry reference for safe payment processing over unreliable networks. Stripe's idempotency key pattern ensures that retrying a failed payment never creates a double charge.",
+use:["Stripe's public API accepts an Idempotency-Key header on every mutating request (charge, refund, transfer)","The server stores the request and response keyed by this idempotency key, with an expiry policy (e.g., 24 hours)","If the client retries (due to network timeout, 503 error, or connection drop), the server returns the stored response instead of re-executing the charge","Money movement is recorded on an immutable, double-entry ledger — every cent is accounted for, and the ledger provides an audit trail"],
+avoid:["Keys and responses must be stored durably (database, not cache) with a clear expiry policy — storing forever is expensive, storing too briefly misses legitimate retries","This requires discipline across every mutating endpoint — partial implementation creates holes where duplicates can still occur"],
+over:"The go-to real-world example for payment and idempotency interview questions. Mention Stripe by name — it shows you know production patterns, not just theory. Do not build a custom payment system without understanding this pattern first.",
+tools:"Idempotency-Key HTTP header · Immutable double-entry ledger · Database storage for idempotency records",
+how:"The problem: a customer clicks 'Pay.' The request reaches Stripe's server, processes the charge, but the network response is lost. The customer sees an error and clicks 'Pay' again. Without idempotency, this creates two charges. Stripe's solution: the client (web app, mobile app) generates a unique idempotency key (UUID) for each user action and sends it in the Idempotency-Key header. Stripe's API gateway checks a database table: 'Have we seen this key?' If yes, return the stored response (success or failure) without touching the payment processor again. If no, execute the charge, store the result with the key, and return it. The ledger design means every financial operation is recorded as a debit and credit in an append-only ledger. Even if the idempotency system fails, the ledger reveals duplicates (two identical charges to the same card). This is defense in depth: idempotency prevents duplicates, and the ledger detects any that slip through.",
+ask:"A client retries a payment after a timeout — what exactly happens server-side? How long should idempotency keys be retained? What is a double-entry ledger and why is it used for financial data?"},
+
+{id:"cs-slack",cat:"Case Studies",pri:"nice",cs:true,title:"🏭 Slack → Sharding Messages with Vitess",tag:"Slack stores messages in MySQL, sharded by workspace (team). This is a clean tenant-based approach, but giant workspaces became hot shards.",
+use:["Messages stored in MySQL, sharded via Vitess (a database clustering system for MySQL), keyed by team/workspace ID","Hot channel reads handled with denormalization (pre-computed message lists) and caching","Vitess provides transparent sharding: applications connect to Vitess as if it were a single MySQL instance, and Vitess routes queries to the correct shard"],
+avoid:["Giant workspaces (e.g., a large company's workspace with 100,000 users) became hot shards — one shard handles disproportionate traffic","Resharding as teams grow is genuinely painful and requires careful data migration"],
+over:"A clean example of shard-by-tenant and its classic weakness: one huge tenant dominates a shard. In interviews, mention this when discussing tenant-based sharding strategies.",
+tools:"MySQL · Vitess (YouTube's sharding layer for MySQL, now open source) · Application-level denormalization",
+how:"Slack's early architecture used a single MySQL database. As they grew, they needed to shard. They chose Vitess, which shards MySQL without requiring application changes — the app still connects to one Vitess endpoint, and Vitess routes queries based on the shard key (workspace_id). This allowed them to scale horizontally while keeping the familiar MySQL interface. However, shard-by-tenant has a known weakness: tenants are not equal. A small startup workspace generates 10 messages/day; a Fortune 500 company generates 1 million/day. The latter creates a hot shard. Slack mitigates this with caching, read replicas for hot workspaces, and careful monitoring. When a shard becomes too hot, they must reshard — split the workspace's data across multiple shards, which requires downtime or complex dual-write migration.",
+ask:"Your biggest customer is 100x larger than everyone else — how does your sharding strategy survive? What are the alternatives to shard-by-tenant? When would you reshard, and how would you do it without downtime?"},
+
+{id:"cs-uber",cat:"Case Studies",pri:"nice",cs:true,title:"🏭 Uber → Microservices Hangover",tag:"Uber built a massive microservices architecture on top of Kafka, eventually growing to thousands of services — then publicly wrote about the pain and their move back toward larger services.",
+use:["Kafka is Uber's central nervous system: every service publishes events, and the Schema Registry enforces contract compatibility between producers and consumers","At peak, Uber had thousands of microservices, creating a 'distributed monolith' where changes required coordinated deploys across dozens of services","Uber publicly documented their shift toward 'macro-services' — larger services that reduce cross-service dependencies and deployment coordination"],
+avoid:["Dependencies cascaded: changing one shared library required updating and deploying hundreds of services","Operational complexity: debugging an issue required checking logs and traces across 20+ services","The cost of coordination outweighed the benefits of independent deployment for tightly coupled features"],
+over:"Perfect evidence for 'when NOT to split': decomposing faster than your organizational maturity creates more problems than it solves. Cite Uber when arguing for starting with a monolith.",
+tools:"Apache Kafka · Uber's uReplica (internal) · Schema Registry (Confluent) · Internal platform teams",
+how:"Uber's growth story is cautionary. They started with a monolith, split into microservices as they scaled, and kept splitting. Eventually, they had ~4,000 services. The problem: many of these services were tightly coupled — a 'checkout' flow might touch 30 services, and a change to a shared library required updating all of them. This is a 'distributed monolith': you have the deployment pain of microservices without the independence benefit. Uber's response: consolidate related services into 'macro-services' — larger services that own a complete business domain (e.g., 'rides' instead of 'ride-matching', 'ride-pricing', 'ride-routing' as separate services). They also invested heavily in platform teams that provide shared infrastructure (service mesh, observability, deployment pipelines) so product teams do not rebuild these for every service. The lesson: microservices are a scaling tool for organizational independence, not a technical virtue in itself.",
+ask:"What signals would tell you that a service should be merged back into a larger one? What is a 'distributed monolith' and how does it happen? How do platform teams enable successful microservices adoption?"},
+
+{id:"cs-revert",cat:"Case Studies",pri:"important",cs:true,title:"🏭 The Great Reverts — Back to Monoliths",tag:"Segment (2017), Uber, and Amazon Prime Video all publicly documented moving from microservices back to monoliths — real evidence that simpler is often better.",
+use:["Segment (2017): 120+ microservices → consolidated back to a monolith. Developer productivity went UP. Deployment became simpler. Debugging became easier.","Amazon Prime Video (2023): their audio/video monitoring service was built as distributed serverless functions. They consolidated to a monolith running on EC2, reducing costs by 90% and improving latency.","Uber: documented their shift from thousands of microservices to 'macro-services' (larger, domain-aligned services)"],
+avoid:["All three cite distributed-systems complexity, deployment pain, and cost as primary reasons for reverting","None of them reverted their data layer — they kept distributed databases and caches. Only service boundaries were consolidated","These are specific cases — microservices still work well for large, mature organizations with clear domain boundaries"],
+over:"Cite these real examples when asked 'when are microservices wrong?' Real receipts beat opinions. But do not swing to the opposite extreme: monoliths are not always right either. The pattern is: start simple, extract when pain is real, consolidate when extraction went too far.",
+tools:"Modular monolith · Strangler Fig pattern · Domain-Driven Design boundaries",
+how:"These case studies share a common theme: the teams extracted services prematurely, before the boundaries were clear or the organizational maturity existed to manage them. Segment found that 120 services meant 120 deployment pipelines, 120 monitoring setups, and 120 potential failure points — for a team of ~100 engineers. The coordination overhead killed productivity. Amazon Prime Video's monitoring service used AWS Step Functions and Lambda for every processing step. The overhead of orchestrating hundreds of tiny functions (data transfer between steps, cold starts, debugging across function boundaries) exceeded the benefit. By moving to a monolithic EC2 application, they eliminated orchestration overhead, reduced data movement, and simplified debugging. The critical insight: they did NOT revert to a single database — they kept their distributed data architecture. They only consolidated the compute layer.",
+ask:"Why do teams revert from microservices to monoliths? What would you check before deciding to split a monolith? What is the difference between consolidating service boundaries and consolidating data storage?"}
+];
+
+const HELP=[
+{t:"Reads are slow / DB CPU is hot",s:["Add the right database index and run EXPLAIN ANALYZE to confirm the query uses it. This is free and often fixes the problem immediately — a missing index is the #1 cause of slow reads.","Cache hot reads in Redis using cache-aside pattern with a TTL. This reduces database load for frequently accessed data that can tolerate brief staleness.","Add read replicas if reads still overwhelm the primary after indexing and caching. Replicas multiply read capacity but introduce replication lag.","Only then think about sharding — when data volume or write throughput exceeds a single machine even after vertical scaling."],w:"Sharding first is the classic over-engineering mistake. It is the last resort, not the first optimization. Sharding adds query complexity, cross-shard join pain, and operational overhead that you do not need at small scale."},
+{t:"Writes / ingestion overwhelm the DB",s:["Accept writes fast, process them asynchronously via a queue (BullMQ, RabbitMQ). The queue absorbs bursts and lets consumers process at a steady rate.","Batch writes instead of inserting one row at a time. Group 100 inserts into one transaction. Archive or purge old data to reduce table size.","Scale the database vertically — one powerful box goes surprisingly far. Modern cloud databases can handle millions of writes per day.","Last resort: shard the database, or move extremely hot writes to a write-optimized store like Cassandra or DynamoDB."],w:"Reaching for a distributed database before trying async queues and batching. Distributed databases trade query flexibility for write throughput — make sure you actually need that trade-off."},
+{t:"Need background jobs (emails, PDFs, thumbnails)",s:["If you are on Node.js and already run Redis: use BullMQ. It provides retries, delays, priorities, and cron jobs with minimal setup.","If you need complex routing across multiple languages (Python, Java, Go): use RabbitMQ. Its exchange topology handles sophisticated routing rules.","If you need replay, event history, or stream processing: use Kafka. But this is rarely justified for simple background jobs."],w:"Using Kafka for a simple job queue is heavy ops for no gain. Kafka does not support delayed jobs natively, lacks dead-letter queue features out of the box, and requires significant operational expertise. Use the simplest tool that handles your load."},
+{t:"Several services need the same events",s:["If you have a few consumers and no need for replay: RabbitMQ fan-out exchange is simple and reliable.","If you need replay, many consumers, or high throughput: Kafka is the right choice. Design small, schema-versioned events.","Keep events small and focused. Large events bloat the log and slow consumers. Reference IDs, not full objects."],w:"'Event-driven everything' without operational maturity creates chaos. Every consumer is a service you must monitor, debug, and maintain. Start with direct API calls, add events only when multiple services genuinely need the same data."},
+{t:"Users are far away → high latency",s:["Serve static assets via a CDN. This is the biggest latency win for global users — edge servers are physically closer.","Cache API responses at the edge where possible (Cloudflare Workers, Lambda@Edge) for semi-dynamic content.","Then, and only then: deploy to multiple regions with geo-DNS routing. This is a major operational step requiring data replication and conflict handling."],w:"Multi-region deployment before you have a global audience is classic overkill. It adds data consistency challenges, cross-region replication costs, and operational complexity. A CDN alone solves 80% of global latency problems."},
+{t:"UI needs live updates",s:["If updates happen every few seconds or less frequently: use polling. It is the simplest approach, works through all proxies, and is cacheable.","For server-to-client pushes (feeds, alerts, notifications): use Server-Sent Events (SSE). It works over standard HTTP, auto-reconnects, and is simpler than WebSockets.","For true bidirectional communication (chat, games, live collaborative editing): use WebSockets."],w:"WebSockets for data that users would happily refresh manually is hidden complexity. You must manage connection state, handle reconnections, implement heartbeats, and scale horizontally with sticky sessions or a pub/sub backplane. SSE covers most 'live update' needs."},
+{t:"Need search / autocomplete",s:["For under ~100k rows: PostgreSQL tsvector, trigram indexes (pg_trgm), or even ILIKE may be sufficient. Do not underestimate SQL search.","For real relevance ranking, typo tolerance, faceted filters, and large scale: use Elasticsearch, Typesense, or Meilisearch.","Keep the search index in sync with your primary database via Change Data Capture (Debezium) or application-level events."],w:"An Elasticsearch cluster for a 10,000-row search box is overkill. Elasticsearch requires JVM tuning, cluster management, and split-brain prevention. Start with Postgres search, upgrade only when query complexity or scale demands it."},
+{t:"Users upload files / media",s:["Never stream large files through your application server. It blocks threads, consumes memory, and creates a bottleneck.","Use presigned URLs: your app generates a time-limited signed URL, the client uploads directly to S3, and your app receives a webhook callback.","Serve files via CDN. Process files (resize images, transcode video) asynchronously via a queue."],w:"Storing blobs inside PostgreSQL or MongoDB bloats your database, slows backups, and makes replication expensive. Object storage (S3) is 10-100x cheaper and designed for this."},
+{t:"API abuse / one noisy client",s:["Rate limit at the edge using a token bucket in Redis. Enforce per-API-key limits for authenticated users, per-IP for anonymous traffic.","Return HTTP 429 Too Many Requests with a Retry-After header so well-behaved clients back off.","Monitor rate limit hits — a sudden spike may indicate an attack or a misbehaving integration."],w:"Rate limits do not fix an under-scaled system — they just hide it by rejecting traffic. If legitimate users are hitting limits, your system needs more capacity, not stricter limits. Rate limiting is for abuse protection, not capacity planning."},
+{t:"Flow spans services (order → payment → stock)",s:["First, ask: can the entire flow fit in one database? If yes, use a local ACID transaction. Boring is good. It is faster, simpler, and stronger.","If it must span services: use the saga pattern with compensating actions (refund payment, release inventory) and the outbox pattern for reliable event publishing.","Design each step to be idempotent. Accept eventual consistency — each service will be consistent in time, but not immediately."],w:"Two-phase commit (2PC) or distributed locks across services is a known anti-pattern. 2PC locks resources across services, creating deadlocks and availability problems. Sagas with compensation are the industry standard for cross-service flows."},
+{t:"App is growing — split into microservices?",s:["Start with a modular monolith: structure code with clear internal boundaries (modules/packages) that could become services later.","Split when you have real pain: team contention (deploys block each other), independent scaling needs, or genuinely different technology requirements.","Use the Strangler Fig pattern: extract one service at a time. Route traffic gradually from the monolith to the new service until the old code can be deleted."],w:"Microservices before CI/CD maturity, monitoring, and integration testing multiply every problem. A 2-person team with 15 microservices spends more time managing infrastructure than building product. Start simple, extract when forced."},
+{t:"Need exactly-once processing",s:["Accept the fundamental truth: end-to-end exactly-once is impossible in general across distributed systems.","Use at-least-once delivery from your message broker.","Make your consumer idempotent: use idempotency keys, database unique constraints, or upserts to handle duplicates gracefully.","Kafka transactions help with exactly-once *within* Kafka, but not beyond it."],w:"Custom 'exactly-once' frameworks with two-phase commit across your broker, database, and cache are weeks of pain for a property you cannot guarantee. The industry solution — at-least-once + idempotency — is boring, reliable, and proven."},
+{t:"Two workers might process the same thing",s:["First: make the operation idempotent. A unique database constraint or upsert ensures duplicate processing is harmless.","Then: use Postgres advisory locks or SELECT FOR UPDATE SKIP LOCKED for database-backed coordination.","Redis SET NX + TTL works if there is no shared database and brief failures are acceptable.","Only then think about Redlock or ZooKeeper for complex distributed coordination."],w:"Reaching for Redlock or ZooKeeper before trying a database unique constraint is over-engineering. Most 'duplicate work' problems are solved more simply and reliably with idempotency than with distributed locks."}
+];
+
+const CHECK=[
+"Kubernetes for a project with no users",
+"Kafka with fewer than 3 services",
+"Sharding before maxing out indexes & replicas",
+"GraphQL gateway + federation for one client app",
+"Microservices with a 2-person team",
+"Multi-region before product–market fit",
+"Custom-built API gateway / framework",
+"Caching every query 'just in case'",
+"Event sourcing + CQRS for a CRUD app",
+"Service mesh (Istio) before basic monitoring",
+"Custom 'exactly-once' machinery instead of idempotency",
+"Distributed locks where a DB unique constraint would do"];
+
+const $=s=>document.querySelector(s);
+const li=x=>`<li>${x}</li>`;
+let mastered=new Set(); try{mastered=new Set(JSON.parse(localStorage.getItem("sdg-mastered-v3")||"[]"))}catch(e){}
+let F={q:"",cat:"all",pri:"all"};
+
+function cardHTML(c){
+  const isCS = !!c.cs;
+  const uLabel = isCS ? "🏭 WHAT THEY DID" : "✅ USE WHEN";
+  const aLabel = isCS ? "💸 WHAT IT COST / BIT THEM" : "⛔ AVOID WHEN";
+  const oLabel = isCS ? "🎓 YOUR INTERVIEW LESSON" : "⚠️ OVER-ENGINEERING TELL";
+  const askLabel = isCS ? "🎤 Talk about:" : "🎤 Interview spin:";
+  const toolsLabel = isCS ? "Stack:" : "Tools:";
+
+  let howSection = c.how ? `<div class="how"><h4>🔧 How It Works</h4>${c.how}</div>` : '';
+
+  return `<article class="card ${mastered.has(c.id)?"done":""}" id="c-${c.id}" data-cat="${c.cat}" data-pri="${c.pri}" data-search="${(c.title+" "+c.tag+" "+(c.tools||"")+" "+c.cat+" "+c.use.join(" ")+" "+c.avoid.join(" ")+" "+(c.how||"")).toLowerCase()}">
+  <div class="top" tabindex="0" role="button" aria-expanded="false">
+    <div class="badges">
+      <span class="cat" style="--c:${CATS[c.cat]}">${c.cat}</span>
+      <span class="pri ${c.pri}">${PRI[c.pri]}</span>
+      <button class="got" title="Mark: I can explain this" aria-label="mark mastered">✓</button>
+    </div>
+    <h3>${c.title}</h3><p class="tag">${c.tag}</p><span class="chev">▾</span>
+  </div>
+  <div class="body"><div class="inner">
+    <div class="cols">
+      <div class="use"><h4>${uLabel}</h4><ul>${c.use.map(li).join("")}</ul></div>
+      <div class="avoid"><h4>${aLabel}</h4><ul>${c.avoid.map(li).join("")}</ul></div>
+    </div>
+    <div class="over"><h4>${oLabel}</h4>${c.over}</div>
+    ${howSection}
+    <p class="tools">🧰 <b>${toolsLabel}</b> ${c.tools}</p>
+    <p class="ask"><b>${askLabel}</b> ${c.ask}</p>
+  </div></div></article>`;
+}
+
+$("#grid").innerHTML=CARDS.map(cardHTML).join("");
+
+$("#chips").innerHTML=`<button class="chip on" data-c="all">All</button>`+Object.keys(CATS).map(k=>`<button class="chip" data-c="${k}">${k}</button>`).join("");
+
+function apply(){
+  let n=0;
+  document.querySelectorAll(".card").forEach(el=>{
+    const ok=(F.cat==="all"||el.dataset.cat===F.cat)&&(F.pri==="all"||el.dataset.pri===F.pri)&&(!F.q||el.dataset.search.includes(F.q));
+    el.hidden=!ok; if(ok)n++;
+  });
+  $("#count").textContent=`Showing ${n} of ${CARDS.length}`;
+}
+function progress(){
+  $("#pbar").style.width=(mastered.size/CARDS.length*100)+"%";
+  $("#ptext").textContent=`${mastered.size}/${CARDS.length} mastered`;
+}
+
+$("#grid").addEventListener("click",e=>{
+  const got=e.target.closest(".got");
+  if(got){e.stopPropagation();const id=got.closest(".card").id.slice(2);
+    mastered.has(id)?mastered.delete(id):mastered.add(id);
+    got.closest(".card").classList.toggle("done");
+    localStorage.setItem("sdg-mastered-v3",JSON.stringify([...mastered]));progress();return;}
+  const top=e.target.closest(".top");
+  if(top){top.closest(".card").classList.toggle("open");top.setAttribute("aria-expanded",top.closest(".card").classList.contains("open"));}
+});
+$("#grid").addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("top")){e.preventDefault();e.target.closest(".card").classList.toggle("open");}
+});
+$("#q").addEventListener("input",e=>{F.q=e.target.value.trim().toLowerCase();apply();});
+$("#chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));b.classList.add("on");F.cat=b.dataset.c;apply();});
+$("#seg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#seg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");F.pri=b.dataset.p;apply();});
+$("#expAll").onclick=()=>document.querySelectorAll(".card:not([hidden])").forEach(c=>c.classList.add("open"));
+$("#colAll").onclick=()=>document.querySelectorAll(".card").forEach(c=>c.classList.remove("open"));
+$("#rnd").onclick=()=>{
+  const vis=[...document.querySelectorAll(".card:not([hidden])")];
+  const c=vis[Math.floor(Math.random()*vis.length)]; if(!c)return;
+  c.classList.add("open","flash"); c.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>c.classList.remove("flash"),1600);
+};
+
+$("#helpSel").innerHTML+=HELP.map((h,i)=>`<option value="${i}">${h.t}</option>`).join("");
+$("#helpSel").addEventListener("change",e=>{
+  const h=HELP[e.target.value]; const out=$("#helpOut");
+  if(!h){out.style.display="none";return;}
+  out.style.display="block";
+  $("#helpSteps").innerHTML=h.s.map(li).join("");
+  $("#helpStop").textContent=h.w;
+});
+
+$("#checklist").innerHTML=CHECK.map((c,i)=>`<label><input type="checkbox" data-i="${i}"> ${c}</label>`).join("");
+function verdict(n){
+  const v=$("#verdict");
+  if(n===0)v.innerHTML="🏆 <b>Lean machine.</b> You add complexity only when it hurts. Interviewers will love your pragmatism.";
+  else if(n<=3)v.innerHTML="🌶️ <b>Mild spice.</b> Defensible if you have traffic metrics to back it up — keep measuring and revisit these decisions quarterly.";
+  else if(n<=7)v.innerHTML="🚧 <b>Complexity creep.</b> Half of these solve problems you do not have yet. Your architecture may be slowing you down more than scaling you up.";
+  else v.innerHTML="🚨 <b>Resume-driven development.</b> Your biggest risk is not scaling — it is shipping at all. Strip it back and prove you need each component.";
+}
+$("#checklist").addEventListener("change",()=>{verdict(document.querySelectorAll("#checklist input:checked").length);});
+verdict(0); apply(); progress();
+</script>
+</body>
+</html>
