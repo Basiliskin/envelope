@@ -141,6 +141,18 @@ pre.code{background:#0a111f;border:1px solid var(--line);border-radius:10px;padd
 .flash:hover .face{border-color:var(--line2)}
 .flash.flipped .face.back{border-color:var(--cyan)}
 
+/* do / dont */
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+.dd-col{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel2)}
+.dd-h{font:700 11px var(--mono);letter-spacing:1.2px;padding:9px 14px}
+.dd-col.bad .dd-h{color:var(--rose);background:rgba(255,107,138,.08);border-bottom:1px solid rgba(255,107,138,.22)}
+.dd-col.good .dd-h{color:var(--green);background:rgba(74,222,128,.08);border-bottom:1px solid rgba(74,222,128,.22)}
+.dd-col.bad{border-top:3px solid var(--rose)}
+.dd-col.good{border-top:3px solid var(--green)}
+.dd-why{padding:12px 14px;font-size:13px;color:var(--mut);line-height:1.6}
+.dd-col pre.code{margin:0;border:none;border-radius:0;border-bottom:1px solid var(--line)}
+.dd-col .codehead{padding:12px 14px 0}
+
 /* rendering demo */
 .refdemo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
 .refcard .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;border-radius:6px;padding:4px 10px;margin-top:10px}
@@ -201,6 +213,7 @@ pre.code{background:#0a111f;border:1px solid var(--line);border-radius:10px;padd
 .bucket .chips{display:flex;flex-wrap:wrap;gap:8px}
 .bucket .chip{border-color:rgba(74,222,128,.4);color:var(--green)}
 #b-server h4 b{color:var(--cyan)} #b-client h4 b{color:var(--amber)}
+#b-server-rsc h4 b{color:var(--cyan)} #b-client-rsc h4 b{color:var(--amber)}
 .sortmsg{margin-top:14px;font-size:14px;color:var(--mut);min-height:22px}
 .sortmsg.win{color:var(--green);font-weight:600}
 
@@ -260,7 +273,7 @@ table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:20px}
 .archdetail li{font-size:13.5px;color:var(--mut);padding:5px 0 5px 18px;position:relative}
 .archdetail li::before{content:"▸";position:absolute;left:0;color:var(--amber)}
 
-/* slow app stepper */
+/* slow application stepper */
 .steps{counter-reset:st}
 .step{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--panel);overflow:hidden}
 .step-h{width:100%;display:flex;align-items:center;gap:16px;padding:16px 20px;background:none;border:none;color:var(--ink);font-size:15px;font-weight:600;text-align:left;transition:.2s}
@@ -286,6 +299,33 @@ table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:20px}
 .toolchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .tchip{font-family:var(--mono);font-size:11px;padding:6px 11px;border:1px solid var(--line2);border-radius:16px;color:var(--mut);transition:.2s}
 .tchip:hover{color:var(--cyan);border-color:var(--cyan);transform:translateY(-2px)}
+
+/* practice exercises */
+#pLists .plist{display:block}
+.ex{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--panel);overflow:hidden;transition:.25s}
+.ex:hover{border-color:var(--line2)}
+.ex-h{display:flex;align-items:center;gap:12px;padding:9px 14px;cursor:pointer;transition:.2s;user-select:none}
+.ex-h:hover{background:var(--panel2)}
+.ex-t{flex:1;font-size:14.5px;font-weight:600;color:var(--ink)}
+.ex-checked .ex-t{color:var(--dim);text-decoration:line-through}
+.ex-chk{position:relative;flex:none;width:22px;height:22px;display:grid;place-items:center}
+.ex-chk input{opacity:0;position:absolute;inset:0;cursor:pointer;z-index:2;margin:0}
+.ex-chk .box{width:19px;height:19px;border:2px solid var(--line2);border-radius:5px;display:grid;place-items:center;font-size:12px;color:transparent;transition:.2s;pointer-events:none}
+.ex-chk input:checked ~ .box{background:var(--green);border-color:var(--green);color:#04220f}
+.ex-chk:hover .box{border-color:var(--cyan)}
+.ex-chev{background:none;border:none;color:var(--dim);font-family:var(--mono);font-size:13px;padding:6px 8px;transition:.3s;flex:none;cursor:pointer}
+.ex-chev:hover{color:var(--cyan)}
+.ex.open .ex-chev{transform:rotate(90deg);color:var(--cyan)}
+.ex-b{max-height:0;overflow:hidden;transition:max-height .45s ease}
+.ex.open .ex-b{max-height:3200px}
+.ex-b .in{padding:14px 18px 20px;border-top:1px dashed var(--line2)}
+.ex-b .in h5{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin:8px 0 4px;font-weight:500}
+.ex-b .in p{font-size:14px;color:var(--mut);line-height:1.65;margin-bottom:4px}
+.ex-b .in ul{list-style:none;margin:4px 0 0}
+.ex-b .in li{font-size:13.5px;color:var(--mut);padding:5px 0 5px 20px;position:relative;line-height:1.55}
+.ex-b .in li::before{content:"▸";position:absolute;left:0;color:var(--amber)}
+.ex-b .in pre.code{margin:10px 0 6px}
+.ex-b .in .codehead{margin-top:14px}
 
 /* practice & plan */
 .ptabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
@@ -338,7 +378,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 
 @media(max-width:960px){
   .hero{grid-template-columns:1fr;padding-top:110px;min-height:auto}
-  .grid2,.grid3,.buckets,.refdemo,.arch,.pyrwrap,.el-theory,.weeks{grid-template-columns:1fr}
+  .grid2,.grid3,.buckets,.refdemo,.arch,.pyrwrap,.el-theory,.weeks,.dd{grid-template-columns:1fr}
   .lanes{grid-template-columns:1fr 1fr}
   .archdetail{position:static}
   .statusbar .mid{display:none}
@@ -355,15 +395,20 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <div class="logo"><span class="atom">⚛</span><span>senior-react-<b>prep.tsx</b></span></div>
   <nav class="mainnav" id="mainnav">
     <a href="#fundamentals">fundamentals</a>
+    <a href="#dodont">do / don't</a>
     <a href="#rendering">rendering</a>
     <a href="#hooks">hooks</a>
+    <a href="#hookorder">hook order</a>
+    <a href="#rsc">modern react</a>
     <a href="#performance">performance</a>
     <a href="#state">state</a>
     <a href="#typescript">typescript</a>
     <a href="#browser">event loop</a>
     <a href="#architecture">architecture</a>
     <a href="#slowapp">profiling</a>
+    <a href="#webvitals">vitals & sec</a>
     <a href="#testing">testing</a>
+    <a href="#behavioral">behavioral</a>
     <a href="#practice">practice</a>
     <a href="#plan">plan</a>
     <a href="#interview">interview</a>
@@ -378,10 +423,10 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     <h1 id="heroTitle"><span class="l1">SENIOR</span><span class="l2">REACT DEV</span><span class="l3">PREP SYSTEM</span></h1>
     <p class="sub">Не заучивание API, а <b>понимание runtime и failure modes</b>: React internals → architecture → performance → TypeScript → browser → testing → system design.</p>
     <div class="stats">
-      <div class="stat"><div class="n"><em>13</em></div><div class="t">модулей</div></div>
-      <div class="stat"><div class="n"><em>18</em></div><div class="t">interview-вопросов</div></div>
+      <div class="stat"><div class="n"><em>18</em></div><div class="t">модулей</div></div>
+      <div class="stat"><div class="n"><em>23</em></div><div class="t">interview-вопросов</div></div>
       <div class="stat"><div class="n"><em>4</em></div><div class="t">недели плана</div></div>
-      <div class="stat"><div class="n" id="heroDone">0<em>/42</em></div><div class="t">тем закрыто</div></div>
+      <div class="stat"><div class="n" id="heroDone">0<em>/45</em></div><div class="t">тем закрыто</div></div>
     </div>
     <div class="cta">
       <a class="btn primary" href="#interview">▶ Начать mock-интервью</a>
@@ -409,13 +454,113 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 
 <section class="sec" id="fundamentals">
   <div class="sec-head rv"><div><div class="idx">/ 01</div><h2>React fundamentals</h2></div>
-  <div class="lead">API — не главное. Главное — уметь ответить на вопрос <b>«почему»</b>. Переверни карточку и ответь вслух, потом проверь себя.</div></div>
+  <div class="lead">API — не главное. Главное — уметь ответить на вопрос <b>«почему»</b>. Сначала — как устроен компонент и state, потом переверни карточку и ответь вслух.</div></div>
+  <div class="grid2">
+    <div class="card lift rv">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>component.tsx — функция, а не шаблон</div>
+      <pre class="code"><span class="k">function</span> <span class="f">Welcome</span>({ user }) {
+  <span class="k">return</span> &lt;<span class="t">h1</span>&gt;Привет, {user.name}!&lt;/<span class="t">h1</span>&gt;;
+}
+<span class="c">// props — входные данные; ребёнок не может их менять</span>
+<span class="c">// на каждый render функция вызывается ЗАНОВО</span></pre>
+      <p style="font-size:13.5px;color:var(--mut)">Компонент — это функция. <b style="color:var(--cyan)">JSX — синтаксический сахар</b> над <span style="font-family:var(--mono);color:var(--ink)">React.createElement()</span>: никакой «магии шаблонов» внутри нет.</p>
+    </div>
+    <div class="card lift rv">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>state.tsx — состояние живёт вне компонента</div>
+      <pre class="code"><span class="k">function</span> <span class="f">Counter</span>() {
+  <span class="k">const</span> [count, setCount] = <span class="f">useState</span>(<span class="n">0</span>);
+  <span class="k">return</span> (
+    &lt;<span class="t">button</span> onClick={() =&gt; <span class="f">setCount</span>(count + <span class="n">1</span>)}&gt;
+      {count}
+    &lt;/<span class="t">button</span>&gt;
+  );
+}</pre>
+      <p style="font-size:13.5px;color:var(--mut)">Значение <span style="font-family:var(--mono);color:var(--ink)">count</span> хранится <b style="color:var(--cyan)">не в переменной функции</b>, а в fiber-узле. <span style="font-family:var(--mono);color:var(--ink)">setCount</span> лишь просит React перерисовать компонент.</p>
+    </div>
+  </div>
+  <div class="card rv" style="margin-top:18px;border-left:3px solid var(--cyan);background:var(--panel2)">
+    <b style="font-family:var(--mono);color:var(--cyan)">UI = f(state)</b>
+    <p style="color:var(--mut);font-size:14px;margin-top:6px;margin-bottom:0">Рендер — это вызов функции-компонента; React сам решает, <b style="color:var(--ink)">когда</b> и <b style="color:var(--ink)">зачем</b> перезапускать её. Отсюда растут все «почему» этого гайда: keys, memo, batching и порядок хуков.</p>
+  </div>
   <div class="flashgrid" id="flashgrid"></div>
   <p class="hint rv">клик по карточке — flip. Задача: ответить быстрее, чем за 20 секунд</p>
 </section>
 
+<section class="sec" id="dodont">
+  <div class="sec-head rv"><div><div class="idx">/ 02</div><h2>Do / Don't</h2></div>
+  <div class="lead">Короткие «senior habits»: в каждой паре — <b>плохой код</b>, почему он плохой, и <b>хороший код</b> с тем же результатом.</div></div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — key={index}</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>dont-index.tsx</div>
+      <pre class="code">{items.<span class="f">map</span>((it, i) =&gt;
+  &lt;<span class="t">Row</span> key={i} item={it} /&gt;)} <span class="c">// позиция, а не личность</span></pre>
+      <div class="dd-why">key — это идентичность для reconciliation. При reorder / insert / delete React путает «какой это элемент»: state и анимации переезжают на чужие строки.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — стабильный id</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>do-id.tsx</div>
+      <pre class="code">{items.<span class="f">map</span>((it) =&gt;
+  &lt;<span class="t">Row</span> key={it.id} item={it} /&gt;)} <span class="c">// идентичность элемента</span></pre>
+      <div class="dd-why">Стабильный id задаёт идентичность, которая переживает сортировку и вставки. Генерируй id при создании объекта, а не по позиции в массиве.</div>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — синхронизировать state через useEffect</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>dont-sync.tsx</div>
+      <pre class="code"><span class="f">useEffect</span>(() =&gt; {
+  <span class="f">setFiltered</span>(list.<span class="f">filter</span>(...));
+}, [list]);
+<span class="c">// лишний render: сначала НЕ-отфильтрованный, потом отфильтрованный</span></pre>
+      <div class="dd-why">«Set state in effect» почти всегда значит: значение нужно было вычислить при render, а не хранить. Это добавляет цикл render → effect → setState → render.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — вычислять производные во время render</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>do-derive.tsx</div>
+      <pre class="code"><span class="k">const</span> filtered = list.<span class="f">filter</span>(...);
+<span class="c">// каждый render пересчитывается — дешевле и предсказуемее</span>
+<span class="c">// если операция дорогая — оберни в useMemo</span></pre>
+      <div class="dd-why">Производные значения считаются по ходу render: один рендер вместо двух, никаких гонок и «замороженного» state.</div>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — поднимать весь state наверх «на всякий случай»</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>dont-lift-all.tsx</div>
+      <pre class="code"><span class="k">const</span> [query, setQuery] = <span class="f">useState</span>(<span class="s">""</span>); <span class="c">// на уровне App</span>
+<span class="c">// каждый ввод символа → re-render ВСЕГО поддерева</span></pre>
+      <div class="dd-why">Чем выше живёт state, тем больше дерева перерисовывается при каждом изменении. «А вдруг пригодится» — не причина поднимать.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — держать state как можно ниже</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>do-colocate.tsx</div>
+      <pre class="code"><span class="k">function</span> <span class="f">SearchBox</span>() {
+  <span class="k">const</span> [query, setQuery] = <span class="f">useState</span>(<span class="s">""</span>); <span class="c">// локально</span>
+  <span class="k">return</span> &lt;<span class="t">input</span> value={query} onChange={...} /&gt;;
+}</pre>
+      <div class="dd-why">State живёт рядом с потребителем. Поднимай только когда он реально нужен нескольким веткам дерева.</div>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — новый объект в props мемо-ребёнку</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>dont-inline.tsx</div>
+      <pre class="code">&lt;<span class="t">Child</span> data={{ name: <span class="s">"John"</span> }} /&gt;
+<span class="c">// каждый render родителя = новый reference → memo бесполезен</span></pre>
+      <div class="dd-why">Объекты и функции пересоздаются на каждый render. Shallow compare в React.memo видит новый reference и рендерит ребёнка заново.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — стабильные ссылки</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>do-stable.tsx</div>
+      <pre class="code"><span class="k">const</span> data = <span class="f">useMemo</span>(() =&gt; ({ name: <span class="s">"John"</span> }), []);
+<span class="k">const</span> onClick = <span class="f">useCallback</span>(handleClick, []);
+&lt;<span class="t">Child</span> data={data} onClick={onClick} /&gt;</pre>
+      <div class="dd-why">Стабильный reference позволяет memo реально пропускать re-render. Но мемоизируй по делу (после замера), а не из страха — про это секция Performance.</div>
+    </div>
+  </div>
+
+  <p class="hint rv">на интервью формулируй «я бы сделал так, потому что…», а не «вот так правильно» — trade-off и есть часть senior-ответа</p>
+</section>
+
 <section class="sec" id="rendering">
-  <div class="sec-head rv"><div><div class="idx">/ 02</div><h2>Rendering &amp; references</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 03</div><h2>Rendering &amp; references</h2></div>
   <div class="lead">Самая частая область на Senior-собеседовании: <b>render → reconciliation → commit</b>, batching, Fiber и идентичность объектов в props.</div></div>
   <div class="grid2">
     <div class="card lift rv">
@@ -449,7 +594,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </section>
 
 <section class="sec" id="hooks">
-  <div class="sec-head rv"><div><div class="idx">/ 03</div><h2>Hooks: stale closure</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 04</div><h2>Hooks: stale closure</h2></div>
   <div class="lead">Классическая задача на реальное понимание React. Разбери баг и три фикса — запускай каждый вариант и смотри на консоль.</div></div>
   <div class="tabs rv" id="hookTabs">
     <button class="tabbtn active" data-t="bug">🐞 Баг</button>
@@ -498,8 +643,122 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <p class="hint rv">на интервью сначала назови баг вслух, потом предложи все три фикса и скажи про trade-offs — это и есть senior-ответ</p>
 </section>
 
+<section class="sec" id="hookorder">
+  <div class="sec-head rv"><div><div class="idx">/ 05</div><h2>Rules of Hooks: как React хранит данные</h2></div>
+  <div class="lead">React не знает имена твоих хуков — только <b>позицию вызова</b>. Отсюда правила хуков и их «неожиданные» ошибки.</div></div>
+
+  <div class="grid2">
+    <div class="card lift rv">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>fiber-hooks.js — как устроено внутри</div>
+      <pre class="code"><span class="c">// у каждого fiber-узла React хранит односвязный список хуков.</span>
+<span class="c">// вызов хука привязан к ИНДЕКСУ в этом списке, а не к имени:</span>
+fiber.memoizedState → { type: useState, idx: <span class="n">0</span> }
+                  → { type: useEffect, idx: <span class="n">1</span> }
+                  → { type: useRef,    idx: <span class="n">2</span> }
+<span class="c">// ↑ никаких имён — только порядок вызовов</span></pre>
+      <p style="font-size:13px;color:var(--mut)">Значения state хранятся <b style="color:var(--cyan)">вне функции компонента</b>, в fiber-узле. Функция на каждый render выполняется заново, а React «подставляет» сохранённые значения по позиции вызова.</p>
+    </div>
+    <div class="card lift rv">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>rules.md — правила</div>
+      <pre class="code"><span class="n">1.</span> Хуки — только на верхнем уровне
+<span class="n">2.</span> Никогда в условиях / циклах / вложенных функциях
+<span class="n">3.</span> Только из компонентов и custom hooks (use*)
+<span class="c">// eslint-plugin-react-hooks ловит это статически</span></pre>
+      <p style="font-size:13px;color:var(--mut)">Это не «style guide», а инвариант runtime: сломанный порядок = сломанная связка «вызов ↔ сохранённое значение».</p>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:18px">
+    <div class="card lift rv">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>conditional-hook.tsx — сломано</div>
+      <pre class="code"><span class="k">function</span> <span class="f">Bad</span>({ open }) {
+  <span class="k">if</span> (open) { <span class="c">// ← хук под условием</span>
+    <span class="k">const</span> [a] = <span class="f">useState</span>(<span class="n">0</span>);
+  }
+  <span class="k">const</span> [b] = <span class="f">useState</span>(<span class="n">1</span>);
+}
+<span class="c">// open=true:  2 хука на рендере</span>
+<span class="c">// open=false: 1 хук → индексы разъехались</span>
+<span class="c">// → «Rendered more hooks than during the previous render»</span></pre>
+      <div class="verdict bad show" style="display:block"><b>Ошибка React.</b> На втором рендере хуков меньше — React не может сопоставить сохранённые значения с вызовами и падает, чтобы не отдать тебе чужое состояние.</div>
+    </div>
+    <div class="card lift rv">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>stable-order.tsx — правильно</div>
+      <pre class="code"><span class="k">function</span> <span class="f">Good</span>({ open }) {
+  <span class="k">const</span> [a] = <span class="f">useState</span>(<span class="n">0</span>); <span class="c">// вызываются всегда</span>
+  <span class="k">const</span> [b] = <span class="f">useState</span>(<span class="n">1</span>);
+  <span class="k">return</span> open ? &lt;<span class="t">Panel</span> a={a} /&gt; : <span class="k">null</span>;
+  <span class="c">// условие — внутри JSX, порядок хуков не меняется</span>
+}</pre>
+      <p style="font-size:13px;color:var(--mut)">Хуки вызываются безусловно, условия выносятся в JSX или в колбэки. Порядок вызовов всегда один и тот же.</p>
+    </div>
+  </div>
+
+  <div class="el-theory rv">
+    <div class="card"><h6 style="color:var(--rose)">ЧТО ЛОМАЕТСЯ БЕЗ ПОРЯДКА</h6><p>state привязывается по индексу: хук под условием «сдвигает» все следующие — useMemo, useEffect, useRef начинают читать чужие значения. Даже без краша это тихие баги.</p></div>
+    <div class="card"><h6 style="color:var(--green)">ПОЧЕМУ ТАК СДЕЛАНО</h6><p>React не хранит словарь «имя → state» — экономия памяти и простая реализация. Цена — дисциплина вызова: React доверяет стабильности порядка.</p></div>
+  </div>
+
+  <p class="hint rv">вопрос-перевёртыш на интервью: «почему eslint-plugin-react-hooks — защита, а не рекомендация?» — потому что нарушение меняет поведение runtime, а не стиль</p>
+</section>
+
+<section class="sec" id="rsc">
+  <div class="sec-head rv"><div><div class="idx">/ 06</div><h2>Modern React: RSC & Concurrent</h2></div>
+  <div class="lead">React 19 и Next.js App Router. Граница сериализации и неблокирующие обновления.</div></div>
+  
+  <div class="grid2 rv">
+    <div class="card lift">
+      <h4 style="color:var(--cyan);font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-bottom:10px">🖥 SERVER COMPONENTS</h4>
+      <p style="font-size:13.5px;color:var(--mut)">Выполняются на сервере. Нет доступа к <code>useState</code>, <code>useEffect</code> или браузерным API. Идеальны для data fetching и работы с БД. Пропсы, передаваемые в Client Components, должны быть <b style="color:var(--amber)">сериализуемы (JSON)</b>.</p>
+    </div>
+    <div class="card lift">
+      <h4 style="color:var(--amber);font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-bottom:10px">💻 CLIENT COMPONENTS</h4>
+      <p style="font-size:13.5px;color:var(--mut)">Директива <code>"use client"</code>. Это обычный React, который гидратируется в браузере. Здесь живут интерактивность, стейт и обработчики событий. Импорт серверного компонента в клиентский запрещён (только через children).</p>
+    </div>
+  </div>
+
+  <div class="rv" style="margin-top:24px">
+    <h3 style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-bottom:12px">// SORT: RSC BOUNDARY</h3>
+    <div class="pool" id="pool-rsc"></div>
+    <div class="buckets">
+      <div class="bucket" id="b-server-rsc" data-side="server">
+        <h4>🖥 SERVER <b>→ RSC</b></h4>
+        <div class="chips"></div>
+      </div>
+      <div class="bucket" id="b-client-rsc" data-side="client">
+        <h4>💻 CLIENT <b>→ "use client"</b></h4>
+        <div class="chips"></div>
+      </div>
+    </div>
+    <div class="sortmsg" id="sortmsg-rsc">Что требует гидратации, а что останется на сервере? <b id="sortScore-rsc">0/6</b></div>
+  </div>
+
+  <div class="grid2 rv" style="margin-top:24px">
+    <div class="card lift">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>concurrent.tsx — useTransition</div>
+      <pre class="code"><span class="k">const</span> [isPending, startTransition] = <span class="f">useTransition</span>();
+
+<span class="k">function</span> <span class="f">handleSearch</span>(q) {
+  <span class="f">startTransition</span>(() =&gt; {
+    <span class="f">setSearchQuery</span>(q); <span class="c">// тяжёлый фильтр не заблокирует ввод</span>
+  });
+}</pre>
+      <p style="font-size:13px;color:var(--mut)"><b style="color:var(--green)">Concurrent Feature:</b> Помечает обновление как «не срочное». React может прервать его, если пользователь продолжит печатать, сохраняя UI отзывчивым (INP).</p>
+    </div>
+    <div class="card lift">
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>concurrent.tsx — useDeferredValue</div>
+      <pre class="code"><span class="k">const</span> [query, setQuery] = <span class="f">useState</span>(<span class="s">""</span>);
+<span class="k">const</span> deferredQuery = <span class="f">useDeferredValue</span>(query);
+
+<span class="c">// deferredQuery обновится, когда main thread освободится</span>
+&lt;<span class="t">HeavyList</span> query={deferredQuery} /&gt;</pre>
+      <p style="font-size:13px;color:var(--mut)">В отличие от debounce, который <i>ждёт</i>, useDeferredValue позволяет показать <i>устаревшее</i> значение, пока новое вычисляется в фоне.</p>
+    </div>
+  </div>
+</section>
+
 <section class="sec" id="performance">
-  <div class="sec-head rv"><div><div class="idx">/ 04</div><h2>Performance: memo-симулятор</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 07</div><h2>Performance: memo-симулятор</h2></div>
   <div class="lead"><b>useMemo и useCallback — инструменты оптимизации, а не ритуал.</b> Поиграй тумблерами и посмотри, когда мемоизация спасает, а когда сама становится дороже re-render.</div></div>
   <div class="grid2">
     <div class="card rv">
@@ -525,7 +784,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </section>
 
 <section class="sec" id="state">
-  <div class="sec-head rv"><div><div class="idx">/ 05</div><h2>State management</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 08</div><h2>State management</h2></div>
   <div class="lead">Ключевой вопрос: <b>почему серверный state не хранят в Redux/MobX?</b> Сначала разложи данные по корзинам.</div></div>
   <div class="rv">
     <div class="pool" id="pool"></div>
@@ -545,7 +804,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     <tr><th>Инструмент</th><th>Для чего</th><th>Граница применимости</th></tr>
     <tr><td>useState</td><td>Локальный state одного компонента</td><td>Не лезет между ветками дерева</td></tr>
     <tr><td>useReducer</td><td>Сложные переходы, связанные поля</td><td>Всё ещё локален</td></tr>
-    <tr><td>Context</td><td>DI, тема, locale, auth-user</td><td>Каждое изменение = re-render всех потребителей</td></tr>
+    <tr><td>Context</td><td>ДИ, тема, locale, auth-user</td><td>Каждое изменение = re-render всех потребителей</td></tr>
     <tr><td>Redux</td><td>Большой client state, строгие правила, devtools</td><td>Много boilerplate — не для мелких задач</td></tr>
     <tr><td>Zustand</td><td>Лёгкий client store, селекторы без re-render</td><td>Меньше структуры из коробки</td></tr>
     <tr><td>MobX</td><td>Реактивные доменные модели, много связанных данных</td><td>Требует дисциплины, «магия» при дебаге</td></tr>
@@ -555,7 +814,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </section>
 
 <section class="sec" id="typescript">
-  <div class="sec-head rv"><div><div class="idx">/ 06</div><h2>React + TypeScript</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 09</div><h2>React + TypeScript</h2></div>
   <div class="lead">Generics, discriminated unions, narrowing, utility types. Эталонный паттерн — типизированный <b>useFetch&lt;T&gt;</b>.</div></div>
   <div class="grid2">
     <div class="rv">
@@ -603,7 +862,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </section>
 
 <section class="sec" id="browser">
-  <div class="sec-head rv"><div><div class="idx">/ 07</div><h2>Browser: Event Loop</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 10</div><h2>Browser: Event Loop</h2></div>
   <div class="lead">Senior обязан прогнать этот код по фазам вручную. Запусти симулятор и смотри, как задачи движутся между стеком и очередями.</div></div>
   <pre class="code rv"><span class="f">console.log</span>(<span class="s">"1"</span>);
 <span class="f">setTimeout</span>(() =&gt; <span class="f">console.log</span>(<span class="s">"2"</span>));
@@ -634,7 +893,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </section>
 
 <section class="sec" id="architecture">
-  <div class="sec-head rv"><div><div class="idx">/ 08</div><h2>Frontend architecture</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 11</div><h2>Frontend architecture</h2></div>
   <div class="lead">Feature-based структура + слой API + TanStack Query. Кликай по слоям — справа детали и что говорить на интервью.</div></div>
   <div class="arch rv">
     <div class="layers" id="archLayers"></div>
@@ -643,13 +902,41 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </section>
 
 <section class="sec" id="slowapp">
-  <div class="sec-head rv"><div><div class="idx">/ 09</div><h2>«Приложение стало медленным»</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 12</div><h2>«Приложение стало медленным»</h2></div>
   <div class="lead">Классический ситуативный вопрос. Порядок шагов — это и есть ответ. <b>Measure first.</b></div></div>
   <div class="steps rv" id="stepsList"></div>
 </section>
 
+<section class="sec" id="webvitals">
+  <div class="sec-head rv"><div><div class="idx">/ 13</div><h2>Web Vitals & Security</h2></div>
+  <div class="lead">Senior мыслит метриками (Core Web Vitals) и угрозами. Кликни на карточку, чтобы увидеть диагноз и фикс.</div></div>
+  
+  <div class="grid3 rv" id="vitalsGrid"></div>
+
+  <div class="dd rv" style="margin-top:34px">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — XSS via dangerouslySetInnerHTML</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>xss-bad.tsx</div>
+      <pre class="code"><span class="k">function</span> <span class="f">Comment</span>({ text }) {
+  <span class="k">return</span> &lt;<span class="t">div</span> dangerouslySetInnerHTML={{__html: text}} /&gt;;
+}</pre>
+      <div class="dd-why">Если `text` приходит от пользователя, он может внедрить `&lt;script&gt;` или `onerror` атрибут. React экранирует текст по умолчанию, но этот хук отключает защиту.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — Sanitize or use Markdown</div>
+      <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>xss-good.tsx</div>
+      <pre class="code"><span class="k">import</span> DOMPurify <span class="k">from</span> <span class="s">'dompurify'</span>;
+
+<span class="k">function</span> <span class="f">Comment</span>({ text }) {
+  <span class="k">const</span> clean = DOMPurify.<span class="f">sanitize</span>(text);
+  <span class="k">return</span> &lt;<span class="t">div</span> dangerouslySetInnerHTML={{__html: clean}} /&gt;;
+}</pre>
+      <div class="dd-why">Всегда санитайзь HTML на клиенте (или, что лучше, на сервере) перед рендером. Либо используй AST-парсеры для Markdown.</div>
+    </div>
+  </div>
+  <p class="hint rv">JWT: никогда не храни в localStorage (уязвимо к XSS). Используй HttpOnly Secure Cookies. CSRF защищай через SameSite=Strict и CSRF-токены.</p>
+</section>
+
 <section class="sec" id="testing">
-  <div class="sec-head rv"><div><div class="idx">/ 10</div><h2>Testing</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 14</div><h2>Testing</h2></div>
   <div class="lead">Пирамида + философия React Testing Library: тестировать то, что видит и делает пользователь.</div></div>
   <div class="pyrwrap rv">
     <div class="pyr">
@@ -667,13 +954,32 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   </div>
 </section>
 
+<section class="sec" id="behavioral">
+  <div class="sec-head rv"><div><div class="idx">/ 15</div><h2>Behavioral & Leadership</h2></div>
+  <div class="lead">Senior — это не только код. STAR метод (Situation, Task, Action, Result) для ответов на софты.</div></div>
+  <div class="grid2 rv">
+    <div class="card lift">
+      <h4 style="color:var(--cyan);font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-bottom:10px">КОНФЛИКТЫ И ТЕХДОЛГ</h4>
+      <p style="font-size:13.5px;color:var(--mut)">«Расскажите о случае, когда вы не согласились с продактом/архитектором».<br><b>STAR:</b> Опиши контекст, свою задачу, <i>какие данные</i> ты собрал для аргументации (метрики, POC), и какой был бизнес-результат.</p>
+    </div>
+    <div class="card lift">
+      <h4 style="color:var(--amber);font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-bottom:10px">Менторство и влияние</h4>
+      <p style="font-size:13.5px;color:var(--mut)">«Как вы онбордите джунов или внедряете новые практики?».<br><b>STAR:</b> Фокус на масштабировании знаний (RFC, ADR, гайды, внутренние доклады), а не на микроменеджменте.</p>
+    </div>
+  </div>
+  <div class="card rv" style="margin-top:18px">
+    <h4 style="font-family:var(--mono);color:var(--cyan);font-size:13px;margin-bottom:12px">✍️ Твой STAR-шаблон (сохранится локально)</h4>
+    <textarea id="starNotes" style="width:100%;min-height:120px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:14px;color:var(--ink);font-family:var(--mono);font-size:13px;resize:vertical" placeholder="Situation: ...&#10;Task: ...&#10;Action: ...&#10;Result: ..."></textarea>
+  </div>
+</section>
+
 <section class="sec" id="practice">
-  <div class="sec-head rv"><div><div class="idx">/ 11</div><h2>Практические задачи</h2></div>
-  <div class="lead">Прорешай руками. Уровни Senior — это design-задачи, идеально ложащиеся на опыт с <b>wallet / payments / transactions</b>.</div></div>
+  <div class="sec-head rv"><div><div class="idx">/ 16</div><h2>Практические задачи</h2></div>
+  <div class="lead">Прорешай руками. Раскрой задачу: там требования, скелет кода и чек-лист «ключевого». Senior-уровень — design-задачи, ложащиеся на опыт с <b>wallet / payments / transactions</b>.</div></div>
   <div class="ptabs rv" id="pTabs">
     <button class="tabbtn active" data-t="easy">Easy · 8</button>
     <button class="tabbtn" data-t="medium">Medium · 8</button>
-    <button class="tabbtn" data-t="senior">Senior design · 7</button>
+    <button class="tabbtn" data-t="senior">Senior design · 9</button>
   </div>
   <div class="pbar rv"><i id="pBar"></i></div>
   <span class="hint" style="display:block;margin-bottom:16px" id="pCount"></span>
@@ -681,13 +987,13 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </section>
 
 <section class="sec" id="plan">
-  <div class="sec-head rv"><div><div class="idx">/ 12</div><h2>План на 4 недели</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 17</div><h2>План на 4 недели</h2></div>
   <div class="lead">Базу (JSX, props, «что такое компонент») пропускаем — у тебя уже есть реальный опыт. Отмечай закрытые темы.</div></div>
   <div class="weeks rv" id="weeks"></div>
 </section>
 
 <section class="sec" id="interview">
-  <div class="sec-head rv"><div><div class="idx">/ 13</div><h2>Mock Senior Interview</h2></div>
+  <div class="sec-head rv"><div><div class="idx">/ 18</div><h2>Mock Senior Interview</h2></div>
   <div class="lead">Вопросы по одному, сложность растёт: Junior → Middle → Senior → Staff. Ответь вслух, сверься, оцени себя честно.</div></div>
   <div class="iv-ctl rv">
     <select id="ivLevel">
@@ -702,7 +1008,7 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     <span class="iv-progress" id="ivProg"></span>
   </div>
   <div class="iv-card rv" id="ivCard">
-    <div class="iv-empty">// 18 вопросов · выбери уровень и нажми «Старт»<br>// правило: сначала ответь вслух, потом открывай ответ</div>
+    <div class="iv-empty">// 23 вопроса · выбери уровень и нажми «Старт»<br>// правило: сначала ответь вслух, потом открывай ответ</div>
   </div>
 </section>
 
@@ -913,7 +1219,7 @@ ITEMS.sort(function(){ return Math.random() - .5; }).forEach(function(it, i){
   c.draggable = true; c.id = "chip" + i;
   c.addEventListener("click", function(){
     if(c.classList.contains("locked")) return;
-    $$(".chip.sel").forEach(function(x){ x.classList.remove("sel"); });
+    $$("#pool .chip.sel, #b-server .chip.sel, #b-client .chip.sel").forEach(function(x){ x.classList.remove("sel"); });
     c.classList.add("sel"); selChip = c;
   });
   c.addEventListener("dragstart", function(e){ selChip = c; e.dataTransfer.setData("text", c.id); });
@@ -939,6 +1245,7 @@ function tryPlace(bucket){
   }
 }
 $$(".bucket").forEach(function(b){
+  if(b.id === "b-server-rsc" || b.id === "b-client-rsc") return;
   b.addEventListener("click", function(){ tryPlace(b); });
   b.addEventListener("dragover", function(e){ e.preventDefault(); b.classList.add("over"); });
   b.addEventListener("dragleave", function(){ b.classList.remove("over"); });
@@ -947,6 +1254,50 @@ $$(".bucket").forEach(function(b){
     var c = document.getElementById(e.dataTransfer.getData("text"));
     if(c) selChip = c;
     tryPlace(b);
+  });
+});
+
+/* ---------- RSC Sorter ---------- */
+var RSC_ITEMS = [
+  ["useState()","client"], ["fetch() / DB query","server"], ["onClick handler","client"],
+  ["fs.readFileSync()","server"], ["window.localStorage","client"], ["async data fetching","server"]
+];
+var selChipRsc = null, sortedRsc = 0;
+RSC_ITEMS.sort(function(){ return Math.random() - .5; }).forEach(function(it, i){
+  var c = document.createElement("span");
+  c.className = "chip"; c.textContent = it[0]; c.dataset.side = it[1];
+  c.draggable = true; c.id = "chip-rsc" + i;
+  c.addEventListener("click", function(){
+    if(c.classList.contains("locked")) return;
+    $$("#pool-rsc .chip.sel, #b-server-rsc .chip.sel, #b-client-rsc .chip.sel").forEach(function(x){ x.classList.remove("sel"); });
+    c.classList.add("sel"); selChipRsc = c;
+  });
+  c.addEventListener("dragstart", function(e){ selChipRsc = c; e.dataTransfer.setData("text", c.id); });
+  $("#pool-rsc").appendChild(c);
+});
+function tryPlaceRsc(bucket){
+  if(!selChipRsc || selChipRsc.classList.contains("locked")) return;
+  if(selChipRsc.dataset.side === bucket.dataset.side){
+    $(".chips", bucket).appendChild(selChipRsc);
+    selChipRsc.classList.remove("sel"); selChipRsc.classList.add("locked");
+    selChipRsc.draggable = false; selChipRsc = null;
+    sortedRsc++;
+    $("#sortScore-rsc").textContent = sortedRsc + "/6";
+    if(sortedRsc === 6) { $("#sortmsg-rsc").classList.add("win"); $("#sortmsg-rsc").innerHTML = "✓ 6/6 — граница сериализации понята. Функции и классы через пропсы не пройдут."; }
+  } else {
+    selChipRsc.classList.add("shake"); bucket.classList.add("flash-bad");
+    setTimeout(function(){ selChipRsc && selChipRsc.classList.remove("shake"); bucket.classList.remove("flash-bad"); }, 450);
+  }
+}
+$$("#b-server-rsc, #b-client-rsc").forEach(function(b){
+  b.addEventListener("click", function(){ tryPlaceRsc(b); });
+  b.addEventListener("dragover", function(e){ e.preventDefault(); b.classList.add("over"); });
+  b.addEventListener("dragleave", function(){ b.classList.remove("over"); });
+  b.addEventListener("drop", function(e){
+    e.preventDefault(); b.classList.remove("over");
+    var c = document.getElementById(e.dataTransfer.getData("text"));
+    if(c) selChipRsc = c;
+    tryPlaceRsc(b);
   });
 });
 
@@ -1059,25 +1410,140 @@ $$("#stepsList .step-h").forEach(function(h){
   h.addEventListener("click", function(){ h.parentElement.classList.toggle("open"); });
 });
 
-/* ---------- 11 practice ---------- */
+/* ---------- Web Vitals Triage ---------- */
+var VITALS = [
+  { sym: "Кнопка нажимается, но интерфейс 'зависает' на 300мс перед обновлением.", metric: "INP (Interaction to Next Paint)", fix: "Используй startTransition, выноси тяжёлые вычисления в Web Worker, дебаунсь ввод.", color: "var(--rose)" },
+  { sym: "При загрузке страницы текст сдвигается вниз, когда подгружается реклама или шрифт.", metric: "CLS (Cumulative Layout Shift)", fix: "Явно задавай width/height для изображений и слотов. Резервируй место через aspect-ratio.", color: "var(--amber)" },
+  { sym: "Главный экран (hero image) появляется слишком долго на медленном 4G.", metric: "LCP (Largest Contentful Paint)", fix: "preload критичных ресурсов, оптимизация TTFB (сервер/CDN), избегай блокирующих JS/CSS в head.", color: "var(--cyan)" }
+];
+$("#vitalsGrid").innerHTML = VITALS.map(function(v, i){
+  return '<div class="flash rv" style="transition-delay:' + (i * 60) + 'ms"><div class="in3d">' +
+    '<div class="face"><span class="cat">СИМПТОМ</span><span class="q" style="font-size:14px;color:var(--ink)">' + v.sym + '</span><span class="cat" style="color:var(--cyan)">диагноз →</span></div>' +
+    '<div class="face back"><span class="cat" style="color:' + v.color + '">' + v.metric + '</span><span class="q"><b>Фикс:</b> ' + v.fix + '</span><span class="cat">↺ обратно</span></div>' +
+    '</div></div>';
+}).join("");
+$$("#vitalsGrid .flash").forEach(function(f){ io.observe(f); f.addEventListener("click", function(){ f.classList.toggle("flipped"); }); });
+
+/* ---------- Behavioral Notes ---------- */
+$("#starNotes").value = store.get("starNotes", "");
+$("#starNotes").addEventListener("input", function(e){ store.set("starNotes", e.target.value); });
+
+/* ---------- 13 practice ---------- */
 var PRACTICE = {
-  easy: ["Counter","Todo List","Search с фильтрацией","Pagination","Modal","Accordion","Tabs","Dropdown"],
-  medium: ["Autocomplete","Debounced search","Infinite scroll","Data table","Multi-step form","File upload","Optimistic update","CRUD application"],
-  senior: ["Design a reusable DataTable","Design an autocomplete component","Design form architecture","Design notification system","Frontend architecture banking dashboard","Real-time transaction updates","Design permission system"]
+  easy: [
+    { t:"Counter", d:"Кнопки «+»/«−» и сброс. Счётчик не должен «отставать» на быстрой серии кликов и не должен дублироваться по стору.",
+      p:["функциональный апдейт setCount(prev => prev + 1) — клики в цикле не теряют инкременты","сброс — через функциональный апдейт или отдельный state, без forceUpdate","один источник правды: счётчик не копируется в ref, state и effect одновременно"],
+      code:{ name:"counter.tsx", html:"<span class=\"k\">const</span> handler = () =&gt; <span class=\"f\">setCount</span>(prev =&gt; prev + <span class=\"n\">1</span>);\n<span class=\"c\">// functional update — работает в цикле и на быстрых кликах</span>" } },
+    { t:"Todo List", d:"Добавить, удалить, переключить done. Список должен переживать удаление и перестановку без потери state и фокуса.",
+      p:["key = стабильный id, а не index — иначе при удалении середины съезжает state и фокус","иммутабельные апдейты: [...todos, item], todos.map / filter — без мутации исходного массива","toggle в одну строку через map и функциональный setState"] },
+    { t:"Search с фильтрацией", d:"Поле поиска + фильтрация списка. Результат должен считаться без лишнего рендера и без setState в эффекте.",
+      p:["вычислять отфильтрованный массив при render (или в useMemo), а не через useEffect + setState","нормализация: trim, toLowerCase, обработка пустой строки и отсутствия результатов","useMemo с deps [list, query], если массив большой"],
+      code:{ name:"search.tsx", html:"<span class=\"k\">const</span> filtered = <span class=\"f\">useMemo</span>(\n  () =&gt; list.<span class=\"f\">filter</span>(x =&gt; x.name.<span class=\"f\">toLowerCase</span>().<span class=\"f\">includes</span>(q)),\n  [list, q]\n);" } },
+    { t:"Pagination", d:"Список с пагинацией. Последняя страница не должна ломаться после удаления последнего элемента.",
+      p:["pageCount = Math.ceil(total / pageSize); если page > pageCount после удаления — корректировать","slice на каждый render — дёшево; ключи строк по id, а не по индексу среза","page / pageSize / total в одном месте; prev, next и переход на номер страницы"] },
+    { t:"Modal", d:"Модальное окно: открыть/закрыть, Esc, фокус-трап, блокировка скролла фона.",
+      p:["Esc и клик по оверлею закрывают; событие не должно «утекать» к элементам под модалкой","фокус входит в модалку и циклится по фокусируемым элементам; при закрытии возвращается на триггер","document.body overflow hidden + восстановление; portal, если родитель с overflow: hidden обрезает","a11y: role=dialog, aria-modal, aria-labelledby"] },
+    { t:"Accordion", d:"Раскрывающиеся секции. Поддержать режимы «один открытый» и «несколько открытых».",
+      p:["controlled vs uncontrolled: openIndex в родителе против локального open в секции","single-режим: открытие одной закрывает другую (или Set открытых)","не рендерить содержимое закрытых секций, если оно тяжёлое (lazy mount)"] },
+    { t:"Tabs", d:"Вкладки: переключение, сохранение активной вкладки, доступность.",
+      p:["activeTab в state (controlled) или defaultValue + внутренний state","lazy: не монтировать содержимое неактивной вкладки до первого открытия","a11y: role=tablist / tab / tabpanel, aria-selected, стрелки ←/→"] },
+    { t:"Dropdown", d:"Выпадающий список: открытие, клик вне, Esc, клавиатура.",
+      p:["закрытие по клику вне через document listener — здесь классически получается stale closure","Esc закрывает и возвращает фокус на триггер; стрелки — навигация по пунктам","позиционирование и слой поверх (portal), если родитель обрезает"] }
+  ],
+  medium: [
+    { t:"Autocomplete", d:"Поле с подсказками от сервера: debounce, гонка ответов, клавиатура.",
+      p:["гонка: старый ответ не должен перезаписать новый — AbortController или проверка актуальности запроса","debounce 200–300 мс + очистка таймера в cleanup эффекта","кэш запросов, чтобы не стрелять повторно; стрелки / Enter / Esc; aria-combobox"],
+      code:{ name:"autocomplete.tsx", html:"<span class=\"f\">useEffect</span>(() =&gt; {\n  <span class=\"k\">const</span> ctrl = <span class=\"k\">new</span> <span class=\"t\">AbortController</span>();\n  <span class=\"f\">fetch</span>(`/suggest?q=${q}`, { signal: ctrl.signal })\n    .<span class=\"f\">then</span>(r =&gt; r.<span class=\"f\">json</span>()).<span class=\"f\">then</span>(setItems).<span class=\"f\">catch</span>(() =&gt; {});\n  <span class=\"k\">return</span> () =&gt; ctrl.<span class=\"f\">abort</span>(); <span class=\"c\">// отменяет устаревший запрос</span>\n}, [q]);" } },
+    { t:"Debounced search", d:"Строка поиска с debounce: реализация и где чистить таймер.",
+      p:["setTimeout в эффекте + return () => clearTimeout — таймер умирает при новом вводе и на unmount","debounce против throttle: ждём паузу ввода, а не частоту событий","leading / trailing — решить, отвечать ли на первый символ сразу"] },
+    { t:"Infinite scroll", d:"Бесконечная подгрузка: когда подгружать, дедупликация, восстановление позиции.",
+      p:["IntersectionObserver на sentinel-элементе вместо scroll-листенера с rAF","cursor-based пагинация и дедуп по id, чтобы «догоняющие» апдейты не дублировали строки","восстановление позиции при возврате; не сбрасывать список при обновлении","TanStack Query: fetchNextPage + isFetchingNextPage — писать руками не нужно"] },
+    { t:"Data table", d:"Таблица с сортировкой/фильтрацией/пагинацией без деградации на больших данных.",
+      p:["сортировка и фильтрация — в useMemo, не в render-эффект; стабильные ссылки в props строк","виртуализация (windowing) для больших списков","controlled/uncontrolled, режимы server-side / client-side; ключи строк по id"] },
+    { t:"Multi-step form", d:"Волшебник из шагов: валидация на шаг, сохранение данных между шагами, «Назад».",
+      p:["одна модель данных формы; «Назад» не теряет введённое","валидация текущего шага при Next; фокус на первый инпут нового шага","синхронизация шага с URL (query param), если нужен browser back","никаких «копий» формы в каждом шаге — единый контейнер"] },
+    { t:"File upload", d:"Загрузка файла: прогресс, отмена, retry, обработка ошибок.",
+      p:["прогресс из xhr.onprogress или ReadableStream — в state, но троттлить","отмена через AbortController; retry с экспоненциальным backoff","превью через URL.createObjectURL + revokeObjectURL; крупные файлы — потоковая загрузка"] },
+    { t:"Optimistic update", d:"Сначала показать успех, потом подтвердить сервером. Что делать при ошибке.",
+      p:["onMutate → setQueryData (оптимистично), onError → откат на snapshot, onSettled → invalidate","снимок состояния до мутации и возврат к нему — не «ручной пересчёт»","гонки: несколько параллельных optimistic-мутаций — очередь и повторная синхронизация"],
+      code:{ name:"optimistic.tsx", html:"<span class=\"k\">const</span> mutation = <span class=\"f\">useMutation</span>(updateTx, {\n  onMutate: <span class=\"k\">async</span> (patch) =&gt; {\n    <span class=\"k\">await</span> queryClient.<span class=\"f\">cancelQueries</span>({ queryKey: [<span class=\"s\">\"tx\"</span>, id] });\n    <span class=\"k\">const</span> prev = queryClient.<span class=\"f\">getQueryData</span>([<span class=\"s\">\"tx\"</span>, id]);\n    queryClient.<span class=\"f\">setQueryData</span>([<span class=\"s\">\"tx\"</span>, id], { ...prev, ...patch });\n    <span class=\"k\">return</span> { prev };\n  },\n  onError: (_, __, ctx) =&gt; queryClient.<span class=\"f\">setQueryData</span>([<span class=\"s\">\"tx\"</span>, id], ctx.prev),\n  onSettled: () =&gt; queryClient.<span class=\"f\">invalidateQueries</span>({ queryKey: [<span class=\"s\">\"tx\"</span>] })\n});" } },
+    { t:"CRUD application", d:"Полный CRUD против API: где серверный state, где клиентский.",
+      p:["данные → TanStack Query (кэш), формы → локальный state; список не дублируется в сторе","после create/update/delete → invalidateQueries нужных ключей","error/loading на каждую операцию; optimistic где уместно; защита от двойного сабмита"] }
+  ],
+  senior: [
+    { t:"Design a reusable DataTable", d:"Спроектировать переиспользуемую таблицу: API, режимы, производительность, доступность.",
+      p:["API: columns + data; controlled/uncontrolled для сортировки, фильтрации, пагинации","server-side и client-side режимы; column config: sortable, align, width, render","виртуализация для больших данных; состояния loading/error/empty","a11y: aria-sort, роли, клавиатура; адаптер вместо жёсткой привязки к конкретной библиотеке","назови trade-offs: контроль над рендером против «магии» библиотеки"] },
+    { t:"Design an autocomplete component", d:"Полный дизайн: источники, debounce, кэш, гонки, доступность combobox.",
+      p:["item-рендер через слот/render-prop; источник — функция (async source), а не вшитый fetch","AbortController против гонок; debounce; кэш запросов; пустые состояния","ARIA combobox: aria-expanded, aria-activedescendant, стрелки / Enter / Esc","контроль фокуса и очистки; виртуализация длинного списка подсказок"] },
+    { t:"Design form architecture", d:"Форма уровня production: схема, валидация, серверные ошибки, submit-флоу.",
+      p:["одна схема/модель; валидация по полю и при сабмите; dirty / touched / errors","маппинг DTO → доменные поля → DTO при отправке; типы через discriminated union","серверные ошибки (400 с полями) — в errors формы, не в console","библиотека (React Hook Form / Formik) против своей реализации — назови границы и trade-offs"] },
+    { t:"Design notification system", d:"Тосты/уведомления: очередь, приоритеты, размещение, доступность.",
+      p:["менеджер очереди вне дерева компонентов (императивный API + подписка), рендер через portal","приоритеты и лимит одновременно видимых уведомлений","aria-live для screen readers; анимации входа/выхода","id + auto-dismiss по таймауту; очередь переживает re-render"] },
+    { t:"Frontend architecture banking dashboard", d:"Архитектура дашборда: структура, данные, real-time, permissions, производительность.",
+      p:["feature-based структура + слои Pages/Features/Shared/API; фичи не импортируют друг друга","TanStack Query для серверных данных; real-time — в кэш, не в локальный state","permissions и route guards; error boundaries и единый loading/error handling","производительность: профилирование, code-splitting, виртуализация","что НЕ делать: бизнес-логика в компонентах, серверные данные в глобальном сторе"] },
+    { t:"Real-time transaction updates", d:"Обновления транзакций кошелька в реальном времени.",
+      p:["WebSocket/SSE + reconnect с экспоненциальным backoff и heartbeat","события мержить в кэш TanStack Query (setQueryData / invalidate), а не рисовать напрямую","порядок и дедупликация событий; троттлинг всплесков","после дисконнекта — догоняющая синхронизация от курсора; optimistic-конфликты"],
+      code:{ name:"realtime.tsx", html:"ws.<span class=\"f\">onmessage</span> = (e) =&gt; {\n  <span class=\"k\">const</span> evt = <span class=\"t\">JSON</span>.<span class=\"f\">parse</span>(e.data);\n  queryClient.<span class=\"f\">setQueryData</span>([<span class=\"s\">\"tx\"</span>, id], (old) =&gt; <span class=\"f\">merge</span>(old, evt));\n};" } },
+    { t:"Design permission system", d:"Разграничение доступа на фронтенде: где источник правды и как UI не разъезжается.",
+      p:["источник правды — сервер; фронтенд делает UX, а не безопасность","usePermission() + компонент Can; route guards; скрытие против disabled","единая точка проверки прав; пересчёт при смене роли","кэш permission-запросов; fallback при отсутствии прав (redirect / 404)"],
+      code:{ name:"can.tsx", html:"<span class=\"k\">function</span> <span class=\"f\">Can</span>({ perm, children }) {\n  <span class=\"k\">const</span> ok = <span class=\"f\">usePermission</span>(perm); <span class=\"c\">// из контекста прав</span>\n  <span class=\"k\">return</span> ok ? children : <span class=\"k\">null</span>;\n}" } },
+    { t:"Design RSC Architecture", d:"Спроектировать архитектуру дашборда на Next.js App Router с учетом RSC и Client Components.",
+      p:["Выделить data-fetching и тяжелые запросы в Server Components для уменьшения бандла","Использовать Client Components ('use client') только для интерактивных виджетов (графики, формы)","Проброс данных через сериализуемые пропсы; избегать передачи функций из RSC в Client","Использовать Streaming и Suspense для постепенной отрисовки тяжелых частей дашборда"] },
+    { t:"Secure Payment Form", d:"Форма оплаты: как защитить от XSS, CSRF и перехвата данных.",
+      p:["Никакого dangerouslySetInnerHTML; санитайзинг всех полей","Токены сессии в HttpOnly Secure Cookies, защита от CSRF через SameSite=Strict","PCI DSS compliance: никогда не логировать и не хранить PAN (номер карты) в state/localStorage","Использование iframe или SDK платежного шлюза (Stripe Elements) для изоляции полей ввода"] }
+  ]
 };
+function exCode(c){
+  if(!c) return "";
+  return '<div class="codehead"><span class="dots"><i></i><i></i><i></i></span>' + c.name + '</div>' +
+         '<pre class="code">' + c.html + '</pre>';
+}
 $("#pLists").innerHTML = Object.keys(PRACTICE).map(function(k){
-  return '<div class="plist tabpanel' + (k === "easy" ? ' active' : '') + '" data-p="' + k + '">' +
-    PRACTICE[k].map(function(t, i){
-      return '<label class="task"><input type="checkbox" data-box="p-' + k + '-' + i + '"><span class="box">✓</span><span class="lbl">' + t + '</span></label>';
+  return '<div class="plist tabpanel' + (k === "easy" ? " active" : "") + '" data-p="' + k + '">' +
+    PRACTICE[k].map(function(ex, i){
+      return '<div class="ex">' +
+        '<div class="ex-h">' +
+          '<span class="ex-t">' + ex.t + '</span>' +
+          '<label class="ex-chk"><input type="checkbox" data-box="p-' + k + '-' + i + '"><span class="box">✓</span></label>' +
+          '<button class="ex-chev" aria-label="развернуть">▶</button>' +
+        '</div>' +
+        '<div class="ex-b"><div class="in">' +
+          '<h5>Задача</h5><p>' + ex.d + '</p>' +
+          exCode(ex.code) +
+          '<h5>Что проверить / ключевое</h5><ul>' +
+          ex.p.map(function(x){ return '<li>' + x + '</li>'; }).join("") +
+          '</ul>' +
+        '</div></div>' +
+      '</div>';
     }).join("") + '</div>';
 }).join("");
+/* expand / collapse + checkbox styling */
+$("#pLists").addEventListener("click", function(e){
+  var t = e.target;
+  if(t.closest(".ex-chk")) return;                 // чекбокс — без аккордеона
+  if(t.closest(".ex-chev")){                       // шеврон — переключить
+    t.closest(".ex").classList.toggle("open"); return;
+  }
+  var h = t.closest(".ex-h");                      // клик по строке — переключить
+  if(h) h.closest(".ex").classList.toggle("open");
+});
+$("#pLists").addEventListener("change", function(e){
+  if(e.target.matches("[data-box]")) e.target.closest(".ex").classList.toggle("ex-checked", e.target.checked);
+});
+/* практика рендерится ПОСЛЕ глобального restore() — восстановить прогресс отдельно */
+(function(){
+  var b = store.get("boxes", {});
+  $$("#pLists [data-box]").forEach(function(el){
+    if(b[el.dataset.box]){ el.checked = true; el.closest(".ex").classList.add("ex-checked"); }
+  });
+})();
 
 /* ---------- 12 plan ---------- */
 var WEEKS = [
-  ["WEEK 1 · RUNTIME",["React rendering","Hooks deep-dive","Closures & scope","Effects & lifecycles","Event loop"]],
+  ["WEEK 1 · RUNTIME",["React rendering","Hooks deep-dive","RSC & Concurrent","Closures & scope","Event loop"]],
   ["WEEK 2 · DATA & SPEED",["State management","TanStack Query","Performance","TypeScript patterns","Browser APIs"]],
-  ["WEEK 3 · SYSTEM",["React architecture","Testing","Security (XSS/CSRF/CSP)","Frontend system design","Real-world scenarios"]],
-  ["WEEK 4 · PRACTICE",["Coding exercises","React debugging","System design drills","Mock interviews"]]
+  ["WEEK 3 · SYSTEM & SEC",["React architecture","Web Vitals (INP/LCP/CLS)","Security (XSS/CSRF/JWT)","Frontend system design","Real-world scenarios"]],
+  ["WEEK 4 · PRACTICE & SOFT",["Coding exercises","Behavioral (STAR prep)","System design drills","Mock interviews"]]
 ];
 $("#weeks").innerHTML = WEEKS.map(function(w, wi){
   return '<div class="card week"><div class="wnum">// ' + w[0] + '</div>' +
@@ -1102,10 +1568,15 @@ var QB = [
   {lvl:"senior",q:"Почему серверный state не стоит хранить в Redux / MobX?",a:"Серверные данные — это кэш со своими задачами: синхронизация, инвалидация, retry, stale-while-revalidate, гонки запросов. Храня их в клиент-сторе, ты пишешь TanStack Query вручную. Разделение: server state → Query, UI state → Zustand/Redux/MobX."},
   {lvl:"senior",q:"Optimistic update: как реализовать и где он ломается?",a:"Меняем кэш до ответа сервера (onMutate), при ошибке — откат на snapshot. Ломается на: гонках ответов, нескольких параллельных оптимистичных мутациях, потере соединения, отсутствии rollback. Нужны queue мутаций и повторная синхронизация."},
   {lvl:"senior",q:"Context: почему ре-рендерятся все потребители и как с этим жить?",a:"Изменение value ре-рендерит всех useContext-потребителей под провайдером. Меры: разделить контексты (state / actions), memo провайдера, выносить частый state из контекста, либо селекторы через useSyncExternalStore / zustand."},
+  {lvl:"senior",q:"В чём разница между React Server Components и Client Components? Где проходит граница сериализации?",a:"RSC выполняются на сервере, не имеют доступа к браузерным API и хукам состояния. Они могут передавать пропсы клиентским компонентам, но эти пропсы должны быть сериализуемы (JSON). Функции, классы и Date объекты передавать нельзя. Client Components ('use client') — это обычный React, который гидратируется в браузере."},
+  {lvl:"senior",q:"Что такое Core Web Vitals (INP, LCP, CLS) и как ты будешь оптимизировать INP в React-приложении?",a:"INP измеряет задержку от клика до следующего кадра (отзывчивость). LCP — скорость загрузки главного элемента. CLS — визуальная стабильность. Для INP: избегать Long Tasks (>50ms), использовать startTransition для неблокирующих обновлений, выносить тяжёлые вычисления в Web Workers, дебаунсить инпуты."},
+  {lvl:"senior",q:"Как защитить React-приложение от XSS и CSRF? Где хранить JWT?",a:"XSS: никогда не использовать dangerouslySetInnerHTML без санитайзера (DOMPurify). CSRF: использовать SameSite=Strict cookies и CSRF-токены. JWT: НИКОГДА в localStorage (уязвимо к XSS). Только в HttpOnly Secure Cookies, чтобы JS не мог их прочитать."},
   {lvl:"staff",q:"Design a reusable DataTable.",a:"API: columns, data, controlled/uncontrolled режимы сортировки-фильтрации-пагинации; серверный vs клиентский режим; row virtualization для больших данных; состояния loading/error/empty; column config и density; доступность (aria-sort, keyboard nav); адаптер вместо привязки к конкретному API."},
   {lvl:"staff",q:"Real-time обновления транзакций в кошельке.",a:"Канал: WebSocket/SSE с reconnect + exponential backoff. События не рисуем напрямую, а мержим в кэш TanStack Query (setQueryData / invalidate). Обязательно: троттлинг всплесков событий, порядок и дедупликация, догоняющая синхронизация от курсора после дисконнекта, optimistic-конфликты."},
   {lvl:"staff",q:"Система permissions на фронтенде.",a:"Permissions приходят с сервера — фронтенд только UX, а не защита. Слой: usePermission() + компонент Can; route guards; скрытие и disabled-состояния. Единая точка проверки, чтобы UI не расходился; настоящая авторизация — всегда на backend."},
-  {lvl:"staff",q:"«Наше приложение стало медленным» — план действий.",a:"Measure first: Profiler + Performance tab + Lighthouse → локализовать сценарий. Затем: лишние рендеры (why rendered), тяжёлые вычисления, network waterfall, размер бандла. Точечные фиксы (изоляция state, memo, lazy, virtualization, кэш) и повторный замер. Не начинать с «useMemo везде»."}
+  {lvl:"staff",q:"«Наше приложение стало медленным» — план действий.",a:"Measure first: Profiler + Performance tab + Lighthouse → локализовать сценарий. Затем: лишние рендеры (why rendered), тяжёлые вычисления, network waterfall, размер бандла. Точечные фиксы (изоляция state, memo, lazy, virtualization, кэш) и повторный замер. Не начинать с «useMemo везде»."},
+  {lvl:"staff",q:"Как бы ты спроектировал систему микрофронтендов для крупного e-commerce? Какие trade-offs?",a:"Module Federation (Webpack/Vite) для shared dependencies. Разделение по доменам (Catalog, Cart, Checkout). trade-offs: сложность CI/CD, дублирование бандла, версионирование общих UI-китов, проблемы с глобальным state и роутингом. Альтернатива: серверная сборка (SSI) или iframe для строгой изоляции."},
+  {lvl:"staff",q:"Твой команда хочет переписать легаси-модуль на новый стек, но бизнес требует фичи. Как поступишь?",a:"Стратегия Strangler Fig: постепенно заменять части легаси новыми компонентами, оборачивая их в адаптеры. Доказать ценность через метрики (скорость разработки, баги). Выделять 20% времени на техдолг в каждом спринте. Не делать 'big bang' rewrite."}
 ];
 var ORDER = {junior:0, middle:1, senior:2, staff:3};
 var queue = [], qi = 0, ratings = {}, weak = [];
