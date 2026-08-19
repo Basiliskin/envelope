@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senior Node.js — Runtime Deep Dive · Interactive Field Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070a10; --panel:#0d1219; --panel2:#111826; --line:#1d2839; --line2:#2a3a52;
+  --text:#dce3ee; --dim:#8a97ab; --faint:#5c6a80;
+  --t1:#ff5c5c; --t2:#ffa245; --t3:#ffd23f; --t4:#4da3ff; --t5:#3ddc84;
+  --good:#46d68c; --bad:#ff6b6b;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --disp:'Bricolage Grotesque',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--text); font:15px/1.65 'IBM Plex Sans',system-ui,sans-serif;
+  background-image:
+    radial-gradient(1000px 620px at 88% -8%, rgba(77,163,255,.09), transparent 60%),
+    radial-gradient(900px 700px at -8% 32%, rgba(255,162,69,.07), transparent 55%),
+    radial-gradient(760px 560px at 70% 110%, rgba(61,220,132,.06), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(148,170,200,.035) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(148,170,200,.035) 0 1px, transparent 1px 44px);
+  background-attachment:fixed;
+}
+::selection{background:rgba(255,162,69,.35)}
+/* packet traffic strip */
+.traffic{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;background:rgba(255,255,255,.04);overflow:hidden}
+.traffic i{position:absolute;top:0;height:100%;width:70px;border-radius:3px;filter:blur(1px);animation:pk linear infinite}
+@keyframes pk{from{transform:translateX(-90px)}to{transform:translateX(110vw)}}
+/* ---------- sidebar ---------- */
+#sidebar{position:fixed;top:0;left:0;bottom:0;width:252px;z-index:50;background:rgba(10,14,22,.94);border-right:1px solid var(--line);padding:22px 0 40px;overflow-y:auto;transition:transform .3s}
+#sidebar::-webkit-scrollbar{width:6px}#sidebar::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+.brand{padding:0 20px 16px;border-bottom:1px solid var(--line)}
+.brand .logo{font-family:var(--mono);font-weight:700;font-size:17px;letter-spacing:-.5px}
+.brand .logo em{color:var(--t2);font-style:normal}
+.brand .sub{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px}
+.prog{margin:14px 20px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.prog .pt{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.pbar{height:5px;background:var(--line);border-radius:3px;margin-top:7px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--t2),var(--t5));transition:width .4s}
+.ngrp{padding:14px 12px 4px}
+.ngrp .gh{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--faint);padding:0 8px 6px}
+.ngrp .gh b{font-weight:700}
+.nav a{display:flex;gap:9px;align-items:center;padding:6px 9px;border-radius:6px;color:var(--dim);text-decoration:none;font-size:13px;transition:.15s;border-left:2px solid transparent}
+.nav a:hover{color:var(--text);background:rgba(255,255,255,.04);transform:translateX(2px)}
+.nav a.on{color:#fff;background:rgba(255,255,255,.05)}
+.nav a .n{font-family:var(--mono);font-size:10px;width:22px;color:var(--faint)}
+.d{width:7px;height:7px;border-radius:50%;flex:none}
+.d1{background:var(--t1)}.d2{background:var(--t2)}.d3{background:var(--t3)}.d4{background:var(--t4)}.d5{background:var(--t5)}.d0{background:var(--dim)}
+#menuBtn{display:none;position:fixed;top:12px;left:12px;z-index:70;background:var(--panel2);border:1px solid var(--line2);color:var(--text);font:13px var(--mono);padding:8px 12px;border-radius:8px;cursor:pointer}
+#backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:45}
+/* ---------- main ---------- */
+main{margin-left:252px;padding:70px 44px 60px;max-width:1080px}
+section{scroll-margin-top:24px}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+/* masthead */
+.mast{display:grid;grid-template-columns:1.02fr .98fr;gap:36px;align-items:center;padding:26px 0 46px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--t2);margin-bottom:14px}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(2.1rem,4.4vw,3.6rem);line-height:1.06;letter-spacing:-1px}
+h1 .g{color:var(--t5)} h1 .o{color:var(--t2)}
+.lede2{color:var(--dim);margin:18px 0 22px;max-width:52ch}
+.stats{display:flex;gap:26px;font-family:var(--mono);font-size:12px;color:var(--faint);flex-wrap:wrap}
+.stats b{display:block;font-size:21px;color:var(--text);font-family:var(--disp)}
+.stats b span{color:var(--t2)}
+/* terminal */
+.term{background:#0a0f16;border:1px solid var(--line2);border-radius:10px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.tbar{display:flex;align-items:center;gap:7px;padding:9px 13px;background:#10161f;border-bottom:1px solid var(--line)}
+.cdot{width:10px;height:10px;border-radius:50%}.cdot.r{background:#ff5f56}.cdot.y{background:#ffbd2e}.cdot.g{background:#27c93f}
+.tname{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:6px}
+.tbody{padding:15px 16px 17px;font-family:var(--mono);font-size:12.8px}
+.tbody pre{white-space:pre-wrap;margin-bottom:10px}
+.hchips{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+.hchip{font-family:var(--mono);font-size:12px;background:var(--panel2);border:1px solid var(--line2);color:var(--text);padding:6px 10px;border-radius:6px;cursor:pointer;transition:.15s}
+.hchip:hover:not(:disabled){border-color:var(--t2);transform:translateY(-2px);box-shadow:0 4px 12px rgba(255,162,69,.18)}
+.hchip.used{opacity:.3;pointer-events:none}
+.hguess{min-height:26px;font-size:12px;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.gsel{background:rgba(77,163,255,.12);border:1px solid rgba(77,163,255,.4);color:#bcd9ff;padding:2px 8px;border-radius:5px;font-size:11px}
+.gdim{color:var(--faint);font-style:italic}
+.hout{margin-top:8px;min-height:8px}
+.hline{padding:3px 0;animation:pop .3s}
+.hord{display:inline-block;width:20px;color:var(--t2);font-weight:700}
+.hbadge{font-size:10px;color:var(--faint);border:1px solid var(--line);padding:1px 7px;border-radius:20px;margin-left:8px}
+.hverdict{margin-top:10px;font-size:12.5px;color:var(--dim);min-height:18px}
+.hverdict.win{color:var(--good)}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* buttons */
+.btn{font:600 11.5px var(--mono);letter-spacing:.6px;text-transform:uppercase;color:var(--text);background:var(--panel2);border:1px solid var(--line2);border-radius:7px;padding:9px 15px;cursor:pointer;transition:.15s;text-decoration:none;display:inline-block}
+.btn:hover{transform:translateY(-2px);border-color:var(--t2);box-shadow:0 6px 18px rgba(255,162,69,.16)}
+.btn:active{transform:translateY(0)}
+.btn.acc{background:var(--t2);border-color:var(--t2);color:#1b1206}
+.btn.acc:hover{box-shadow:0 6px 20px rgba(255,162,69,.4)}
+.btn.grn{background:var(--t5);border-color:var(--t5);color:#06231a}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn.sm{padding:6px 11px;font-size:10.5px}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:12px}
+/* tier bands */
+.tierband{display:flex;gap:22px;align-items:center;margin:74px 0 34px;padding:22px 26px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(120deg,rgba(255,255,255,.03),transparent 60%);position:relative;overflow:hidden}
+.tierband::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tc)}
+.tierband .big{font-family:var(--disp);font-weight:800;font-size:56px;line-height:1;color:transparent;-webkit-text-stroke:1.4px var(--tc);opacity:.85;flex:none}
+.tierband h2{font-family:var(--disp);font-size:24px;letter-spacing:-.4px}
+.tierband p{color:var(--dim);font-size:13.5px}
+.t1b{--tc:var(--t1)} .t2b{--tc:var(--t2)} .t3b{--tc:var(--t3)} .t4b{--tc:var(--t4)} .t5b{--tc:var(--t5)}
+/* topic headers */
+.thead{margin-bottom:22px}
+.tag{font:700 10.5px var(--mono);letter-spacing:1.6px;padding:4px 11px;border-radius:20px;border:1px solid;vertical-align:middle}
+.tag.t1{color:var(--t1);border-color:rgba(255,92,92,.5);background:rgba(255,92,92,.08)}
+.tag.t2{color:var(--t2);border-color:rgba(255,162,69,.5);background:rgba(255,162,69,.08)}
+.tag.t3{color:var(--t3);border-color:rgba(255,210,63,.45);background:rgba(255,210,63,.07)}
+.tag.t4{color:var(--t4);border-color:rgba(77,163,255,.5);background:rgba(77,163,255,.08)}
+.tag.t5{color:var(--t5);border-color:rgba(61,220,132,.5);background:rgba(61,220,132,.08)}
+.thead h2{font-family:var(--disp);font-weight:800;font-size:clamp(1.7rem,3vw,2.4rem);letter-spacing:-.6px;margin:12px 0 8px}
+.thead .lede{color:var(--dim);max-width:70ch}
+.topic{margin-bottom:78px}
+h3.blk{font-family:var(--disp);font-size:17.5px;margin:30px 0 12px;letter-spacing:-.2px}
+h3.blk::before{content:'▸ ';color:var(--t2)}
+p.tx{color:#b9c4d4;margin:10px 0;max-width:78ch}
+ul.tx{margin:8px 0 8px 20px;color:#b9c4d4;max-width:78ch}
+ul.tx li{margin:5px 0}
+b.k{color:#fff}
+/* code windows */
+.codewin{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#0a0f16;margin:14px 0}
+.cbar{display:flex;align-items:center;gap:7px;padding:7px 12px;background:#0f1520;border-bottom:1px solid var(--line)}
+.cname{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px;flex:1}
+.copy{font:10.5px var(--mono);background:none;border:1px solid var(--line2);color:var(--dim);border-radius:5px;padding:3px 9px;cursor:pointer;transition:.15s}
+.copy:hover{color:var(--t2);border-color:var(--t2)}
+pre.src{padding:14px 16px;overflow-x:auto;font:12.8px/1.7 var(--mono);tab-size:2;white-space:pre}
+pre.mini{font-size:11.8px;padding:10px 13px}
+code.il{font:12.5px var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 7px;color:#ffd9a8}
+/* syntax tokens */
+.tkw{color:#c678dd}.tstr{color:#98c379}.tnum{color:#d19a66}.tfn{color:#61afef}.tty{color:#e5c07b}.tcm{color:#5c6a80;font-style:italic}
+/* do / dont */
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+.dd-col{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:rgba(255,255,255,.015)}
+.dd-col .codewin{margin:0;border:none;border-radius:0}
+.dd-h{font:700 11px var(--mono);letter-spacing:1.5px;padding:8px 14px}
+.dd-col.bad .dd-h{color:var(--bad);background:rgba(255,107,107,.08);border-bottom:1px solid rgba(255,107,107,.2)}
+.dd-col.good .dd-h{color:var(--good);background:rgba(70,214,140,.08);border-bottom:1px solid rgba(70,214,140,.2)}
+.dd-col.bad{border-top:3px solid var(--bad)}
+.dd-col.good{border-top:3px solid var(--good)}
+.dd-why{padding:10px 14px;font-size:12.8px;color:var(--dim)}
+/* labs */
+.lab{border:1px solid var(--line2);border-radius:10px;background:linear-gradient(180deg,#0c121c,#0a0f17);margin:18px 0;overflow:hidden}
+.lab-h{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);font:700 12px var(--mono);letter-spacing:1.4px;color:var(--text)}
+.lab-h .pulse{width:8px;height:8px;border-radius:50%;background:var(--t5);animation:pl 1.6s infinite}
+@keyframes pl{0%,100%{box-shadow:0 0 0 0 rgba(61,220,132,.5)}50%{box-shadow:0 0 0 6px rgba(61,220,132,0)}}
+.lab-h .ls{color:var(--faint);font-weight:400;letter-spacing:.3px;margin-left:auto;font-size:11px}
+.lab-b{padding:16px}
+.ctl{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font:12px var(--mono);color:var(--dim);margin-bottom:12px}
+.ctl label{display:flex;gap:8px;align-items:center}
+input[type=range]{accent-color:var(--t2);width:130px}
+input[type=text],select{font:12.5px var(--mono);background:var(--panel2);color:var(--text);border:1px solid var(--line2);border-radius:6px;padding:7px 10px;outline:none}
+input[type=text]:focus,select:focus{border-color:var(--t2)}
+input[type=checkbox]{accent-color:var(--t2);width:15px;height:15px}
+.mlog{font:11.8px var(--mono);color:var(--dim);background:#080c12;border:1px solid var(--line);border-radius:7px;padding:9px 12px;margin-top:12px;max-height:130px;overflow-y:auto}
+.mlog div{padding:1.5px 0;animation:pop .25s}
+/* signal callout */
+.signal{border:1px solid rgba(255,162,69,.35);border-left:4px solid var(--t2);background:rgba(255,162,69,.06);border-radius:8px;padding:13px 17px;margin:18px 0;font-size:13.5px;color:#e8d9c4}
+.signal b{color:var(--t2);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;display:block;margin-bottom:4px}
+/* grids & tables */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.015);padding:15px 17px;transition:.2s}
+.card:hover{border-color:var(--line2);transform:translateY(-2px)}
+.card h4{font-family:var(--disp);font-size:15px;margin-bottom:6px}
+.card p{font-size:12.8px;color:var(--dim)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0}
+.tbl th{font:700 11px var(--mono);letter-spacing:1px;color:var(--t2);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line2)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);color:#b9c4d4;vertical-align:top}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl td:first-child{font-family:var(--mono);color:#fff;white-space:nowrap}
+/* promise lab */
+.plrow{display:flex;gap:12px;align-items:center;font:12px var(--mono);padding:7px 0;border-bottom:1px dashed var(--line)}
+.plname{width:30px;color:var(--dim)}
+.plst{font:11px var(--mono);border-radius:6px;padding:5px 10px;cursor:pointer;border:1px solid;background:transparent;min-width:104px}
+.plst.ok{color:var(--good);border-color:rgba(70,214,140,.5);background:rgba(70,214,140,.07)}
+.plst.bad{color:var(--bad);border-color:rgba(255,107,107,.5);background:rgba(255,107,107,.07)}
+.plms{color:var(--faint);font-size:11px}
+.pbar{display:flex;align-items:center;gap:10px;font:11px var(--mono);color:var(--dim);margin:7px 0}
+.pbar>span{width:26px}
+.ptrack{flex:1;height:12px;background:#0a0e15;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.pfill{height:100%;width:0;border-radius:5px;transition:width linear;background:#3a465c}
+.pfill.ok{background:linear-gradient(90deg,#2b8a5e,var(--good))}
+.pfill.bad{background:linear-gradient(90deg,#a33,#ff6b6b)}
+.pres{display:grid;grid-template-columns:150px 1fr;gap:4px 14px;font:12px var(--mono);margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.pres .pn{color:var(--t4)}.pres .pv{color:#b9c4d4}.pres .px{grid-column:2;color:var(--faint);font-size:11px;margin-bottom:6px}
+.ptabs{display:flex;gap:6px;margin:16px 0 0;flex-wrap:wrap}
+.ptab{font:11px var(--mono);padding:6px 13px;border:1px solid var(--line2);border-radius:6px 6px 0 0;background:transparent;color:var(--dim);cursor:pointer}
+.ptab.on{color:var(--t2);border-color:var(--t2);border-bottom-color:transparent;background:#0a0f16}
+.ppane{border:1px solid var(--line);border-radius:0 8px 8px 8px;padding:4px 14px 12px;background:#0a0f16}
+.ppane p{font-size:12.5px;color:var(--dim);margin:10px 0 2px}
+/* gantt */
+.grow{display:flex;align-items:center;gap:10px;margin:5px 0}
+.glab{font:10.5px var(--mono);color:var(--faint);width:32px;flex:none}
+.gtrack{flex:1;position:relative;height:14px;background:#0a0e15;border:1px solid var(--line);border-radius:4px}
+.gbar{position:absolute;top:1px;bottom:1px;width:0;border-radius:3px;background:#3a465c}
+.gbar.run{background:linear-gradient(90deg,#c77b2e,var(--t2));box-shadow:0 0 8px rgba(255,162,69,.4)}
+.gbar.done{background:linear-gradient(90deg,#2b8a5e,var(--good))}
+.gms{font:10px var(--mono);color:var(--faint);width:52px;flex:none;text-align:right}
+#gStats{font:12px var(--mono);color:var(--dim);margin-top:12px}
+#gStats b{color:var(--t2)}
+/* backpressure gauge */
+.bpgauge{position:relative;height:34px;background:#0a0e15;border:1px solid var(--line2);border-radius:7px;overflow:hidden;margin:10px 0}
+.bpfill{height:100%;width:0;background:linear-gradient(90deg,#2b8a5e,#46d68c);transition:width .12s linear}
+.bpfill.warm{background:linear-gradient(90deg,#c77b2e,var(--t2))}
+.bpfill.hot{background:linear-gradient(90deg,#a33,var(--bad))}
+.bphwm{position:absolute;top:0;bottom:0;left:70%;width:2px;background:rgba(255,210,63,.7)}
+.bphwm::after{content:'highWaterMark';position:absolute;top:-1px;left:6px;font:9px var(--mono);color:var(--t3)}
+#bpLvl{font:12px var(--mono);color:var(--dim)}
+#bpCrash{margin-top:10px;padding:10px 14px;border:1px solid var(--bad);background:rgba(255,107,107,.1);border-radius:8px;font:12.5px var(--mono);color:var(--bad);animation:pop .3s}
+/* memory meter */
+.lkmeter{display:flex;height:30px;border:1px solid var(--line2);border-radius:7px;overflow:hidden;background:#0a0e15;margin:12px 0}
+#lkR{background:linear-gradient(90deg,#a33,var(--bad));transition:width .3s}
+#lkG{background:repeating-linear-gradient(45deg,#3a465c 0 6px,#2c3648 6px 12px);transition:width .3s}
+#lkTxt{font:11.5px var(--mono);color:var(--dim)}
+#lkWarn{margin-top:8px;font:12px var(--mono);color:var(--bad)}
+/* phase ring */
+.phases{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.ph{font:11px var(--mono);padding:7px 13px;border:1px solid var(--line2);border-radius:20px;background:transparent;color:var(--dim);cursor:pointer;transition:.15s}
+.ph:hover,.ph.on{color:var(--t1);border-color:var(--t1);background:rgba(255,92,92,.07);transform:translateY(-2px)}
+#phaseInfo{font-size:13px;color:#b9c4d4;border-left:3px solid var(--t1);padding:6px 14px;min-height:40px}
+/* quiz */
+.qz{border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin:12px 0;background:rgba(255,255,255,.015)}
+.qz-q{font:13px var(--mono);margin-bottom:10px;white-space:pre-wrap}
+.qz-o{display:flex;gap:8px;flex-wrap:wrap}
+.qz-o button{font:12.5px var(--mono);padding:7px 14px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2);color:var(--text);cursor:pointer;transition:.15s}
+.qz-o button:hover{border-color:var(--t3);transform:translateY(-2px)}
+.qz-o button.ok{border-color:var(--good);background:rgba(70,214,140,.15);color:var(--good)}
+.qz-o button.badr{border-color:var(--bad);background:rgba(255,107,107,.12);color:var(--bad)}
+.qz-w{margin-top:10px;font-size:12.8px;color:var(--dim);border-top:1px dashed var(--line);padding-top:9px;animation:pop .3s}
+.qz-score{font:11px var(--mono);color:var(--t3);letter-spacing:1px;margin-bottom:4px}
+/* peek reveal */
+.peek{border:1px solid var(--line);border-radius:9px;margin:12px 0;overflow:hidden}
+.peek .codewin{margin:0;border:none;border-radius:0}
+.peek-b{display:block;width:100%;text-align:left;font:11.5px var(--mono);letter-spacing:1px;color:var(--t4);background:rgba(77,163,255,.06);border:none;border-top:1px solid var(--line);padding:10px 16px;cursor:pointer}
+.peek-b:hover{background:rgba(77,163,255,.12)}
+.peek-a{padding:11px 16px;font-size:13px;color:#b9c4d4;background:rgba(77,163,255,.04);display:none;animation:pop .25s}
+.peek.open .peek-a{display:block}
+/* keep alive anim */
+.ka-row{margin:10px 0}
+.ka-l{font:11px var(--mono);color:var(--dim);margin-bottom:5px}
+.ka-track{display:flex;gap:3px;min-height:24px}
+.ka-seg{height:24px;border-radius:4px;font:9.5px var(--mono);color:#0b0e13;display:flex;align-items:center;justify-content:center;padding:0 6px;white-space:nowrap;animation:pop .3s;font-weight:700}
+.ka-seg.h{background:var(--t2)}
+.ka-seg.r{background:var(--t4)}
+/* status chips */
+.scgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;margin:12px 0}
+.scc{font:700 13px var(--mono);padding:10px 0;text-align:center;border:1px solid var(--line2);border-radius:7px;background:var(--panel2);cursor:pointer;transition:.15s;color:var(--text)}
+.scc:hover{transform:translateY(-3px)}
+.scc.c2{border-color:rgba(70,214,140,.4)}.scc.c2:hover{box-shadow:0 6px 14px rgba(70,214,140,.2)}
+.scc.c3{border-color:rgba(77,163,255,.4)}.scc.c3:hover{box-shadow:0 6px 14px rgba(77,163,255,.2)}
+.scc.c4{border-color:rgba(255,210,63,.4)}.scc.c4:hover{box-shadow:0 6px 14px rgba(255,210,63,.2)}
+.scc.c5{border-color:rgba(255,92,92,.4)}.scc.c5:hover{box-shadow:0 6px 14px rgba(255,92,92,.2)}
+#scDetail{font-size:13px;color:#b9c4d4;border:1px dashed var(--line2);border-radius:8px;padding:11px 15px;min-height:44px}
+#scDetail b{font-family:var(--mono);color:var(--t2)}
+.idem{display:inline-block;font:700 12px var(--mono);padding:8px 14px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2);cursor:pointer;margin:0 8px 8px 0;transition:.15s}
+.idem:hover{transform:translateY(-2px);border-color:var(--t3)}
+.idem span{display:none;font-weight:400;font-size:11px;margin-left:8px}
+.idem.open span{display:inline}
+.idem.yes{border-color:var(--good);color:var(--good)}
+.idem.no{border-color:var(--bad);color:var(--bad)}
+.idem.meh{border-color:var(--t3);color:var(--t3)}
+/* token bucket */
+#tbDots{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0;min-height:20px}
+#tbDots i{width:15px;height:15px;border-radius:50%;background:var(--t5);box-shadow:0 0 8px rgba(61,220,132,.4);transition:.2s}
+#tbDots i.empty{background:#232c3c;box-shadow:none}
+/* network stack */
+.netrow{display:flex;gap:12px;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:8px;margin:7px 0;cursor:pointer;transition:.15s;background:rgba(255,255,255,.012)}
+.netrow:hover{border-color:var(--t4)}
+.netrow.lit{border-color:var(--t4);background:rgba(77,163,255,.09);box-shadow:0 0 16px rgba(77,163,255,.15)}
+.netrow .nn{font:700 11px var(--mono);color:var(--faint);width:20px}
+.netrow .nt{font:13px var(--mono);color:var(--text)}
+.netrow .arrow{color:var(--faint);text-align:center;font-size:12px;margin:-2px 0 -2px 20px}
+#netDetail{border:1px solid var(--line);border-radius:9px;padding:15px 18px;background:rgba(77,163,255,.04);margin-top:12px}
+#netDetail h4{font-family:var(--disp);margin-bottom:6px}
+#netDetail p{font-size:13px;color:#b9c4d4}
+#netApi{display:inline-block;margin-top:9px;font:11.5px var(--mono);color:var(--t4);border:1px solid rgba(77,163,255,.4);padding:3px 10px;border-radius:5px}
+/* cache aside */
+.csteps{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.cstep{font:11px var(--mono);padding:8px 12px;border:1px solid var(--line);border-radius:7px;color:var(--faint);transition:.2s;background:var(--panel)}
+.cstep.lit{color:#0b0e13;background:var(--t2);border-color:var(--t2);font-weight:700;transform:translateY(-2px)}
+.cstep.hit{background:var(--t5);border-color:var(--t5)}
+/* LRU */
+#lruView{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;min-height:70px}
+.lruc{border:1px solid var(--line2);border-radius:8px;background:var(--panel2);padding:9px 14px;font:12px var(--mono);text-align:center;animation:pop .3s;transition:.3s}
+.lruc b{display:block;color:var(--t2);font-size:14px}
+.lruc span{color:var(--faint);font-size:10px}
+.lruc.mru{border-color:var(--t5)}
+.lruc.out{opacity:0;transform:scale(.7)}
+#lruStats{font:12px var(--mono);color:var(--dim)}
+#lruStats b{color:var(--t5)}
+/* queue sim */
+.qboard{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.qcol{border:1px solid var(--line);border-radius:8px;min-height:150px;padding:8px;background:rgba(255,255,255,.012)}
+.qcol h5{font:700 9.5px var(--mono);letter-spacing:1.5px;color:var(--faint);text-align:center;margin-bottom:8px}
+.qchip{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:6px;padding:5px 8px;margin:4px 0;display:flex;justify-content:space-between;gap:6px;animation:pop .3s}
+.qchip b{color:var(--t2)}
+.qchip .qatt{color:var(--faint)}
+.qchip.proc{border-color:var(--t2);box-shadow:0 0 10px rgba(255,162,69,.25)}
+.qchip.dead{border-color:var(--bad);color:var(--bad)}
+.qchip.dead b{color:var(--bad)}
+#qsStats{font:12px var(--mono);color:var(--dim)}
+/* closure / scope */
+.scopebox{border:1px dashed var(--t3);border-radius:9px;padding:12px 16px;font:12.5px var(--mono);color:#e8d9a8;background:rgba(255,210,63,.05);margin:10px 0}
+/* prototype chain */
+.pchain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0}
+.pnode{font:12px var(--mono);padding:10px 15px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);cursor:pointer;transition:.15s}
+.pnode:hover,.pnode.on{border-color:var(--t3);color:var(--t3);transform:translateY(-3px);box-shadow:0 6px 16px rgba(255,210,63,.15)}
+.parr{color:var(--faint);font-family:var(--mono)}
+#prDetail{font-size:13px;color:#b9c4d4;border-left:3px solid var(--t3);padding:6px 14px;min-height:42px}
+/* references mini */
+.refbox{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.refobj{border:1px solid var(--line);border-radius:8px;padding:12px 15px;font:12.5px var(--mono);background:#0a0f16;white-space:pre;color:#98c379}
+.refobj em{color:var(--faint);font-style:normal;display:block;margin-bottom:6px}
+#refVerdict{font:12.5px var(--mono);margin-top:10px;color:var(--t3)}
+/* ts reveal */
+.tsc{border:1px solid var(--line);border-radius:9px;background:rgba(77,163,255,.03);margin:10px 0;cursor:pointer;transition:.15s;overflow:hidden}
+.tsc:hover{border-color:var(--t4)}
+.tsc .e{font:12.5px var(--mono);padding:12px 16px;white-space:pre-wrap;color:#c9d6ea}
+.tsc .a{display:none;font:700 13px var(--mono);color:var(--t4);padding:0 16px 12px;animation:pop .25s}
+.tsc.open .a{display:block}
+.tsc .hint{font:10px var(--mono);color:var(--faint);padding:0 16px 10px}
+/* saga */
+.sgl{list-style:none;margin:14px 0}
+.sgl li{display:flex;align-items:center;gap:12px;padding:11px 15px;border:1px solid var(--line);border-radius:8px;margin:7px 0;font:13px var(--mono);transition:.25s;background:rgba(255,255,255,.012)}
+.sgl li .sic{width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:11px;flex:none}
+.sgl li.run{border-color:var(--t2);box-shadow:0 0 14px rgba(255,162,69,.2)}
+.sgl li.ok{border-color:rgba(70,214,140,.5)}
+.sgl li.ok .sic{background:var(--good);border-color:var(--good);color:#06231a;font-weight:700}
+.sgl li.fail{border-color:var(--bad);background:rgba(255,107,107,.06)}
+.sgl li.fail .sic{background:var(--bad);border-color:var(--bad);color:#2a0606;font-weight:700}
+.sgl li.comp{border-color:rgba(255,107,107,.6)}
+.sgl li.comp .scomp{color:var(--bad);font-size:11px;margin-left:auto;animation:pop .3s}
+#sgBanner{font:13px var(--mono);padding:12px 16px;border-radius:8px;margin-top:12px;display:none}
+#sgBanner.win{display:block;background:rgba(70,214,140,.1);border:1px solid rgba(70,214,140,.5);color:var(--good)}
+#sgBanner.err{display:block;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.5);color:#ffb3b3}
+#sgBanner.note{display:block;background:rgba(255,210,63,.07);border:1px solid rgba(255,210,63,.5);color:#ffe9a8}
+/* circuit breaker */
+.cbstate{display:inline-block;font:700 12px var(--mono);letter-spacing:1.5px;padding:7px 16px;border-radius:7px;border:1px solid}
+.cbstate.CLOSED{color:var(--good);border-color:var(--good);background:rgba(70,214,140,.08)}
+.cbstate.OPEN{color:var(--bad);border-color:var(--bad);background:rgba(255,107,107,.1);animation:pl2 1s infinite}
+.cbstate.HALF-OPEN{color:var(--t3);border-color:var(--t3);background:rgba(255,210,63,.08)}
+@keyframes pl2{50%{box-shadow:0 0 14px rgba(255,107,107,.5)}}
+#cbDots{display:flex;gap:6px;margin:12px 0}
+#cbDots i{width:14px;height:14px;border-radius:50%;border:1px solid var(--line2)}
+#cbDots i.ok{background:var(--good);border-color:var(--good)}
+#cbDots i.bad{background:var(--bad);border-color:var(--bad)}
+/* roadmap */
+.roadmap{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.chk{display:flex;gap:13px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.012);transition:.15s}
+.chk:hover{background:rgba(255,255,255,.035)}
+.chk:last-child{border-bottom:none}
+.chk input{width:16px;height:16px;accent-color:var(--t5);cursor:pointer;flex:none}
+.chk .no{font:700 11px var(--mono);color:var(--faint);width:26px}
+.chk a{color:var(--text);text-decoration:none;font-size:13.5px}
+.chk a:hover{color:var(--t2)}
+.chk .sub2{margin-left:auto;font:10.5px var(--mono);color:var(--faint);text-align:right}
+.chk input:checked ~ a{color:var(--faint);text-decoration:line-through}
+.ladder{display:flex;flex-direction:column;margin:14px 0}
+.lstep{display:flex;align-items:center;gap:14px;padding:9px 16px;font:13px var(--mono);color:#b9c4d4;text-decoration:none;border-left:2px solid var(--line2);margin-left:10px;transition:.15s}
+.lstep:hover{color:var(--t2);border-left-color:var(--t2);background:rgba(255,162,69,.05);transform:translateX(4px)}
+.lstep .ln{font-weight:700;color:var(--faint);width:22px}
+.lstep:hover .ln{color:var(--t2)}
+footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:12px var(--mono);color:var(--faint)}
+@media(max-width:1120px){.mast{grid-template-columns:1fr}}
+@media(max-width:960px){
+  #sidebar{transform:translateX(-100%)}
+  #sidebar.open{transform:none}
+  #menuBtn{display:block}
+  #backdrop.show{display:block}
+  main{margin-left:0;padding:64px 20px 40px}
+}
+@media(max-width:720px){
+  .dd,.g2,.refbox{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr}
+  .qboard{grid-template-columns:repeat(2,1fr)}
+  .tierband .big{font-size:38px}
+}
+</style>
+</head>
+<body>
+<div class="traffic" aria-hidden="true">
+  <i style="background:var(--t1);animation-duration:7s"></i>
+  <i style="background:var(--t2);animation-duration:11s;animation-delay:2s"></i>
+  <i style="background:var(--t4);animation-duration:9s;animation-delay:4s"></i>
+  <i style="background:var(--t5);animation-duration:13s;animation-delay:1s"></i>
+</div>
+
+<button id="menuBtn">≡ topics</button>
+<div id="backdrop"></div>
+
+<aside id="sidebar">
+  <div class="brand">
+    <div class="logo">node<span>:</span>senior</div>
+    <div class="sub">runtime deep-dive · v2026.08</div>
+  </div>
+  <div class="prog">
+    <div class="pt"><span>STUDIED</span><span id="progTxt">0/15</span></div>
+    <div class="pbar"><i id="progBar"></i></div>
+  </div>
+  <div class="nav">
+    <div class="nav"><a href="#roadmap"><span class="n">00</span><span class="d d0"></span>Roadmap & ladder</a></div>
+    <div class="ngrp"><div class="gh"><b style="color:var(--t1)">TIER 1</b> · CRITICAL</div>
+      <a href="#event-loop"><span class="n">01</span><span class="d d1"></span>Event Loop</a>
+      <a href="#promises"><span class="n">02</span><span class="d d1"></span>Promises & async/await</a>
+      <a href="#concurrency"><span class="n">03</span><span class="d d1"></span>Concurrency</a>
+      <a href="#streams"><span class="n">04</span><span class="d d1"></span>Streams & backpressure</a>
+      <a href="#memory"><span class="n">05</span><span class="d d1"></span>Memory & GC</a>
+      <a href="#errors"><span class="n">06</span><span class="d d1"></span>Error handling</a>
+    </div>
+    <div class="ngrp"><div class="gh"><b style="color:var(--t2)">TIER 2</b> · BACKEND</div>
+      <a href="#http"><span class="n">07</span><span class="d d2"></span>HTTP deeply</a>
+      <a href="#networking"><span class="n">08</span><span class="d d2"></span>Node networking</a>
+      <a href="#caching"><span class="n">09</span><span class="d d2"></span>Caching & Redis</a>
+      <a href="#queues"><span class="n">10</span><span class="d d2"></span>Queues & messaging</a>
+    </div>
+    <div class="ngrp"><div class="gh"><b style="color:var(--t3)">TIER 3</b> · JS INTERNALS</div>
+      <a href="#closures"><span class="n">11</span><span class="d d3"></span>Closures</a>
+      <a href="#prototypes"><span class="n">12</span><span class="d d3"></span>Prototype chain</a>
+      <a href="#this"><span class="n">13</span><span class="d d3"></span>this</a>
+      <a href="#equality"><span class="n">14</span><span class="d d3"></span>Equality & coercion</a>
+      <a href="#references"><span class="n">15</span><span class="d d3"></span>References & spread</a>
+      <a href="#generators"><span class="n">16</span><span class="d d3"></span>Generators & iterators</a>
+    </div>
+    <div class="ngrp"><div class="gh"><b style="color:var(--t4)">TIER 4</b> · TYPESCRIPT</div>
+      <a href="#typescript"><span class="n">17</span><span class="d d4"></span>Advanced types</a>
+    </div>
+    <div class="ngrp"><div class="gh"><b style="color:var(--t5)">TIER ∞</b> · SENIOR LEVEL</div>
+      <a href="#distributed"><span class="n">18</span><span class="d d5"></span>Distributed systems</a>
+    </div>
+  </div>
+</aside>
+
+<main>
+
+<!-- ============ MASTHEAD ============ -->
+<header class="mast">
+  <div>
+    <div class="eyebrow">/// INTERACTIVE FIELD MANUAL — SENIOR BACKEND / NODE.JS</div>
+    <h1>Stop memorizing APIs.<br>Learn where things <span class="o">break</span>,<br>and <span class="g">why</span>.</h1>
+    <p class="lede2">Sixteen topics, four tiers, thirteen live labs that run real JavaScript in your browser. Predict outputs before you run them — that's the interview. Your progress is saved locally.</p>
+    <div class="stats">
+      <div><b>16</b>topics</div>
+      <div><b>1<span>3</span></b>live labs</div>
+      <div><b>2<span>5+</span></b>don't/do pairs</div>
+      <div><b>∞</b>"what does this print?"</div>
+    </div>
+  </div>
+  <div class="term">
+    <div class="tbar"><span class="cdot r"></span><span class="cdot y"></span><span class="cdot g"></span><span class="tname">interview-question-01.js — node v24</span></div>
+    <div class="tbody">
+<pre class="src">console.log('start');
+process.nextTick(() =&gt; console.log('nextTick'));
+Promise.resolve().then(() =&gt; console.log('promise.then'));
+setTimeout(() =&gt; console.log('setTimeout(0)'), 0);
+console.log('end');</pre>
+      <div style="font:11px var(--mono);color:var(--faint)">PREDICT THE OUTPUT ORDER → click the lines below</div>
+      <div class="hchips" id="heroChips"></div>
+      <div class="hguess" id="heroGuess"></div>
+      <div class="btnrow">
+        <button class="btn acc" id="heroRun">▶ run it</button>
+        <button class="btn sm" id="heroReset">reset</button>
+      </div>
+      <div class="hout" id="heroOut"></div>
+      <div class="hverdict" id="heroVerdict"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ ROADMAP ============ -->
+<section id="roadmap" class="topic">
+  <header class="thead rv">
+    <span class="tag t5">00 · GAME PLAN</span>
+    <h2>Study order & the interview ladder</h2>
+    <p class="lede">Work top to bottom. Check things off as you can <em>explain them out loud and build them from scratch</em> — that's the real definition of "knowing" a topic.</p>
+  </header>
+  <div class="roadmap rv">
+    <label class="chk"><input type="checkbox" name="r1"><span class="no">01</span><a href="#event-loop">Event Loop — phases, microtasks vs macrotasks</a><span class="sub2">§01</span></label>
+    <label class="chk"><input type="checkbox" name="r2"><span class="no">02</span><a href="#promises">Promises & async/await — combinators, cancellation</a><span class="sub2">§02</span></label>
+    <label class="chk"><input type="checkbox" name="r3"><span class="no">03</span><a href="#concurrency">Concurrency — limiting, workers, race conditions</a><span class="sub2">§03</span></label>
+    <label class="chk"><input type="checkbox" name="r4"><span class="no">04</span><a href="#streams">Streams + backpressure — pipeline()</a><span class="sub2">§04</span></label>
+    <label class="chk"><input type="checkbox" name="r5"><span class="no">05</span><a href="#memory">Memory + GC — leaks, Buffers, snapshots</a><span class="sub2">§05</span></label>
+    <label class="chk"><input type="checkbox" name="r6"><span class="no">06</span><a href="#http">HTTP / TCP — keep-alive, timeouts, retries</a><span class="sub2">§07</span></label>
+    <label class="chk"><input type="checkbox" name="r7"><span class="no">07</span><a href="#errors">Error handling — operational vs programmer, shutdown</a><span class="sub2">§06</span></label>
+    <label class="chk"><input type="checkbox" name="r8"><span class="no">08</span><a href="#caching">Redis / caching — aside, TTL, LRU, stampede</a><span class="sub2">§09</span></label>
+    <label class="chk"><input type="checkbox" name="r9"><span class="no">09</span><a href="#queues">Queues — Kafka / Redis Streams, at-least-once</a><span class="sub2">§10</span></label>
+    <label class="chk"><input type="checkbox" name="r10"><span class="no">10</span><a href="#queues">Database transactions & isolation levels</a><span class="sub2">§10</span></label>
+    <label class="chk"><input type="checkbox" name="r11"><span class="no">11</span><a href="#distributed">Distributed systems — saga, outbox, breakers</a><span class="sub2">§18</span></label>
+    <label class="chk"><input type="checkbox" name="r12"><span class="no">12</span><a href="#typescript">TypeScript advanced types</a><span class="sub2">§17</span></label>
+    <label class="chk"><input type="checkbox" name="r13"><span class="no">13</span><a href="#networking">Node.js internals — net → http → framework</a><span class="sub2">§08</span></label>
+    <label class="chk"><input type="checkbox" name="r14"><span class="no">14</span><a href="#http">Security — injection, SSRF, secrets, rate limiting</a><span class="sub2">§07</span></label>
+    <label class="chk"><input type="checkbox" name="r15"><span class="no">15</span><a href="#memory">Performance / profiling — clinic, flame graphs</a><span class="sub2">§05</span></label>
+  </div>
+
+  <h3 class="blk rv">The build-it-yourself ladder</h3>
+  <p class="tx rv">The strongest interview prep is implementing the classics <b class="k">from a blank file</b>, in this order — it walks you from JS fundamentals straight into backend engineering:</p>
+  <div class="ladder rv">
+    <a class="lstep" href="#promises"><span class="ln">01</span>Promise.all</a>
+    <a class="lstep" href="#promises"><span class="ln">02</span>Promise.race</a>
+    <a class="lstep" href="#promises"><span class="ln">03</span>Promise.any</a>
+    <a class="lstep" href="#promises"><span class="ln">04</span>Promise.allSettled</a>
+    <a class="lstep" href="#concurrency"><span class="ln">05</span>Concurrency limiter (mapLimit)</a>
+    <a class="lstep" href="#http"><span class="ln">06</span>Retry with exponential backoff + jitter</a>
+    <a class="lstep" href="#queues"><span class="ln">07</span>Task queue with ack / retry / DLQ</a>
+    <a class="lstep" href="#concurrency"><span class="ln">08</span>Worker pool</a>
+    <a class="lstep" href="#caching"><span class="ln">09</span>LRU cache</a>
+    <a class="lstep" href="#http"><span class="ln">10</span>Rate limiter (token bucket)</a>
+    <a class="lstep" href="#event-loop"><span class="ln">11</span>EventEmitter</a>
+    <a class="lstep" href="#streams"><span class="ln">12</span>Readable stream</a>
+  </div>
+</section>
+
+<!-- ============ TIER 1 ============ -->
+<div class="tierband t1b rv"><div class="big">T1</div><div><h2>Tier 1 — Absolutely critical</h2><p>Runtime mechanics. If you can't reason about these, everything above them is guesswork.</p></div></div>
+
+<!-- EVENT LOOP -->
+<section id="event-loop" class="topic">
+  <header class="thead rv">
+    <span class="tag t1">TIER 1 · 01</span>
+    <h2>The Event Loop</h2>
+    <p class="lede">Node is single-threaded but not single-file: your code, timers, I/O callbacks and microtasks all wait in different lines. Senior answers are about <b class="k">which queue runs when</b> — and what starves what.</p>
+  </header>
+
+  <div class="signal rv"><b>🎯 WHAT THE INTERVIEWER IS LISTENING FOR</b>
+  "The call stack runs sync code to completion. nextTick drains before microtasks; both drain after <em>every</em> task and between every phase. Timers are a <em>phase</em>, not a queue — setTimeout(0) means 'at least 0ms, when the timers phase next runs'."</div>
+
+  <h3 class="blk rv">Phases — click each one</h3>
+  <div class="phases rv">
+    <button class="ph on" data-p="timers">⏱ timers</button><span style="color:var(--faint)">→</span>
+    <button class="ph" data-p="pending">pending callbacks</button><span style="color:var(--faint)">→</span>
+    <button class="ph" data-p="poll">poll (I/O)</button><span style="color:var(--faint)">→</span>
+    <button class="ph" data-p="check">check (setImmediate)</button><span style="color:var(--faint)">→</span>
+    <button class="ph" data-p="close">close callbacks</button><span style="color:var(--faint)">↺</span>
+  </div>
+  <div id="phaseInfo" class="rv">Executes expired <code class="il">setTimeout</code>/<code class="il">setInterval</code> callbacks. Node checks expiry time when the phase runs — timers are never early, can be late.</div>
+  <p class="tx rv">Crucial addendum: <code class="il">process.nextTick()</code> and the microtask queue (<code class="il">Promise.then</code>, <code class="il">queueMicrotask</code>) drain <b class="k">between every phase and after every callback</b> — they effectively cut in line, which is exactly why abusing them can starve I/O.</p>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LIVE — A BLOCKING MICROTASK DELAYS TIMERS <span class="ls">runs for real in this tab</span></div>
+    <div class="lab-b">
+      <p class="tx" style="margin-top:0">A microtask that blocks the thread delays <em>everything</em> behind it, including timers that are already due. Run it and watch the elapsed times:</p>
+      <button class="btn acc" id="elRun2">▶ run</button>
+      <div class="hout" id="el2Out"></div>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — starve the loop</div>
+      <div class="codewin"><div class="cbar"><span class="cname">sync-heavy.js</span></div><pre class="src">// JSON.parse of a 40MB payload inside a request handler
+app.post('/import', (req, res) =&gt; {
+  const data = JSON.parse(req.body.huge); // blocks for ~800ms
+  // EVERY other request waits. Timers fire late. Healthchecks fail.
+});</pre></div>
+      <div class="dd-why">One blocked loop = the whole process frozen. CPU-bound work belongs in a worker thread, a separate service, or streamed incrementally.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — keep callbacks short, offload the heavy part</div>
+      <div class="codewin"><div class="cbar"><span class="cname">offload.js</span></div><pre class="src">import { Worker } from 'node:worker_threads';
+app.post('/import', (req, res) =&gt; {
+  const w = new Worker('./parse-worker.js');
+  w.postMessage(req.body.huge);
+  w.on('message', (data) =&gt; res.json({ ok: true, rows: data.length }));
+});</pre></div>
+      <div class="dd-why">The event loop stays free to serve everyone else; the CPU work happens on a real parallel thread.</div>
+    </div>
+  </div>
+
+  <ul class="tx rv">
+    <li><b class="k">setTimeout(fn, 0)</b> inside an I/O callback vs <b class="k">setImmediate(fn)</b>: inside I/O callbacks, <code class="il">setImmediate</code> is guaranteed first (check phase follows poll). In the main module, their order is technically indeterminate — saying that out loud is a senior signal.</li>
+    <li><b class="k">process.nextTick</b> fires before any other microtask; prefer <code class="il">queueMicrotask</code> unless you truly need to go first (recursive nextTick can starve I/O).</li>
+  </ul>
+</section>
+
+<!-- PROMISES -->
+<section id="promises" class="topic">
+  <header class="thead rv">
+    <span class="tag t1">TIER 1 · 02</span>
+    <h2>Promises & async/await</h2>
+    <p class="lede">Combinators are vocabulary: <code class="il">all</code> fails fast, <code class="il">race</code> takes the first <em>settled</em>, <code class="il">any</code> takes the first <em>fulfilled</em>, <code class="il">allSettled</code> never rejects. The senior layer is knowing what happens to the <b class="k">losers</b> of each race (they keep running) and how errors propagate.</p>
+  </header>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — COMBINATOR PLAYGROUND <span class="ls">real promises, real timing</span></div>
+    <div class="lab-b">
+      <div id="plRows"></div>
+      <div id="plBars"></div>
+      <div class="btnrow"><button class="btn acc" id="plRun">▶ run all four combinators</button></div>
+      <div class="pres" id="plRes"></div>
+    </div>
+  </div>
+
+  <div class="ptabs rv">
+    <button class="ptab on" data-pane="paneAll">implement Promise.all</button>
+    <button class="ptab" data-pane="paneRace">Promise.race</button>
+    <button class="ptab" data-pane="paneAny">Promise.any</button>
+    <button class="ptab" data-pane="paneSet">Promise.allSettled</button>
+  </div>
+  <div class="ppane rv" id="paneAll"><p>Fan-in with fail-fast. Count down completions; first rejection settles everything.</p>
+    <div class="codewin"><div class="cbar"><span class="cname">promise-all.ts</span></div><pre class="src">function promiseAll&lt;T&gt;(ps: Iterable&lt;T | Promise&lt;T&gt;&gt;): Promise&lt;T[]&gt; {
+  const list = [...ps];
+  return new Promise((resolve, reject) =&gt; {
+    const out = new Array(list.length);
+    let left = list.length;
+    if (left === 0) return resolve(out);
+    list.forEach((p, i) =&gt;
+      Promise.resolve(p).then(
+        (v) =&gt; { out[i] = v; if (--left === 0) resolve(out); }, // preserve ORDER, not finish order
+        reject,                                                 // first rejection wins
+      ));
+  });
+}</pre></div></div>
+  <div class="ppane rv" id="paneRace" hidden><p>First <b>settlement</b> (fulfil OR reject) wins. Classic use: racing work against a timeout.</p>
+    <div class="codewin"><div class="cbar"><span class="cname">promise-race.ts</span></div><pre class="src">function promiseRace&lt;T&gt;(ps: Promise&lt;T&gt;[]): Promise&lt;T&gt; {
+  return new Promise((resolve, reject) =&gt;
+    ps.forEach((p) =&gt; Promise.resolve(p).then(resolve, reject)));
+}
+// the timeout pattern you'll be asked about:
+const withTimeout = &lt;T&gt;(p: Promise&lt;T&gt;, ms: number) =&gt;
+  Promise.race([p, new Promise&lt;never&gt;((_, rej) =&gt;
+    setTimeout(() =&gt; rej(new Error(`timeout ${ms}ms`)), ms))]);</pre></div></div>
+  <div class="ppane rv" id="paneAny" hidden><p>First <b>fulfilment</b> wins; collect rejections; if all reject, throw <code class="il">AggregateError</code>.</p>
+    <div class="codewin"><div class="cbar"><span class="cname">promise-any.ts</span></div><pre class="src">function promiseAny&lt;T&gt;(ps: Promise&lt;T&gt;[]): Promise&lt;T&gt; {
+  return new Promise((resolve, reject) =&gt; {
+    const errs: unknown[] = new Array(ps.length);
+    let left = ps.length;
+    if (left === 0) reject(new AggregateError([], 'no promises'));
+    ps.forEach((p, i) =&gt; Promise.resolve(p).then(resolve, (e) =&gt; {
+      errs[i] = e;
+      if (--left === 0) reject(new AggregateError(errs, 'all rejected'));
+    }));
+  });
+}</pre></div></div>
+  <div class="ppane rv" id="paneSet" hidden><p>Wait for everything, reject nothing. Perfect for "do N things, report each outcome" (batch jobs, fan-out notifications).</p>
+    <div class="codewin"><div class="cbar"><span class="cname">promise-allsettled.ts</span></div><pre class="src">function promiseAllSettled&lt;T&gt;(ps: Promise&lt;T&gt;[]) {
+  return Promise.all(ps.map((p) =&gt;
+    Promise.resolve(p).then(
+      (value)  =&gt; ({ status: 'fulfilled' as const, value }),
+      (reason) =&gt; ({ status: 'rejected'  as const, reason }),
+    )));
+}</pre></div></div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — await in series what can run in parallel</div>
+      <div class="codewin"><div class="cbar"><span class="cname">serial.ts</span></div><pre class="src">const user    = await fetchUser(id);     // 120ms
+const orders  = await fetchOrders(id);   // +150ms
+const balance = await fetchBalance(id);  // +90ms
+// total ≈ 360ms — each call waited for the previous</pre></div>
+      <div class="dd-why">Three independent network calls chained into one slow request. The event loop <em>could</em> have overlapped them.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — fan out, join with Promise.all</div>
+      <div class="codewin"><div class="cbar"><span class="cname">parallel.ts</span></div><pre class="src">const [user, orders, balance] = await Promise.all([
+  fetchUser(id), fetchOrders(id), fetchBalance(id),
+]);
+// total ≈ 150ms — bounded by the slowest call</pre></div>
+      <div class="dd-why">Rule of thumb: <code class="il">await</code> only what the next line genuinely depends on.</div>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — async inside forEach</div>
+      <div class="codewin"><div class="cbar"><span class="cname">foreach.ts</span></div><pre class="src">ids.forEach(async (id) =&gt; {
+  await sendEmail(id); // forEach IGNORES the returned promises
+});
+console.log('all sent'); // lies — fires immediately</pre></div>
+      <div class="dd-why">forEach swallows promises: no waiting, and rejections become unhandled.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — for…of (sequential) or map + all (parallel)</div>
+      <div class="codewin"><div class="cbar"><span class="cname">loops.ts</span></div><pre class="src">for (const id of ids) await sendEmail(id);      // one at a time
+await Promise.all(ids.map((id) =&gt; sendEmail(id))); // all at once (mind limits → §03)</pre></div>
+      <div class="dd-why">Both actually await completion and propagate errors to your try/catch.</div>
+    </div>
+  </div>
+
+  <h3 class="blk rv">Cancellation — AbortController</h3>
+  <div class="codewin rv"><div class="cbar"><span class="cname">abort.ts</span></div><pre class="src">// Node 18+ / browsers: timeouts built in
+const res = await fetch(url, { signal: AbortSignal.timeout(3_000) });
+
+// Manual: cancel a whole unit of work
+const ac = new AbortController();
+setTimeout(() =&gt; ac.abort('client disconnected'), 5_000);
+await doWork({ signal: ac.signal }); // check signal.aborted between steps
+
+// TS-friendly error narrowing
+try { await fetch(url, { signal: ac.signal }); }
+catch (e) {
+  if (e instanceof DOMException &amp;&amp; e.name === 'AbortError') return; // user choice, not a bug
+  throw e;
+}</pre></div>
+  <div class="signal rv"><b>🎯 INTERVIEW SIGNAL</b> Mention that aborting doesn't kill running CPU work — cooperative cancellation means your code checks <code class="il">signal.aborted</code> at safe points and unwinds resources.</div>
+</section>
+
+<!-- CONCURRENCY -->
+<section id="concurrency" class="topic">
+  <header class="thead rv">
+    <span class="tag t1">TIER 1 · 03</span>
+    <h2>Concurrency</h2>
+    <p class="lede">Promise concurrency is <b class="k">interleaving</b>, not parallelism: one thread still runs one statement at a time. That gives you free overlap of I/O — and free race conditions on shared state. CPU-bound work needs real threads (worker_threads).</p>
+  </header>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — CONCURRENCY LIMITER (mapLimit) <span class="ls">watch the in-flight ceiling</span></div>
+    <div class="lab-b">
+      <div class="ctl">
+        <label>tasks <input type="range" id="gN" min="4" max="24" value="12"><span id="gNv">12</span></label>
+        <label>limit <input type="range" id="gL" min="1" max="10" value="3"><span id="gLv">3</span></label>
+        <button class="btn acc sm" id="gRun">▶ run</button>
+      </div>
+      <div id="gantt"></div>
+      <div id="gStats">press run — each bar is an async task; only <b>limit</b> ever run at once</div>
+    </div>
+  </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">map-limit.ts — build this from scratch once</span></div><pre class="src">async function mapLimit&lt;T, R&gt;(
+  items: T[], limit: number, fn: (item: T, i: number) =&gt; Promise&lt;R&gt;,
+): Promise&lt;R[]&gt; {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (next &lt; items.length) {
+      const i = next++;               // claim BEFORE any await — no two workers grab the same index
+      results[i] = await fn(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}</pre></div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — unbounded fan-out</div>
+      <div class="codewin"><div class="cbar"><span class="cname">unbounded.ts</span></div><pre class="src">// 10k open sockets, EMFILE, rate-limit ban, DB connection pool exhausted
+await Promise.all(users.map((u) =&gt; enrichFromApi(u)));</pre></div>
+      <div class="dd-why">Parallelism without a ceiling is a DDoS on your own dependencies.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — cap in-flight work</div>
+      <div class="codewin"><div class="cbar"><span class="cname">bounded.ts</span></div><pre class="src">await mapLimit(users, 20, enrichFromApi); // or p-limit / p-queue</pre></div>
+      <div class="dd-why">Same shape as connection pools: the limit is chosen from the <em>downstream's</em> capacity, not your CPU.</div>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — read-modify-write on shared state</div>
+      <div class="codewin"><div class="cbar"><span class="cname">race-condition.ts</span></div><pre class="src">// two requests interleave at each await → lost update
+const seat = await db.seat.find(id);   // both read: free
+if (seat.free) {
+  await db.seat.update(id, { free: false, userId }); // both write
+}</pre></div>
+      <div class="dd-why">Every <code class="il">await</code> is a point where another task can slip in. Single-threaded ≠ safe.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — make the check-and-set atomic</div>
+      <div class="codewin"><div class="cbar"><span class="cname">atomic.ts</span></div><pre class="src">// conditional UPDATE: the database serializes it
+const { count } = await db.query(
+  `UPDATE seats SET free = false, user_id = $1
+   WHERE id = $2 AND free = true`, [userId, id]);
+if (count === 0) throw new ConflictError('seat taken');
+// same idea: SELECT ... FOR UPDATE, Redis SETNX, unique constraints</pre></div>
+      <div class="dd-why">Push atomicity into a layer that actually serializes: DB row lock, Redis, or a unique index.</div>
+    </div>
+  </div>
+
+  <h3 class="blk rv">CPU-bound vs I/O-bound</h3>
+  <div class="codewin rv"><div class="cbar"><span class="cname">worker-pool.ts</span></div><pre class="src">// parent
+import { Worker } from 'node:worker_threads';
+function hash(password: string): Promise&lt;string&gt; {
+  return new Promise((resolve, reject) =&gt; {
+    const w = new Worker('./hash.worker.js', { workerData: password });
+    w.once('message', resolve);
+    w.once('error', reject);
+  });
+}
+// hash.worker.js
+import { parentPort, workerData } from 'node:worker_threads';
+import { scryptSync } from 'node:crypto';
+parentPort.postMessage(scryptSync(workerData, 'salt', 64).toString('hex'));</pre></div>
+  <p class="tx rv">Decision rule: <b class="k">waiting</b> (network, disk) → async/await is perfect; <b class="k">computing</b> (image resize, parsing, crypto) &gt; a few ms → worker thread or separate service. <code class="il">async</code> never makes CPU work faster — it just hides waits.</p>
+</section>
+
+<!-- STREAMS -->
+<section id="streams" class="topic">
+  <header class="thead rv">
+    <span class="tag t1">TIER 1 · 04</span>
+    <h2>Streams & Backpressure</h2>
+    <p class="lede">Streams process data in chunks so memory stays flat while throughput stays high. <b class="k">Backpressure</b> is the protocol by which a slow consumer tells a fast producer to slow down — <code class="il">write()</code> returns <code class="il">false</code>, you wait for <code class="il">'drain'</code>. Ignoring it turns "large file upload" into "OOM at 3am".</p>
+  </header>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — BACKPRESSURE OR OOM <span class="ls">producer 45/s vs consumer 12/s</span></div>
+    <div class="lab-b">
+      <div class="ctl">
+        <label>produce <input type="range" id="bpProd" min="0" max="80" value="45"><span id="bpProdv">45</span>/s</label>
+        <label>consume <input type="range" id="bpCons" min="0" max="80" value="12"><span id="bpConsv">12</span>/s</label>
+        <label><input type="checkbox" id="bpOnChk" checked> respect backpressure</label>
+        <button class="btn sm" id="bpReset">reset</button>
+      </div>
+      <div class="bpgauge"><div class="bpfill" id="bpFill"></div><div class="bphwm"></div></div>
+      <div id="bpLvl">0 / 100 chunks</div>
+      <div id="bpCrash" hidden>💥 FATAL ERROR: Reached heap limit — buffer grew without bound. This is what happens when you ignore write()'s return value.</div>
+      <div class="mlog" id="bpLog"></div>
+      <p class="tx" style="margin-top:10px">Try it: with backpressure <b class="k">on</b>, the producer pauses at the yellow line and resumes after drain — throughput is capped but the process lives. Turn it <b class="k">off</b> and watch the crash.</p>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — buffer the whole file</div>
+      <div class="codewin"><div class="cbar"><span class="cname">whole-file.ts</span></div><pre class="src">const data = await fs.readFile('4gb-video.mp4'); // RAM explodes
+res.send(data);
+// also wrong: pipe without error handling
+src.pipe(dest); // a read error leaves dest half-written, unhandled 'error'</pre></div>
+      <div class="dd-why">Memory ∝ file size. One big upload kills the process for every other user.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — stream + pipeline()</div>
+      <div class="codewin"><div class="cbar"><span class="cname">pipeline.ts</span></div><pre class="src">import { pipeline } from 'node:stream/promises';
+await pipeline(
+  fs.createReadStream('4gb-video.mp4'),   // Readable
+  zlib.createGzip(),                       // Transform
+  res,                                     // Writable (HTTP)
+); // errors propagate, all streams get destroyed, no leaks</pre></div>
+      <div class="dd-why">Constant memory, automatic backpressure, single error path. <code class="il">pipeline</code> &gt; <code class="il">.pipe()</code> — always.</div>
+    </div>
+  </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">manual-backpressure.ts — what pipeline does for you</span></div><pre class="src">readable.on('data', (chunk) =&gt; {
+  const ok = writable.write(chunk);       // false = internal buffer is full
+  if (!ok) {
+    readable.pause();                     // stop pulling…
+    writable.once('drain', () =&gt; readable.resume()); // …until consumer catches up
+  }
+});</pre></div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">s3-upload-stream.ts — streams + HTTP + S3</span></div><pre class="src">import { Upload } from '@aws-sdk/lib-storage';
+import { PassThrough } from 'node:stream';
+
+// pipe the HTTP request body straight to S3 — never hold it in memory
+const bridge = new PassThrough();
+const upload = new Upload({ client: s3, params: { Bucket, Key, Body: bridge } });
+req.pipe(bridge);
+req.on('error', () =&gt; bridge.destroy());  // client disconnects → abort upload
+await upload.done();</pre></div>
+  <div class="signal rv"><b>🎯 INTERVIEW SIGNAL</b> Name the default highWaterMark (16KB / 16 objects), explain <code class="il">objectMode</code>, and say why <code class="il">pipeline</code> cleans up on error while <code class="il">pipe</code> doesn't.</div>
+</section>
+
+<!-- MEMORY -->
+<section id="memory" class="topic">
+  <header class="thead rv">
+    <span class="tag t1">TIER 1 · 05</span>
+    <h2>Memory & Garbage Collection</h2>
+    <p class="lede">Locals live on the <b class="k">stack</b> (freed when functions return); objects live on the <b class="k">heap</b>, reclaimed only when unreachable. A "memory leak" in JS is simply <em>accidental reachability</em>: something keeps pointing at data you think is gone. Buffers live off the V8 heap — track them via <code class="il">process.memoryUsage()</code>.</p>
+  </header>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — SIMULATED HEAP <span class="ls">red = reachable (survives GC), striped = garbage</span></div>
+    <div class="lab-b">
+      <div class="btnrow" style="margin-top:0">
+        <button class="btn sm" id="lkA">+ cache entry (Map grows)</button>
+        <button class="btn sm" id="lkB">+ request listener</button>
+        <button class="btn sm" id="lkChurn">normal request (10MB garbage)</button>
+        <button class="btn acc sm" id="lkGC">run GC sweep</button>
+      </div>
+      <div class="lkmeter"><div id="lkR"></div><div id="lkG"></div></div>
+      <div id="lkTxt">heapUsed ≈ 0MB</div>
+      <div id="lkWarn" hidden>⚠ heap near --max-old-space-size → next major GC or allocation = OOM kill</div>
+      <div class="mlog" id="lkLog"></div>
+      <p class="tx" style="margin-top:10px">GC only collects <em>garbage</em>. Click the leaks a few times, then sweep — the red part never goes away. That asymmetry is the entire diagnosis.</p>
+    </div>
+  </div>
+
+  <h3 class="blk rv">Spot the leak — click your answer on each card</h3>
+  <div class="g3 rv">
+    <div class="card spot" data-a="yes"><h4>A — module cache</h4>
+      <div class="codewin" style="margin:8px 0"><pre class="src mini">const cache = new Map(); // module scope
+app.get('/u/:id', (req, res) =&gt; {
+  cache.set(req.params.id, await load(req.params.id));
+});</pre></div>
+      <div class="btnrow" style="margin-top:0"><button class="btn sm" data-v="yes">leaks</button><button class="btn sm" data-v="no">safe</button></div>
+      <p class="spot-r" hidden>LEAKS: unbounded Map keyed by user input — every unique id lives forever. Fix: LRU with max size + TTL (§09), or WeakMap when keys are objects.</p></div>
+    <div class="card spot" data-a="yes"><h4>B — listeners</h4>
+      <div class="codewin" style="margin:8px 0"><pre class="src mini">emitter.on('data', handler);
+// inside a per-request function,
+// never emitter.off(...)</pre></div>
+      <div class="btnrow" style="margin-top:0"><button class="btn sm" data-v="yes">leaks</button><button class="btn sm" data-v="no">safe</button></div>
+      <p class="spot-r" hidden>LEAKS: each request pins another handler (and its closure!) forever. Node even warns: MaxListenersExceededWarning is a gift — listen to it.</p></div>
+    <div class="card spot" data-a="no"><h4>C — WeakMap</h4>
+      <div class="codewin" style="margin:8px 0"><pre class="src mini">const meta = new WeakMap();
+app.use((req, res, next) =&gt; {
+  meta.set(req, { start: Date.now() });
+  next();
+});</pre></div>
+      <div class="btnrow" style="margin-top:0"><button class="btn sm" data-v="yes">leaks</button><button class="btn sm" data-v="no">safe</button></div>
+      <p class="spot-r" hidden>SAFE: WeakMap keys are weakly held — when the request object dies, the entry becomes collectible. This is what WeakMap is for.</p></div>
+  </div>
+
+  <ul class="tx rv">
+    <li><b class="k">V8 GC in one breath:</b> young generation (Scavenge, fast, minor) + old generation (Mark-Sweep / Mark-Compact, slower, major). Leaks = objects promoted to old space that never become unreachable.</li>
+    <li><b class="k">Diagnosis:</b> <code class="il">node --inspect app.js</code> → Chrome DevTools → Memory → take heap snapshots over time and diff (objects growing between snapshots = suspects). Server-side: <code class="il">process.memoryUsage()</code> logged to your metrics; <code class="il">--max-old-space-size</code> to make OOMs deterministic instead of mysterious.</li>
+    <li><b class="k">Classic leak roster:</b> global Maps/arrays, timers never cleared, listeners never removed, closures over big scopes, cached Promises that never settle, accidental globals (<code class="il">x = 1</code> without declaration in sloppy mode).</li>
+  </ul>
+</section>
+
+<!-- ERRORS -->
+<section id="errors" class="topic">
+  <header class="thead rv">
+    <span class="tag t1">TIER 1 · 06</span>
+    <h2>Error Handling</h2>
+    <p class="lede">The senior distinction: <b class="k">operational errors</b> (expected failures: 404, timeout, validation, downstream 503 — handle and recover) vs <b class="k">programmer errors</b> (bugs: TypeError, undefined dereference — the process is in an unknown state; log, crash, let the orchestrator restart).</p>
+  </header>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — swallow or half-handle</div>
+      <div class="codewin"><div class="cbar"><span class="cname">swallow.ts</span></div><pre class="src">try { await charge(card); }
+catch (e) { /* TODO */ }        // silent failure — order "succeeds" unpaid
+
+try { await save(data); }
+catch (e) { logger.error(e); }   // logged AND lost — caller thinks it worked</pre></div>
+      <div class="dd-why">A catch block must make a decision: recover, transform, or rethrow. "Log and continue" is usually neither.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — typed errors, decide at the boundary</div>
+      <div class="codewin"><div class="cbar"><span class="cname">errors.ts</span></div><pre class="src">class AppError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: number,
+    readonly isOperational = true,
+  ) { super(message); }
+}
+try { await charge(card); }
+catch (e) {
+  if (e instanceof PaymentDeclinedError)
+    throw new AppError('Card declined', 402); // translate for the caller
+  throw e;                                    // unknown → propagate unchanged
+}</pre></div>
+      <div class="dd-why">In NestJS this lands in an Exception Filter; the point is the same: one place maps errors to responses, everything else just throws honestly.</div>
+    </div>
+  </div>
+
+  <h3 class="blk rv">Predict what happens — then reveal</h3>
+  <div class="peek rv"><div class="codewin"><div class="cbar"><span class="cname">a.ts</span></div><pre class="src">try {
+  setTimeout(() =&gt; { throw new Error('boom'); }, 10);
+} catch (e) { console.log('caught!'); }</pre></div>
+    <button class="peek-b">▸ WHAT GETS PRINTED?</button>
+    <div class="peek-a">Nothing gets caught — <b>uncaughtException</b>. try/catch only sees errors thrown <em>synchronously within its own execution</em>; the callback runs later, outside the try. Inside callbacks you need the callback's own try/catch (or async/await, which restores this).</div></div>
+  <div class="peek rv"><div class="codewin"><div class="cbar"><span class="cname">b.ts</span></div><pre class="src">async function f() { throw new Error('x'); }
+f();
+console.log('after');</pre></div>
+    <button class="peek-b">▸ WHAT GETS PRINTED?</button>
+    <div class="peek-a"><code class="il">after</code> prints. An async function throwing returns a <b>rejected promise</b> — it never throws synchronously. Since nobody awaits f(), Node 15+ terminates the process with an unhandled rejection (right after the tick).</div></div>
+  <div class="peek rv"><div class="codewin"><div class="cbar"><span class="cname">c.ts</span></div><pre class="src">Promise.reject(new Error('x'))
+  .catch((e) =&gt; { throw e; });</pre></div>
+    <button class="peek-b">▸ DOES THE CATCH FIX IT?</button>
+    <div class="peek-a">No — throwing inside <code class="il">.catch</code> produces a <b>new</b> rejected promise (the one returned by catch). If nothing handles <em>that</em>, it's unhandled again. A catch handler only "handles" an error if it doesn't rethrow/reject.</div></div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">shutdown.ts — graceful shutdown, the interview classic</span></div><pre class="src">process.on('unhandledRejection', (reason) =&gt; {
+  logger.fatal({ err: reason }, 'unhandled rejection');
+  shutdown(1);                    // Node ≥15 crashes anyway — be explicit
+});
+
+let shuttingDown = false;
+async function shutdown(code: number) {
+  if (shuttingDown) return; shuttingDown = true;
+  server.close();                          // 1) stop accepting NEW connections
+  await Promise.race([
+    drainInFlightRequests(),               // 2) let current work finish
+    sleep(10_000),                         // 3) …but never forever
+  ]);
+  await db.$disconnect();                  // 4) release resources
+  process.exit(code);
+}
+process.on('SIGTERM', () =&gt; shutdown(0));  // k8s sends SIGTERM, then SIGKILL after grace period</pre></div>
+  <div class="signal rv"><b>🎯 INTERVIEW SIGNAL</b> Explain <em>why</em> we exit on programmer errors (unknown state can't be reasoned about), why SIGTERM handlers must have a force-exit timer, and why "just restart the pod" is a strategy — not an accident.</div>
+</section>
+
+<!-- ============ TIER 2 ============ -->
+<div class="tierband t2b rv"><div class="big">T2</div><div><h2>Tier 2 — Very important for backend</h2><p>The network is where senior backends live: protocols, pooling, caching, queues.</p></div></div>
+
+<!-- HTTP -->
+<section id="http" class="topic">
+  <header class="thead rv">
+    <span class="tag t2">TIER 2 · 07</span>
+    <h2>HTTP, Deeply</h2>
+    <p class="lede">Three protocol generations, one lesson: every abstraction hides latency you can only see if you know the layer beneath. Keep-alive, pooling, timeouts, idempotency, retries with backoff, rate limiting — this is production fluency.</p>
+  </header>
+
+  <table class="tbl rv">
+    <tr><th></th><th>HTTP/1.1</th><th>HTTP/2</th><th>HTTP/3</th></tr>
+    <tr><td>Transport</td><td>TCP</td><td>TCP + TLS</td><td>QUIC over UDP (TLS built-in)</td></tr>
+    <tr><td>Multiplexing</td><td>One request at a time per connection (browsers open ~6)</td><td>Many streams over one connection</td><td>Many streams; streams are independent</td></tr>
+    <tr><td>Head-of-line blocking</td><td>Application-level (queue of requests)</td><td>Solved at HTTP layer; still at TCP layer</td><td>Solved — a lost packet stalls only its stream</td></tr>
+    <tr><td>Extras</td><td>keep-alive, pipelining (dead)</td><td>HPACK header compression, server push (deprecated)</td><td>0-RTT resumption, connection migration</td></tr>
+  </table>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — WHY KEEP-ALIVE & POOLING MATTER <span class="ls">3 requests, watch the handshakes</span></div>
+    <div class="lab-b">
+      <div class="btnrow" style="margin-top:0"><button class="btn acc sm" id="kaRun">▶ run both</button></div>
+      <div class="ka-row"><div class="ka-l">no keep-alive — new TCP+TLS per request:</div><div class="ka-track" id="ka1"></div></div>
+      <div class="ka-row"><div class="ka-l">keep-alive / connection pool:</div><div class="ka-track" id="ka2"></div></div>
+      <p class="tx" id="kaTotals" style="font:12px var(--mono);color:var(--dim)"></p>
+      <p class="tx" style="margin-top:6px">Node's <code class="il">fetch</code> (undici) and <code class="il">http.Agent({ keepAlive: true })</code> do exactly the right side. Creating a new client per request is one of the most common senior-level performance bugs.</p>
+    </div>
+  </div>
+
+  <h3 class="blk rv">Status codes — click any</h3>
+  <div class="scgrid rv" id="scGrid"></div>
+  <div id="scDetail" class="rv">← pick a code</div>
+
+  <h3 class="blk rv">Idempotency — click a method</h3>
+  <div class="rv" id="idemRow"></div>
+  <p class="tx rv"><b class="k">Why it matters:</b> only idempotent operations are safe to retry blindly. A POST that charges a card needs an <code class="il">Idempotency-Key</code> header stored server-side, so retries return the original result instead of charging twice.</p>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — RETRY WITH EXPONENTIAL BACKOFF + JITTER</div>
+    <div class="lab-b">
+      <div class="ctl">
+        <label>failure rate <input type="range" id="boFail" min="0" max="100" value="70"><span id="boFailv">70</span>%</label>
+        <label>base <select id="boBase"><option>100</option><option selected>200</option><option>300</option></select>ms</label>
+        <label>max attempts <input type="range" id="boMax" min="3" max="8" value="5"><span id="boMaxv">5</span></label>
+        <label><input type="checkbox" id="boJit" checked> jitter</label>
+        <button class="btn acc sm" id="boRun">▶ send request</button>
+      </div>
+      <div class="csteps" id="boChips"></div>
+      <div class="mlog" id="boLog"></div>
+      <p class="tx" style="margin-top:10px"><code class="il">delay = min(base × 2ⁿ, cap) × jitter</code>. Jitter is not decoration — synchronized retries from 1000 clients without it create a thundering herd that re-crashes the service you're trying to save.</p>
+    </div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — requests that never end</div>
+      <div class="codewin"><div class="cbar"><span class="cname">no-timeout.ts</span></div><pre class="src">const res = await fetch(url);
+// if the server accepts the connection and then goes silent,
+// this promise hangs FOREVER. One slow dependency →
+// all your sockets and workers pile up behind it.</pre></div>
+      <div class="dd-why">Every outbound call needs a deadline. Cascading failure starts exactly here.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — timeouts everywhere, budgets end-to-end</div>
+      <div class="codewin"><div class="cbar"><span class="cname">timeouts.ts</span></div><pre class="src">const res = await fetch(url, { signal: AbortSignal.timeout(2_500) });
+// budget thinking: if the client gives me 3s and I need 2 retries,
+// each attempt gets &lt;1.5s. Timeouts must SHRINK down the call chain.</pre></div>
+      <div class="dd-why">Retry only retriable failures (5xx, timeouts, 429 — respect Retry-After), never 4xx, and never non-idempotent writes without a key.</div>
+    </div>
+  </div>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — RATE LIMITER (TOKEN BUCKET) <span class="ls">the thing that returns those 429s</span></div>
+    <div class="lab-b">
+      <div class="ctl">
+        <label>bucket size <input type="range" id="tbCap" min="4" max="20" value="8"><span id="tbCapv">8</span></label>
+        <label>refill <input type="range" id="tbRef" min="1" max="10" value="2"><span id="tbRefv">2</span>/s</label>
+        <button class="btn sm" id="tbSend">send ×1</button>
+        <button class="btn acc sm" id="tbBurst">burst ×12</button>
+        <span id="tbCount" style="margin-left:auto">200 OK: <b id="tbOk" style="color:var(--good)">0</b> · 429: <b id="tbRej" style="color:var(--bad)">0</b></span>
+      </div>
+      <div id="tbDots"></div>
+      <p class="tx" style="font-size:12.5px">Each request spends a token; tokens refill over time. Burst above capacity and the excess gets <code class="il">429</code>. Variants you should name: token bucket (this), leaky bucket (constant outflow), sliding window counters (Redis-friendly).</p>
+    </div>
+  </div>
+</section>
+
+<!-- NETWORKING -->
+<section id="networking" class="topic">
+  <header class="thead rv">
+    <span class="tag t2">TIER 2 · 08</span>
+    <h2>Node.js Networking</h2>
+    <p class="lede">Every framework request you've ever handled rode this exact path. Knowing it lets you answer "what happens when you type a URL" down to the socket — and explains why connection pooling, DNS caching and TLS session resumption matter.</p>
+  </header>
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> THE LIFE OF A REQUEST <span class="ls">click layers, or trace the whole path</span></div>
+    <div class="lab-b">
+      <div class="btnrow" style="margin-top:0"><button class="btn acc sm" id="netTrace">▶ trace request</button></div>
+      <div id="netRows"></div>
+      <div id="netDetail"><h4 id="netTitle"></h4><p id="netBody"></p><span id="netApi"></span></div>
+    </div>
+  </div>
+  <p class="tx rv">How the APIs relate: <code class="il">net.Socket</code> is raw TCP — <code class="il">http.request()</code> and <code class="il">http.createServer()</code> are HTTP parsing layered on sockets — <code class="il">https</code>/<code class="il">http2</code> add TLS/framing — <code class="il">fetch()</code> (undici) is a high-level client with a built-in keep-alive pool. Express/NestJS are just structured callbacks handed to <code class="il">createServer</code>.</p>
+</section>
+
+<!-- CACHING -->
+<section id="caching" class="topic">
+  <header class="thead rv">
+    <span class="tag t2">TIER 2 · 09</span>
+    <h2>Caching</h2>
+    <p class="lede">The two hard problems line, right here: naming and <b class="k">invalidation</b>. Know the write strategies, TTL semantics, LRU eviction, and why a cache stampede can take down the very database you were protecting.</p>
+  </header>
+
+  <table class="tbl rv">
+    <tr><th>strategy</th><th>write path</th><th>trade-off</th></tr>
+    <tr><td>Cache-aside</td><td>App reads cache → miss → DB → write cache</td><td>Simple, ubiquitous; stale window after writes; stampede risk on expiry</td></tr>
+    <tr><td>Write-through</td><td>Write DB + cache together, synchronously</td><td>Cache always fresh; every write pays double latency</td></tr>
+    <tr><td>Write-behind</td><td>Write cache now, flush to DB async</td><td>Blazing writes; crash before flush = data loss</td></tr>
+  </table>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — CACHE-ASIDE, REQUEST BY REQUEST</div>
+    <div class="lab-b">
+      <div class="btnrow" style="margin-top:0">
+        <button class="btn acc sm" id="caReq1">GET /user/42 (cold)</button>
+        <button class="btn sm" id="caReq2">GET /user/42 (warm)</button>
+        <span style="font:12px var(--mono);color:var(--dim);margin-left:auto">hits <b id="caHits" style="color:var(--good)">0</b> · misses <b id="caMiss" style="color:var(--bad)">0</b></span>
+      </div>
+      <div class="csteps" id="caSteps"></div>
+    </div>
+  </div>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — LRU CACHE (capacity-limited, recency-ordered)</div>
+    <div class="lab-b">
+      <div class="ctl">
+        <label>capacity <input type="range" id="lruCap" min="2" max="6" value="3"><span id="lruCapv">3</span></label>
+        <input type="text" id="lruKey" placeholder="key" value="user:1" style="width:110px">
+        <button class="btn acc sm" id="lruSet">set</button>
+        <button class="btn sm" id="lruGet">get</button>
+        <button class="btn sm" id="lruRand">random traffic ×8</button>
+      </div>
+      <div id="lruView"></div>
+      <div id="lruStats"></div>
+      <div class="mlog" id="lruLog"></div>
+    </div>
+  </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">lru.ts — the 10-line implementation they ask for</span></div><pre class="src">class LRU&lt;K, V&gt; {
+  #m = new Map&lt;K, V&gt;();              // Map preserves insertion order
+  constructor(private cap: number) {}
+  get(k: K): V | undefined {
+    if (!this.#m.has(k)) return undefined;
+    const v = this.#m.get(k)!;
+    this.#m.delete(k); this.#m.set(k, v);  // touch → move to newest
+    return v;
+  }
+  set(k: K, v: V) {
+    if (this.#m.has(k)) this.#m.delete(k);
+    else if (this.#m.size &gt;= this.cap)
+      this.#m.delete(this.#m.keys().next().value!); // evict OLDEST
+    this.#m.set(k, v);
+  }
+}</pre></div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — the three classic cache bugs</div>
+      <div class="codewin"><div class="cbar"><span class="cname">cache-bugs.ts</span></div><pre class="src">// 1) no TTL, no size cap → stale forever + memory leak (§05)
+cache.set('cfg', config);
+
+// 2) caching a live object → mutations leak between callers
+const u = cache.get(id); u.name = 'hacked'; // every reader sees it
+
+// 3) hot key expires → 5,000 requests all hit DB at once (stampede)</pre></div>
+      <div class="dd-why">All three are real outages with post-mortems you could find.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — TTL + jitter, immutable payloads, single-flight</div>
+      <div class="codewin"><div class="cbar"><span class="cname">cache-good.ts</span></div><pre class="src">cache.set('cfg', config, ttl(60_000 + jitter(10_000))); // spread expiry
+cache.set(id, structuredClone(user));                    // or freeze it
+// stampede guard: only ONE caller rebuilds, others await the same promise
+const inflight = new Map&lt;string, Promise&lt;User&gt;&gt;();
+async function getUser(id: string) {
+  if (!inflight.has(id))
+    inflight.set(id, load(id).finally(() =&gt; inflight.delete(id)));
+  return inflight.get(id)!;
+}</pre></div>
+      <div class="dd-why">In Redis terms: <code class="il">maxmemory-policy allkeys-lru</code>, <code class="il">SET key val EX ttl NX</code> for locks.</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUEUES -->
+<section id="queues" class="topic">
+  <header class="thead rv">
+    <span class="tag t2">TIER 2 · 10</span>
+    <h2>Queues & Messaging</h2>
+    <p class="lede">Queues decouple "received" from "processed" and absorb spikes. The price of reliability is <b class="k">at-least-once delivery</b>: messages get redelivered, so consumers must be <b class="k">idempotent</b>. After N failures, poison messages go to a dead-letter queue instead of clogging the pipe.</p>
+  </header>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — API → QUEUE → WORKER → DB <span class="ls">inject crashes, watch redelivery</span></div>
+    <div class="lab-b">
+      <div class="ctl">
+        <button class="btn acc sm" id="qsPub">publish order</button>
+        <button class="btn sm" id="qsDup">redeliver last (simulated)</button>
+        <label><input type="checkbox" id="qsChaos"> chaos: workers fail 60%</label>
+        <label><input type="checkbox" id="qsDed" checked> idempotency keys ON</label>
+      </div>
+      <div class="qboard">
+        <div class="qcol"><h5>API</h5><div id="qsApi"></div></div>
+        <div class="qcol"><h5>QUEUE</h5><div id="qsQueue"></div></div>
+        <div class="qcol"><h5>WORKER</h5><div id="qsWorker"></div></div>
+        <div class="qcol"><h5>DATABASE</h5><div id="qsDb"></div></div>
+        <div class="qcol"><h5>DLQ</h5><div id="qsDlq"></div></div>
+      </div>
+      <div id="qsStats"></div>
+      <div class="mlog" id="qsLog"></div>
+    </div>
+  </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">idempotent-consumer.ts</span></div><pre class="src">async function consume(msg: OrderEvent) {
+  // unique index on (message_id) makes this atomic across worker instances
+  const inserted = await db.query(
+    `INSERT INTO processed_events (message_id, at) VALUES ($1, now())
+     ON CONFLICT DO NOTHING`, [msg.id]);
+  if (inserted.rowCount === 0) return ack(msg);   // duplicate → skip, still ack!
+
+  await applyOrder(msg);                          // real work happens exactly once
+  await ack(msg);                                 // ack AFTER processing + persisting
+}
+// acking before processing = at-most-once (message lost on crash)
+// never acking           = infinite redelivery → DLQ</pre></div>
+
+  <table class="tbl rv">
+    <tr><th>tech</th><th>mental model</th><th>reach for it when…</th></tr>
+    <tr><td>RabbitMQ</td><td>Smart broker, dumb consumers. Routing keys, acks, DLX.</td><td>Task queues, complex routing, moderate throughput</td></tr>
+    <tr><td>Kafka</td><td>Durable append-only log. Consumers pull by offset, replayable.</td><td>Event streaming, replay/audit, huge throughput, partition order</td></tr>
+    <tr><td>Redis Streams</td><td>Log + consumer groups (XREADGROUP / XACK / pending list)</td><td>You already run Redis; lightweight jobs with groups</td></tr>
+    <tr><td>SQS</td><td>Managed queue, visibility timeout, DLQ built in</td><td>AWS-native, serverless fan-out, no broker to operate</td></tr>
+  </table>
+  <div class="signal rv"><b>🎯 INTERVIEW SIGNAL</b> Say out loud: "at-least-once + idempotent consumer = effectively-once behavior", ordering is only guaranteed per partition/queue, and ack-after-processing is what makes redelivery safe.</div>
+</section>
+
+<!-- ============ TIER 3 ============ -->
+<div class="tierband t3b rv"><div class="big">T3</div><div><h2>Tier 3 — JavaScript internals</h2><p>Interview favorites. Small topics, brutal gotchas.</p></div></div>
+
+<!-- CLOSURES -->
+<section id="closures" class="topic">
+  <header class="thead rv">
+    <span class="tag t3">TIER 3 · 11</span>
+    <h2>Closures</h2>
+    <p class="lede">A function carries its birth environment with it: variables from the enclosing scope stay alive as long as the function is reachable — even after that scope has returned. That's encapsulation, that's React hooks, and that's half your memory leaks.</p>
+  </header>
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — WATCH <code class="il">count</code> SURVIVE</div>
+    <div class="lab-b">
+      <div class="codewin" style="margin:0 0 10px"><pre class="src">function counter() {
+  let count = 0;                 // NOT global, NOT on the stack frame
+  return () =&gt; ++count;          // the arrow function closes over `count`
+}
+const inc = counter();           // counter() returned… but count didn't die</pre></div>
+      <div class="btnrow" style="margin-top:0">
+        <button class="btn acc sm" id="clCall">inc()</button>
+        <button class="btn sm" id="clReset">new counter()</button>
+      </div>
+      <div class="scopebox" id="clScope">[[Scopes]] of inc → { count: 0, …global }</div>
+      <div class="mlog" id="clOut"></div>
+      <p class="tx" style="margin-top:8px">The scope object lives on the heap, referenced by the returned function. No other code can touch <code class="il">count</code> — this is the closest thing JS has to a private field, and exactly why an accidentally long-lived closure pins memory (§05).</p>
+    </div>
+  </div>
+  <div class="peek rv"><div class="codewin"><div class="cbar"><span class="cname">the-loop-question.ts — asked constantly</span></div><pre class="src">for (var i = 0; i &lt; 3; i++) setTimeout(() =&gt; console.log(i)); // ?
+for (let j = 0; j &lt; 3; j++) setTimeout(() =&gt; console.log(j)); // ?</pre></div>
+  <button class="peek-b">▸ REVEAL OUTPUT</button>
+  <div class="peek-a"><b>3 3 3</b> then <b>0 1 2</b>. <code class="il">var</code> is function-scoped: all three callbacks close over the <em>same</em> i, which is 3 by the time they run. <code class="il">let</code> creates a fresh binding <em>per iteration</em>, so each callback captures its own j.</div></div>
+</section>
+
+<!-- PROTOTYPES -->
+<section id="prototypes" class="topic">
+  <header class="thead rv">
+    <span class="tag t3">TIER 3 · 12</span>
+    <h2>The Prototype Chain</h2>
+    <p class="lede">Property lookup is a walk: own properties → <code class="il">[[Prototype]]</code> → its prototype → … → <code class="il">null</code>. <code class="il">class</code>/<code class="il">extends</code> are syntax over exactly this. <code class="il">instanceof</code> just walks the chain asking "do I hit X.prototype?"</p>
+  </header>
+  <div class="pchain rv">
+    <span class="pnode on" data-k="dog">dog</span><span class="parr">→</span>
+    <span class="pnode" data-k="dp">Dog.prototype</span><span class="parr">→</span>
+    <span class="pnode" data-k="op">Object.prototype</span><span class="parr">→</span>
+    <span class="pnode" data-k="nl">null</span>
+  </div>
+  <div id="prDetail" class="rv">Own properties only: <code class="il">{ name: 'Rex' }</code>. <code class="il">bark()</code> is NOT here — lookup walks up until it finds it.</div>
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T</div>
+      <div class="codewin"><div class="cbar"><span class="cname">proto-bad.ts</span></div><pre class="src">obj.__proto__ = other;        // slow, non-standard, mutates the chain live
+Object.prototype.hi = fn;     // monkey-patching poisons EVERY object
+if (obj.hasOwnProperty('x'))  // breaks if obj = Object.create(null)</pre></div>
+      <div class="dd-why">Prototype mutation defeats engine optimizations and leaks behavior into unrelated code.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO</div>
+      <div class="codewin"><div class="cbar"><span class="cname">proto-good.ts</span></div><pre class="src">const clean = Object.create(null);         // no prototype at all — safe dict
+Object.getPrototypeOf(obj);                // read the chain properly
+Object.hasOwn(obj, 'x');                   // null-safe own-property check
+class Dog extends Animal {}                // the chain, with guard rails</pre></div>
+      <div class="dd-why">Read the chain, never rewrite it; prefer classes and composition.</div>
+    </div>
+  </div>
+</section>
+
+<!-- THIS -->
+<section id="this" class="topic">
+  <header class="thead rv">
+    <span class="tag t3">TIER 3 · 13</span>
+    <h2>this</h2>
+    <p class="lede">Five rules, checked in this order: <b class="k">new</b> binding → <b class="k">explicit</b> (call/apply/bind) → <b class="k">implicit</b> (obj.method()) → <b class="k">lexical</b> (arrows capture the surrounding this) → default (undefined in strict mode). Detaching a method from its object is the #1 real-world bug here.</p>
+  </header>
+  <div id="qzThis" class="rv"></div>
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T — pass methods as bare callbacks</div>
+      <div class="codewin"><div class="cbar"><span class="cname">this-bad.ts</span></div><pre class="src">class Timer {
+  seconds = 0;
+  tick() { this.seconds++; }
+}
+const t = new Timer();
+setInterval(t.tick, 1000);   // this === undefined (strict) → TypeError</pre></div>
+      <div class="dd-why">The reference <code class="il">t.tick</code> is just a function; the <code class="il">t.</code> context evaporates the moment you hand it away.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO — bind at the boundary</div>
+      <div class="codewin"><div class="cbar"><span class="cname">this-good.ts</span></div><pre class="src">setInterval(() =&gt; t.tick(), 1000);   // arrow wraps the call site
+setInterval(t.tick.bind(t), 1000);   // or pin it explicitly
+// React era equivalent: class fields  tick = () =&gt; { this.seconds++; }</pre></div>
+      <div class="dd-why">If you can state which of the five rules applies and why, this topic is done.</div>
+    </div>
+  </div>
+</section>
+
+<!-- EQUALITY -->
+<section id="equality" class="topic">
+  <header class="thead rv">
+    <span class="tag t3">TIER 3 · 14</span>
+    <h2>Equality & Coercion</h2>
+    <p class="lede"><code class="il">===</code> compares without converting. <code class="il">==</code> converts then compares (numbers win over strings, booleans become numbers, null only equals undefined). <code class="il">Object.is</code> is the strictest: NaN equals NaN, and +0 ≠ −0. Senior stance: always <code class="il">===</code>, except the one blessed idiom <code class="il">x == null</code> (catches null <em>and</em> undefined).</p>
+  </header>
+  <div id="qzEq" class="rv"></div>
+</section>
+
+<!-- REFERENCES -->
+<section id="references" class="topic">
+  <header class="thead rv">
+    <span class="tag t3">TIER 3 · 15</span>
+    <h2>References, Destructuring & Spread</h2>
+    <p class="lede">Objects are handled by <b class="k">reference</b>: assignment copies the pointer, not the data. Spread is <b class="k">shallow</b> — one level deep. Knowing when two names point at one object explains half of all "who mutated my state?" mysteries.</p>
+  </header>
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — HOW SHARED IS SHARED?</div>
+    <div class="lab-b">
+      <div class="btnrow" style="margin-top:0">
+        <span style="font:12px var(--mono);color:var(--dim)">const b =</span>
+        <button class="btn sm" data-m="alias">a</button>
+        <button class="btn sm" data-m="spread">{...a}</button>
+        <button class="btn sm" data-m="deep">structuredClone(a)</button>
+        <span style="color:var(--faint)">|</span>
+        <button class="btn acc sm" id="refM1">b.x = 2</button>
+        <button class="btn acc sm" id="refM2">b.meta.v = 9</button>
+      </div>
+      <div class="refbox" style="margin-top:12px">
+        <div class="refobj"><em>const a = { x: 1, meta: { v: 1 } }</em><span id="refA"></span></div>
+        <div class="refobj"><em>b</em><span id="refB"></span></div>
+      </div>
+      <div id="refVerdict"></div>
+    </div>
+  </div>
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T</div>
+      <div class="codewin"><div class="cbar"><span class="cname">refs-bad.ts</span></div><pre class="src">const config = { db: { host: 'prod' } };
+const testConfig = { ...config, db: { ...config.db, host: 'local' } };
+// …unless you remember EVERY nested level, shared sub-objects mutate both</pre></div>
+      <div class="dd-why">Hand-rolled deep copies rot the moment the shape grows a field.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO</div>
+      <div class="codewin"><div class="cbar"><span class="cname">refs-good.ts</span></div><pre class="src">const copy = structuredClone(original);        // deep, built-in, Node 17+
+const { db, ...rest } = config;                // destructure what you need
+return { ...user, name: updated };             // shallow immutability for flat shapes</pre></div>
+      <div class="dd-why">Default to cloning at trust boundaries (caches, queues, test fixtures); share references only inside clearly owned code.</div>
+    </div>
+  </div>
+</section>
+
+<!-- GENERATORS -->
+<section id="generators" class="topic">
+  <header class="thead rv">
+    <span class="tag t3">TIER 3 · 16</span>
+    <h2>Generators & Iterators</h2>
+    <p class="lede">A generator is a function that can <b class="k">pause and resume</b>, keeping its local state alive between calls. Before async/await existed, generator + runner libraries <em>were</em> async JS (co, Koa v1) — understanding them demystifies <code class="il">for await…of</code>, lazy sequences, and how frameworks sequence middleware.</p>
+  </header>
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — STEP THROUGH next()</div>
+    <div class="lab-b">
+      <div class="codewin" style="margin:0"><div class="cbar"><span class="cname">walk.js</span></div><pre class="src" id="genCode">function* walk() {
+  yield 'parse request';
+  yield 'query database';
+  return 'send response';
+}</pre></div></div>
+      <div class="btnrow"><button class="btn acc sm" id="genNext">gen.next()</button><button class="btn sm" id="genReset">reset</button></div>
+      <div class="scopebox" id="genOut">→ gen not started. The body hasn't run a single line yet (generators are lazy).</div>
+    </div>
+  </div>
+  <div class="codewin rv"><div class="cbar"><span class="cname">iterator-protocol.ts — the shape under everything</span></div><pre class="src">// any object with next(): { value, done } is iterable-by-hand;
+// add [Symbol.iterator]() and it works in for…of, spread, destructuring
+const range = {
+  [Symbol.iterator]() {
+    let n = 0;
+    return { next: () =&gt; ({ value: n, done: n++ &gt;= 3 }) };
+  },
+};
+[...range]; // [0, 1, 2]
+
+// async iteration = streams of promises (e.g. paginated API, S3 list)
+for await (const page of paginate(query)) process(page);</pre></div>
+</section>
+
+<!-- ============ TIER 4 ============ -->
+<div class="tierband t4b rv"><div class="big">T4</div><div><h2>Tier 4 — TypeScript</h2><p>For a NestJS stack these aren't tricks — they're the day-to-day vocabulary.</p></div></div>
+
+<section id="typescript" class="topic">
+  <header class="thead rv">
+    <span class="tag t4">TIER 4 · 17</span>
+    <h2>TypeScript, Advanced</h2>
+    <p class="lede">The through-line: <b class="k">model states as unions, behavior as functions over them</b>. Discriminated unions make impossible states unrepresentable; generics keep pipelines honest; narrowing turns runtime checks into compile-time guarantees.</p>
+  </header>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">result.ts — the pattern from your brief, fully wired</span></div><pre class="src">type Result&lt;T&gt; =
+  | { success: true;  data: T }
+  | { success: false; error: Error };
+
+function handle(r: Result&lt;User&gt;) {
+  if (!r.success) {
+    r.error;            // : Error — the union NARROWED via the literal field
+    throw r.error;
+  }
+  r.data;               // : User — no casts, no `!`
+}
+
+// exhaustiveness: if someone adds a third variant, this stops compiling
+function assertNever(x: never): never {
+  throw new Error('unhandled variant');
+}</pre></div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">generics.ts — constraints + inference</span></div><pre class="src">interface Entity { id: string }
+
+function process&lt;T extends Entity&gt;(entity: T): T {   // T keeps its specific shape
+  return entity;                                      // User in → User out, not Entity
+}
+
+type Unwrap&lt;T&gt; = T extends Promise&lt;infer V&gt; ? V : T;  // infer = pattern matching on types
+type A = Unwrap&lt;Promise&lt;string&gt;&gt;;                      // string
+type B = Unwrap&lt;number&gt;;                               // number
+
+type Mapped&lt;T&gt; = { readonly [K in keyof T]?: T[K] };  // mapped: transform every key</pre></div>
+
+  <h3 class="blk rv">Utility types you should be able to write from scratch</h3>
+  <table class="tbl rv">
+    <tr><th>type</th><th>what it does</th><th>roughly equivalent to</th></tr>
+    <tr><td>Partial&lt;T&gt;</td><td>all props optional</td><td>{ [K in keyof T]?: T[K] }</td></tr>
+    <tr><td>Required&lt;T&gt;</td><td>all props mandatory</td><td>{ [K in keyof T]-?: T[K] }</td></tr>
+    <tr><td>Pick / Omit</td><td>keep / drop keys</td><td>filter over keyof T</td></tr>
+    <tr><td>Record&lt;K, V&gt;</td><td>dictionary</td><td>{ [P in K]: V }</td></tr>
+    <tr><td>ReturnType&lt;F&gt;</td><td>what F returns</td><td>F extends (...a: any[]) =&gt; infer R ? R : never</td></tr>
+    <tr><td>Awaited&lt;T&gt;</td><td>recursively unwrap Promise</td><td>what await gives you</td></tr>
+  </table>
+
+  <h3 class="blk rv">unknown vs any vs never — click to reveal each resolution</h3>
+  <div class="g2 rv">
+    <div class="tsc"><div class="e">type X = 'id' | 'email' extends string ? true : false</div><div class="hint">click to reveal</div><div class="a">→ true (conditional type distributes & resolves)</div></div>
+    <div class="tsc"><div class="e">type U = Unwrap&lt;Promise&lt;string&gt;&gt;</div><div class="hint">click to reveal</div><div class="a">→ string</div></div>
+    <div class="tsc"><div class="e">ReturnType&lt;typeof fetchUser&gt;   // fetchUser(): Promise&lt;User&gt;</div><div class="hint">click to reveal</div><div class="a">→ Promise&lt;User&gt; (unwrap with Awaited to get User)</div></div>
+    <div class="tsc"><div class="e">keyof { id: string; name: string }</div><div class="hint">click to reveal</div><div class="a">→ "id" | "name"</div></div>
+    <div class="tsc"><div class="e">const e: unknown = getError();
+e.message</div><div class="hint">click to reveal</div><div class="a">→ COMPILE ERROR. unknown is "anything, but prove it first": if (e instanceof Error) e.message ✓. That's the whole difference vs any — any disables checking, unknown demands narrowing.</div></div>
+    <div class="tsc"><div class="e">function fail(msg: string): never { throw new Error(msg) }</div><div class="hint">click to reveal</div><div class="a">→ never = the bottom type: values that never exist. Powers exhaustiveness checks and unreachable-branch detection.</div></div>
+  </div>
+
+  <div class="dd rv">
+    <div class="dd-col bad"><div class="dd-h">✗ DON'T</div>
+      <div class="codewin"><div class="cbar"><span class="cname">ts-bad.ts</span></div><pre class="src">catch (e: any) { logger.error(e.message); } // any: e might be a string
+const u = response as User;                  // casts silence the compiler, not the runtime
+type State = { loading: boolean; error?: Error; data?: User };
+// loading=false, error=set, data=set → which is it? unrepresentable mess</pre></div>
+      <div class="dd-why">Each of these moves a failure from compile time to 3am production.</div>
+    </div>
+    <div class="dd-col good"><div class="dd-h">✓ DO</div>
+      <div class="codewin"><div class="cbar"><span class="cname">ts-good.ts</span></div><pre class="src">catch (e: unknown) {
+  if (e instanceof Error) logger.error(e.message);
+  else logger.error(String(e));
+}
+const u = UserSchema.parse(response);        // validate at the boundary (zod)
+type State =                                 // discriminated union: exactly ONE truth
+  | { status: 'loading' }
+  | { status: 'error'; error: Error }
+  | { status: 'ready'; data: User };</pre></div>
+      <div class="dd-why">Structural typing means you never need nominal hacks — if it has the shape, it is the type.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DISTRIBUTED ============ -->
+<div class="tierband t5b rv"><div class="big">T∞</div><div><h2>The most valuable senior topic — distributed systems</h2><p>Representative of real senior work far more than obscure syntax. The defining question: <em>what happens when step 3 of 4 fails?</em></p></div></div>
+
+<section id="distributed" class="topic">
+  <header class="thead rv">
+    <span class="tag t5">TIER ∞ · 18</span>
+    <h2>Concurrency at System Scale</h2>
+    <p class="lede">One client → one API → four services. Any arrow can fail, time out, or deliver twice. Your job is to design so that partial failure leaves the system <b class="k">consistent, recoverable, and honest</b> — not "mostly fine".</p>
+  </header>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">topology — the interview whiteboard</span></div><pre class="src">                ┌─── Payment Service
+Client → API → Order Service
+                ├─── Inventory Service
+                └─── Notification Service
+
+Question: Inventory reserved ✓ … Payment declined ✗
+Now what? You owe the system an ANSWER for this moment.</pre></div>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — SAGA ORCHESTRATOR <span class="ls">pick a failure, run the order</span></div>
+    <div class="lab-b">
+      <div class="ctl">
+        <label>inject failure at:
+          <select id="sgFail">
+            <option value="-1">none — happy path</option>
+            <option value="1">step 2 · inventory</option>
+            <option value="2" selected>step 3 · payment</option>
+            <option value="3">step 4 · notification</option>
+          </select>
+        </label>
+        <button class="btn acc sm" id="sgRun">▶ place order</button>
+      </div>
+      <ul class="sgl" id="sgSteps"></ul>
+      <div id="sgBanner"></div>
+      <div class="mlog" id="sgLog"></div>
+    </div>
+  </div>
+
+  <div class="g2 rv">
+    <div class="card"><h4>Saga</h4><p>A chain of local transactions, each with a <b>compensating action</b>. Orchestration (one coordinator — easier to reason about) vs choreography (services react to events — looser coupling, harder to see the whole flow).</p></div>
+    <div class="card"><h4>Outbox pattern</h4><p>Write the domain change AND the event into the <b>same DB transaction</b>; a relay (poller / CDC / Debezium) publishes the event afterwards. Kills the "saved but never published" dual-write bug.</p></div>
+    <div class="card"><h4>Idempotency everywhere</h4><p>Client → API: Idempotency-Key header. Queue consumers: processed-message table. Retries become harmless replays instead of double charges.</p></div>
+    <div class="card"><h4>Eventual consistency</h4><p>Accept that replicas/services disagree for a while; design UX and invariants around "converges soon", not "always in sync".</p></div>
+    <div class="card"><h4>Distributed locks</h4><p>Redis SETNX + TTL for coarse coordination. Know the caveat: locks expire while work continues → fencing tokens or DB-level guarantees for correctness-critical paths.</p></div>
+    <div class="card"><h4>Timeouts, budgets & DLQ</h4><p>Every remote call: deadline. Every retry: cap + backoff. Every unprocessable message: dead-letter queue + alert — never silent drop, never infinite retry.</p></div>
+  </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">outbox.ts</span></div><pre class="src">await db.transaction(async (tx) =&gt; {
+  await tx.orders.update(id, { status: 'PAID' });            // domain change
+  await tx.outbox.insert({                                    // event, SAME transaction
+    topic: 'orders', type: 'OrderPaid', payload: { id },
+  });
+});
+// separate relay process: SELECT … FOR UPDATE SKIP LOCKED → publish → DELETE</pre></div>
+
+  <div class="lab rv">
+    <div class="lab-h"><span class="pulse"></span> LAB — CIRCUIT BREAKER <span class="ls">3 fails in the last 5 calls → OPEN for 4s</span></div>
+    <div class="lab-b">
+      <div class="ctl">
+        <label>downstream failure rate <input type="range" id="cbFail" min="0" max="100" value="60"><span id="cbFailv">60</span>%</label>
+        <button class="btn acc sm" id="cbCall">call downstream</button>
+        <span class="cbstate CLOSED" id="cbState">CLOSED</span>
+        <span id="cbCool" style="font:11px var(--mono);color:var(--faint)"></span>
+      </div>
+      <div id="cbDots"></div>
+      <div class="mlog" id="cbLog"></div>
+      <p class="tx" style="margin-top:8px">CLOSED → traffic flows. OPEN → requests fail <b class="k">instantly</b> without touching the sick service (that fast-fail is the whole point: it stops pile-ups). HALF-OPEN after the cooldown lets one probe through. Flip failure rate to 0% and watch recovery.</p>
+    </div>
+  </div>
+
+  <div class="signal rv"><b>🎯 THE SENIOR ANSWER, OUT LOUD</b> "I'd make each step idempotent, drive the flow with an orchestrator saga backed by an outbox so no event is lost, put timeouts and a circuit breaker on every outbound call, dead-letter anything that fails repeatedly, and accept eventual consistency — with compensations for everything reversible and retries for everything that isn't."</div>
+</section>
+
+<footer>
+  <span>node:senior — built to be broken, run, and rebuilt. Every lab executes real JS.</span>
+  <button class="btn sm" id="resetAll">reset progress</button>
+</footer>
+</main>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------- syntax highlighter ---------- */
+(function(){
+  const KWS=new Set('const let var function return if else for of in new class extends async await yield try catch finally throw import from export default typeof instanceof this super static get set null undefined true false void delete switch case break continue do while type interface implements readonly enum public private protected as satisfies keyof infer never unknown any string number boolean object symbol bigint declare abstract override module namespace require out asserts unique is'.split(' '));
+  const rWs=/\s+/y,rC1=/\/\/[^\n]*/y,rC2=/\/\*[\s\S]*?(?:\*\/|$)/y,rT=/`(?:\\.|[^`\\])*`/y,rS=/"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'/y,rN=/\d[\d_]*(?:\.\d+)?/y,rI=/[A-Za-z_$][\w$]*/y;
+  function hl(src){
+    let out='',i=0;const N=src.length;
+    const eat=re=>{re.lastIndex=i;const m=re.exec(src);return m&&m.index===i?m[0]:null;};
+    while(i<N){let t;
+      if(t=eat(rWs)){out+=t;i+=t.length;continue;}
+      if(t=eat(rC1)){out+='<span class="tcm">'+esc(t)+'</span>';i+=t.length;continue;}
+      if(t=eat(rC2)){out+='<span class="tcm">'+esc(t)+'</span>';i+=t.length;continue;}
+      if(t=eat(rT)||eat(rS)){out+='<span class="tstr">'+esc(t)+'</span>';i+=t.length;continue;}
+      if(t=eat(rN)){out+='<span class="tnum">'+esc(t)+'</span>';i+=t.length;continue;}
+      if(t=eat(rI)){let cls='';
+        if(KWS.has(t))cls='tkw';
+        else{let j=i+t.length;while(j<N&&/\s/.test(src[j]))j++;
+          if(src[j]==='(')cls='tfn';else if(/^[A-Z]/.test(t))cls='tty';}
+        out+=cls?'<span class="'+cls+'">'+t+'</span>':t;i+=t.length;continue;}
+      out+=esc(src[i]);i++;}
+    return out;
+  }
+  document.querySelectorAll('pre.src').forEach(p=>{const s=p.textContent.replace(/^\n+|\s+$/g,'');p.innerHTML=hl(s);});
+})();
+
+/* ---------- copy buttons ---------- */
+document.querySelectorAll('.codewin').forEach(w=>{
+  const pre=w.querySelector('pre');if(!pre)return;
+  const b=document.createElement('button');b.className='copy';b.textContent='copy';
+  (w.querySelector('.cbar')||w).appendChild(b);
+  b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(pre.innerText);b.textContent='copied ✓';setTimeout(()=>b.textContent='copy',1200);};
+});
+
+/* ---------- reveal + scrollspy + nav ---------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+const links=new Map([...document.querySelectorAll('.nav a')].map(a=>[a.getAttribute('href').slice(1),a]));
+const spy=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('.nav a.on').forEach(a=>a.classList.remove('on'));const l=links.get(e.target.id);if(l)l.classList.add('on');}}),{rootMargin:'-30% 0px -60% 0px'});
+document.querySelectorAll('main section[id]').forEach(s=>spy.observe(s));
+$('menuBtn').onclick=()=>{$('sidebar').classList.toggle('open');$('backdrop').classList.toggle('show');};
+$('backdrop').onclick=()=>{$('sidebar').classList.remove('open');$('backdrop').classList.remove('show');};
+document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>{$('sidebar').classList.remove('open');$('backdrop').classList.remove('show');}));
+
+/* ---------- progress ---------- */
+const KEY='snjs-progress';
+let done=new Set(JSON.parse(localStorage.getItem(KEY)||'[]'));
+function paintProg(){const tot=document.querySelectorAll('.chk input').length;
+  $('progTxt').textContent=done.size+'/'+tot;$('progBar').style.width=(done.size/tot*100)+'%';}
+document.querySelectorAll('.chk input').forEach(cb=>{cb.checked=done.has(cb.name);
+  cb.onchange=()=>{cb.checked?done.add(cb.name):done.delete(cb.name);
+    localStorage.setItem(KEY,JSON.stringify([...done]));paintProg();};});
+paintProg();
+$('resetAll').onclick=()=>{done=new Set();localStorage.removeItem(KEY);
+  document.querySelectorAll('.chk input').forEach(cb=>cb.checked=false);paintProg();};
+
+/* ---------- hero puzzle ---------- */
+(function(){
+  const chipsOrder=['setTimeout(0)','start','promise.then','end','nextTick'];
+  const ans=['start','end','nextTick','promise.then','setTimeout(0)'];
+  const meta={'start':'call stack','end':'call stack','nextTick':'nextTick queue','promise.then':'microtask queue','setTimeout(0)':'timers phase'};
+  let picked=[];
+  function paintChips(){const c=$('heroChips');c.innerHTML='';
+    chipsOrder.forEach(k=>{const b=document.createElement('button');
+      b.className='hchip'+(picked.includes(k)?' used':'');b.textContent=k;
+      b.onclick=()=>{if(picked.length>=5)return;picked.push(k);paintChips();paintGuess();};
+      c.appendChild(b);});}
+  function paintGuess(){$('heroGuess').innerHTML=picked.length?
+    picked.map((k,i)=>'<span class="gsel">'+(i+1)+'·'+k+'</span>').join(''):
+    '<span class="gdim">click outputs in the order Node prints them…</span>';}
+  paintChips();paintGuess();
+  $('heroRun').onclick=()=>{
+    if(picked.length<5){$('heroVerdict').textContent='place all 5 outputs first.';return;}
+    $('heroRun').disabled=true;const out=$('heroOut');out.innerHTML='';
+    ans.forEach((k,i)=>setTimeout(()=>{
+      const d=document.createElement('div');d.className='hline';
+      d.innerHTML='<span class="hord">'+(i+1)+'</span>'+esc(k)+'<span class="hbadge">'+meta[k]+'</span>';
+      out.appendChild(d);
+      if(i===ans.length-1){let s=0;picked.forEach((p,j)=>{if(p===ans[j])s++;});
+        const v=$('heroVerdict');
+        v.innerHTML=(s===5?'<b>5/5.</b> You already think in phases. ':'<b>'+s+'/5.</b> ')+
+          'The invariant: sync code → nextTick → microtasks → timers. Every time, every Node version.';
+        v.className='hverdict'+(s===5?' win':'');}
+    },i*430));};
+  $('heroReset').onclick=()=>{picked=[];$('heroOut').innerHTML='';$('heroVerdict').textContent='';$('heroRun').disabled=false;paintChips();paintGuess();};
+})();
+
+/* ---------- phases ---------- */
+(function(){
+  const PH={timers:'Executes expired setTimeout/setInterval callbacks. Node checks expiry when the phase runs — timers are never early, can be late.',
+    pending:'System-level callbacks: certain socket errors, write-side drains, other internals Node wants to run "soon but not now".',
+    poll:'The heart of the loop: retrieves new I/O events and runs I/O callbacks (fs reads completing, socket data, DNS results). Node can block here waiting for work.',
+    check:'setImmediate() callbacks fire here — immediately after poll. This is why setImmediate beats setTimeout(0) inside I/O callbacks.',
+    close:'Close callbacks: socket.on("close") and similar teardown events. Then the loop either re-enters timers or exits if nothing is left.'};
+  document.querySelectorAll('.ph').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.ph').forEach(x=>x.classList.toggle('on',x===b));
+    $('phaseInfo').textContent=PH[b.dataset.p];});
+})();
+
+/* ---------- event loop demo 2 ---------- */
+$('elRun2').onclick=()=>{
+  const out=$('el2Out');out.innerHTML='';const t0=performance.now();
+  const lg=(t,ms)=>{const d=document.createElement('div');d.className='hline';
+    d.innerHTML='<span class="hord">'+ms+'</span>'+t;out.appendChild(d);};
+  lg('script start','+0ms');
+  setTimeout(()=>lg('timer fired — was already due, but waited for the microtask','+'+Math.round(performance.now()-t0)+'ms'),0);
+  queueMicrotask(()=>{lg('microtask: blocking the thread 60ms…','+'+Math.round(performance.now()-t0)+'ms');
+    const end=performance.now()+60;while(performance.now()<end);
+    lg('microtask done','+'+Math.round(performance.now()-t0)+'ms');});
+  lg('script end','+0ms');
+};
+
+/* ---------- promise lab ---------- */
+(function(){
+  const st=[{ok:true,ms:600},{ok:true,ms:1400},{ok:false,ms:900}];
+  function paint(){
+    $('plRows').innerHTML=st.map((p,i)=>{const L='ABC'[i];
+      return '<div class="plrow"><span class="plname">P'+(i+1)+'</span>'+
+      '<button class="plst '+(p.ok?'ok':'bad')+'" data-i="'+i+'">'+(p.ok?'✓ resolves':'✗ rejects')+'</button>'+
+      '<input type="range" min="200" max="2000" step="100" value="'+p.ms+'" data-i="'+i+'">'+
+      '<span class="plms">'+p.ms+'ms → '+(p.ok?'"'+L+'"':'Error("'+L+' blew up")')+'</span></div>';}).join('');
+    document.querySelectorAll('#plRows .plst').forEach(b=>b.onclick=()=>{st[+b.dataset.i].ok=!st[+b.dataset.i].ok;paint();});
+    document.querySelectorAll('#plRows input').forEach(r=>r.oninput=()=>{
+      st[+r.dataset.i].ms=+r.value;
+      r.parentElement.querySelector('.plms').textContent=r.value+'ms → '+(st[+r.dataset.i].ok?'"'+'ABC'[+r.dataset.i]+'"':'Error("'+'ABC'[+r.dataset.i]+' blew up")');});
+  }
+  paint();
+  const fmt=v=>{if(Array.isArray(v))return '['+v.map(x=>(x&&typeof x==='object'&&'status' in x)?(x.status==='fulfilled'?'✓':'✗'):JSON.stringify(x)).join(', ')+']';
+    if(v instanceof Error)return 'Error("'+v.message+'")';if(v instanceof AggregateError)return 'AggregateError('+v.errors.length+' rejections)';return JSON.stringify(v);};
+  $('plRun').onclick=async()=>{
+    $('plRun').disabled=true;const t0=performance.now();
+    const bars=$('plBars');bars.innerHTML='';
+    st.forEach((p,i)=>{bars.insertAdjacentHTML('beforeend',
+      '<div class="pbar"><span>P'+(i+1)+'</span><div class="ptrack"><div class="pfill'+(p.ok?' ok':' bad')+'" id="pf'+i+'"></div></div></div>');});
+    const mk=()=>st.map((p,i)=>new Promise((res,rej)=>setTimeout(()=>p.ok?res('ABC'[i]):rej(new Error('ABC'[i]+' blew up')),p.ms)));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      st.forEach((p,i)=>{const f=$('pf'+i);f.style.transitionDuration=p.ms+'ms';f.style.width='100%';});}));
+    const wrap=p=>p.then(v=>({ok:true,v,ms:performance.now()-t0})).catch(e=>({ok:false,e,ms:performance.now()-t0}));
+    const [all,race,any,set]=await Promise.all([wrap(Promise.all(mk())),wrap(Promise.race(mk())),wrap(Promise.any(mk())),wrap(Promise.allSettled(mk()))]);
+    const line=(n,r,x)=>'<span class="pn">'+n+'</span><span class="pv">'+(r.ok?'✓ ':'✗ ')+fmt(r.ok?r.v:r.e)+' · '+Math.round(r.ms)+'ms</span><span class="px">'+x+'</span>';
+    const anyRej=st.every(p=>!p.ok);
+    $('plRes').innerHTML=
+      line('Promise.all',all,all.ok?'Fulfilled — bounded by the SLOWEST promise. Parallel, not serial.':'Rejected the moment the first promise rejected. The others kept running — their results were simply discarded.')+
+      line('Promise.race',race,'First SETTLEMENT wins — fulfil or reject. The classic use: race(work, timeout).')+
+      line('Promise.any',any,any.ok?'First FULFILMENT wins; rejections are ignored unless every promise fails.':'AggregateError — all three rejected, so any() had nothing to give.')+
+      line('Promise.allSettled',set,'Never rejects. You get every outcome — the right tool for batch jobs and fan-out reports.');
+    $('plRun').disabled=false;
+  };
+  document.querySelectorAll('.ptab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('on',x===t));
+    document.querySelectorAll('.ppane').forEach(p=>p.hidden=p.id!==t.dataset.pane);});
+})();
+
+/* ---------- gantt / mapLimit ---------- */
+(function(){
+  let busy=false;
+  const gN=$('gN'),gL=$('gL');
+  gN.oninput=()=>$('gNv').textContent=gN.value;
+  gL.oninput=()=>$('gLv').textContent=gL.value;
+  $('gRun').onclick=async()=>{
+    if(busy)return;busy=true;$('gRun').disabled=true;
+    const n=+gN.value,lim=+gL.value,base=650;
+    const dur=Array.from({length:n},()=>Math.round(base*(0.5+Math.random())));
+    const serial=dur.reduce((a,b)=>a+b,0),par=Math.max(...dur);
+    const est=Math.max(serial/lim,par);
+    const W=$('gantt').clientWidth||700;
+    const pxms=Math.max(0.06,Math.min(0.6,(W-120)/est));
+    $('gantt').innerHTML=dur.map((d,i)=>'<div class="grow"><span class="glab">T'+String(i+1).padStart(2,'0')+'</span><div class="gtrack"><div class="gbar" id="gb'+i+'"></div></div><span class="gms" id="gm'+i+'"></span></div>').join('');
+    const taken=new Set(),running=new Set(),starts={};let done=0,animOn=false;
+    const t0=performance.now();
+    const tick=()=>{const now=performance.now();
+      running.forEach(j=>{const b=$('gb'+j);if(b)b.style.width=((now-starts[j])*pxms)+'px';});
+      if(running.size)requestAnimationFrame(tick);else animOn=false;};
+    const stat=()=>$('gStats').innerHTML='in-flight <b>'+running.size+'</b> · done <b>'+done+'/'+n+'</b> · limit '+lim;
+    async function worker(){for(;;){let j=-1;
+      for(let k=0;k<n;k++){if(!taken.has(k)){taken.add(k);j=k;break;}}
+      if(j<0)return;
+      starts[j]=performance.now();running.add(j);
+      const b=$('gb'+j);b.style.left=((starts[j]-t0)*pxms)+'px';b.classList.add('run');
+      if(!animOn){animOn=true;requestAnimationFrame(tick);}
+      stat();await sleep(dur[j]);
+      running.delete(j);done++;
+      b.classList.remove('run');b.classList.add('done');
+      b.style.width=((performance.now()-starts[j])*pxms)+'px';
+      $('gm'+j).textContent=Math.round(performance.now()-starts[j])+'ms';stat();}}
+    stat();
+    await Promise.all(Array.from({length:Math.min(lim,n)},worker));
+    const total=Math.round(performance.now()-t0);
+    $('gStats').innerHTML+=' · total <b>'+total+'ms</b> · serial would be '+Math.round(serial)+'ms · unbounded all-at-once '+par+'ms';
+    busy=false;$('gRun').disabled=false;
+  };
+})();
+
+/* ---------- backpressure ---------- */
+(function(){
+  const HWM=70,CAP=100;
+  let buffer=0,prod=45,cons=12,bpOn=true,paused=false,dead=false,last=performance.now();
+  const log=$('bpLog');
+  const lg=t=>{log.insertAdjacentHTML('afterbegin','<div>'+t+'</div>');while(log.children.length>5)log.lastChild.remove();};
+  function frame(now){
+    const dt=Math.min(0.1,(now-last)/1000);last=now;
+    if(!dead){
+      if(paused){if(buffer<=HWM*0.4){paused=false;lg('⬇ drained below 40% of HWM → <b>resume</b> producer');}}
+      else{buffer+=prod*dt;
+        if(bpOn&&buffer>=HWM){buffer=HWM;paused=true;lg('⚠ write() returned false at highWaterMark → <b>pause</b> producer');}}
+      buffer-=cons*dt;if(buffer<0)buffer=0;
+      if(!bpOn&&buffer>=CAP){buffer=CAP;dead=true;$('bpCrash').hidden=false;lg('💥 heap limit reached — process would OOM');}
+    }
+    const f=$('bpFill');f.style.width=buffer+'%';
+    f.className='bpfill'+(buffer>=HWM?' hot':buffer>=HWM*0.7?' warm':'');
+    $('bpLvl').textContent=Math.round(buffer)+' / '+CAP+' chunks'+(paused?' · PRODUCER PAUSED':'');
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  $('bpProd').oninput=e=>{prod=+e.target.value;$('bpProdv').textContent=prod;};
+  $('bpCons').oninput=e=>{cons=+e.target.value;$('bpConsv').textContent=cons;};
+  $('bpOnChk').onchange=e=>{bpOn=e.target.checked;lg(bpOn?'backpressure handling ON':'backpressure handling OFF — buffer is now unbounded');};
+  $('bpReset').onclick=()=>{buffer=0;dead=false;paused=false;$('bpCrash').hidden=true;log.innerHTML='';};
+})();
+
+/* ---------- leak lab ---------- */
+(function(){
+  let ret=0,gar=0,users=0,listeners=0;const MAX=120;
+  const log=$('lkLog');
+  const lg=t=>{log.insertAdjacentHTML('afterbegin','<div>'+t+'</div>');while(log.children.length>6)log.lastChild.remove();};
+  function paint(){$('lkR').style.width=Math.min(100,ret/MAX*100)+'%';
+    $('lkG').style.width=Math.min(100-ret/MAX*100,gar/MAX*100)+'%';
+    $('lkTxt').textContent='heapUsed ≈ '+(ret+gar)+'MB  (retained '+ret+'MB + garbage '+gar+'MB)';
+    $('lkWarn').hidden=ret<100;}
+  $('lkA').onclick=()=>{ret+=8;lg('cache.set("user:'+(++users)+'") — module-level Map keeps growing, nothing ever evicts');paint();};
+  $('lkB').onclick=()=>{ret+=3;lg('emitter.on("data", handler) — listener #'+(++listeners)+' pinned forever, closure and all');paint();};
+  $('lkChurn').onclick=()=>{gar+=10;lg('request handled — 10MB of short-lived objects created (this part is healthy)');paint();};
+  $('lkGC').onclick=()=>{lg('GC sweep — reclaimed '+gar+'MB garbage · retained stays at '+ret+'MB. <b>That asymmetry is the diagnosis.</b>');gar=0;paint();};
+  paint();
+  document.querySelectorAll('.spot').forEach(card=>{
+    card.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+      if(card.dataset.done)return;card.dataset.done=1;
+      const correct=b.dataset.v===card.dataset.a;
+      b.classList.add(correct?'ok':'badr');b.style.borderColor=correct?'var(--good)':'var(--bad)';
+      const r=card.querySelector('.spot-r');r.hidden=false;
+      r.style.color=correct?'var(--good)':'var(--bad)';});});
+})();
+
+/* ---------- peek reveals ---------- */
+document.querySelectorAll('.peek').forEach(p=>{
+  p.querySelector('.peek-b').onclick=()=>{p.classList.toggle('open');
+    p.querySelector('.peek-b').textContent=p.classList.contains('open')?'▾ HIDE':'▸ WHAT GETS PRINTED?';};});
+
+/* ---------- quiz engine ---------- */
+function mountQuiz(id,qs){
+  const root=$(id);let sc=0,ansd=0;
+  const head=document.createElement('div');head.className='qz-score';root.prepend(head);
+  const upd=()=>head.textContent='SCORE '+sc+'/'+qs.length;
+  qs.forEach(q=>{
+    const w=document.createElement('div');w.className='qz';
+    w.innerHTML='<div class="qz-q">'+q.q+'</div><div class="qz-o">'+
+      q.o.map((o,j)=>'<button data-j="'+j+'">'+esc(o)+'</button>').join('')+
+      '</div><div class="qz-w" hidden>'+q.w+'</div>';
+    const opts=w.querySelectorAll('button');
+    opts.forEach(b=>b.onclick=()=>{
+      if(w.dataset.done)return;w.dataset.done=1;ansd++;
+      const j=+b.dataset.j;
+      if(j===q.a){b.classList.add('ok');sc++;}
+      else{b.classList.add('badr');opts[q.a].classList.add('ok');}
+      w.querySelector('.qz-w').hidden=false;upd();});
+    root.appendChild(w);});
+  upd();
+}
+mountQuiz('qzThis',[
+ {q:'const o = { n: 42, get() { return this.n } };\no.get()',o:['42','undefined','TypeError'],a:0,w:'Implicit binding: the object before the dot is this.'},
+ {q:'const f = o.get;\nf();   // inside an ES module (strict mode)',o:['42','undefined','TypeError'],a:1,w:'Detached method → default binding → this is undefined in strict mode. The #1 real-world this bug.'},
+ {q:'f.call({ n: 7 })',o:['42','7','undefined'],a:1,w:'Explicit binding wins: call/apply/bind set this directly.'},
+ {q:'const o2 = { n: 1, late() { return () => this.n } };\no2.late()()',o:['1','undefined','TypeError'],a:0,w:'Arrows have no own this — they capture the surrounding one, which was o2 when late() ran. Detaching the arrow changes nothing.'},
+ {q:'function P() { this.x = 5 }\nconst B = P.bind({ x: 9 });\nnew B().x',o:['9','5','undefined'],a:1,w:'new beats bind. Precedence: new > explicit > implicit > default.'},
+ {q:"class Btn { label = 'ok'; log() { return this.label } }\n['a'].forEach(new Btn().log)",o:["'ok'",'undefined','TypeError'],a:2,w:"forEach calls the bare function; class bodies are always strict → this is undefined → reading .label throws. Fix: .forEach((x) => btn.log(x)) or .log.bind(btn)."}
+]);
+mountQuiz('qzEq',[
+ {q:"0 == '0'",o:['true','false'],a:0,w:"String is converted: Number('0') === 0."},
+ {q:"0 == ''",o:['true','false'],a:0,w:"Number('') === 0. Yes, the empty string is 0 to ==."},
+ {q:'null == undefined',o:['true','false'],a:0,w:'Spec carve-out: they equal each other and NOTHING else. Which is why `x == null` is the one accepted == idiom.'},
+ {q:'null == 0',o:['true','false'],a:1,w:'Despite null == undefined, null does NOT convert to 0. Special case only.'},
+ {q:'[] == false',o:['true','false'],a:1? 1:1,w:'',a:1,o:['true','false'],w:'[] → "" → 0; false → 0. 0 === 0 → true. Coercion chains through ToPrimitive then ToNumber.'},
+ {q:'[] == ![]',o:['true','false','impossible to say'],a:0,w:'![] is false, so this reduces to [] == false — true, as above. The most famous coercion trivia question.'},
+ {q:'NaN === NaN',o:['true','false'],a:1,w:'NaN is never equal to anything, including itself. Use Number.isNaN(x). (Object.is(NaN, NaN) IS true.)'},
+ {q:"'1' + 1   and   '1' - 1",o:["'11' and 0","'11' and '0'",'2 and 0'],a:0,w:'+ triggers string concatenation if either side is a string; − is always arithmetic. Two different ToPrimitive paths.'}
+]);
+
+/* ---------- HTTP: keep-alive ---------- */
+(function(){
+  const KA1=[['TCP',120],['TLS',140],['GET /a',40],['TCP',120],['TLS',140],['GET /b',40],['TCP',120],['TLS',140],['GET /c',40]];
+  const KA2=[['TCP',120],['TLS',140],['GET /a',40],['GET /b',40],['GET /c',40]];
+  const tot=a=>a.reduce((s,x)=>s+x[1],0);
+  function play(el,segs,delayBase){
+    el.innerHTML='';let cum=0;
+    segs.forEach((s,i)=>{const start=cum;cum+=s[1];
+      setTimeout(()=>{const d=document.createElement('div');
+        d.className='ka-seg '+(s[0]==='GET /a'||s[0]==='GET /b'||s[0]==='GET /c'?'r':'h');
+        d.style.width=(s[1]*0.55)+'px';d.title=s[0]+' · '+s[1]+'ms';d.textContent=s[0];
+        el.appendChild(d);},delayBase+start*1.6);});
+    return cum;
+  }
+  $('kaRun').onclick=()=>{
+    const t1=play($('ka1'),KA1,0),t2=play($('ka2'),KA2,0);
+    setTimeout(()=>{$('kaTotals').innerHTML='total without keep-alive: <b style="color:var(--bad)">'+t1+'ms</b> · with keep-alive: <b style="color:var(--good)">'+t2+'ms</b> — six handshake round-trips saved';},t1*1.6+300);
+  };
+})();
+
+/* ---------- status codes ---------- */
+(function(){
+  const SC={'200':'OK — standard success.','201':'Created — resource created (usually POST). Send the Location header.','202':'Accepted — request queued for async processing; not done yet.','204':'No Content — success with nothing to return (DELETE, some PUTs).','301':'Moved Permanently — permanent redirect; clients may cache it forever.','302':'Found — temporary redirect; keep using the original URL.','304':'Not Modified — conditional GET; the client should use its cached copy.','400':'Bad Request — malformed syntax or failed validation.','401':'Unauthorized — "who are you?" Authentication missing or invalid.','403':'Forbidden — "I know who you are; you can\'t do this." Authorization failure.','404':'Not Found — resource doesn\'t exist (or you\'re hiding that it does).','409':'Conflict — state collision: duplicate create, version mismatch.','410':'Gone — deleted, deliberately and permanently.','422':'Unprocessable — syntactically valid, semantically wrong.','429':'Too Many Requests — rate limited. Always send Retry-After.','500':'Internal Server Error — unhandled exception. Never leak stack traces to clients.','502':'Bad Gateway — your proxy got garbage from upstream.','503':'Service Unavailable — overloaded or maintaining. Clients may retry.','504':'Gateway Timeout — upstream was too slow. Clients may retry.'};
+  const g=$('scGrid');
+  Object.keys(SC).forEach(code=>{
+    const b=document.createElement('button');
+    b.className='scc c'+code[0];b.textContent=code;
+    b.onclick=()=>$('scDetail').innerHTML='<b>'+code+'</b> — '+SC[code];
+    g.appendChild(b);});
+})();
+
+/* ---------- idempotency ---------- */
+(function(){
+  const ID={GET:['yes','✓ idempotent — read-only, retry freely'],HEAD:['yes','✓ idempotent — headers only'],PUT:['yes','✓ idempotent — same payload N times → same state'],DELETE:['yes','✓ idempotent — deleting twice still leaves it gone (2nd may 404)'],POST:['no','✗ NOT idempotent — creates on every call; needs Idempotency-Key'],PATCH:['meh','~ not guaranteed — depends on the op; treat as non-idempotent']};
+  const row=$('idemRow');
+  Object.keys(ID).forEach(m=>{
+    const s=document.createElement('span');s.className='idem';
+    s.innerHTML=m+'<span>'+ID[m][1]+'</span>';
+    s.onclick=()=>{s.classList.add('open',ID[m][0]);};
+    row.appendChild(s);});
+})();
+
+/* ---------- backoff ---------- */
+(function(){
+  let running=false;
+  $('boFail').oninput=e=>$('boFailv').textContent=e.target.value;
+  $('boMax').oninput=e=>$('boMaxv').textContent=e.target.value;
+  const log=$('boLog');
+  const lg=t=>{log.insertAdjacentHTML('beforeend','<div>'+t+'</div>');log.scrollTop=log.scrollHeight;};
+  $('boRun').onclick=async()=>{
+    if(running)return;running=true;$('boRun').disabled=true;
+    log.innerHTML='';$('boChips').innerHTML='';
+    const fail=+$('boFail').value,base=+$('boBase').value,max=+$('boMax').value,jit=$('boJit').checked;
+    for(let a=1;a<=max;a++){
+      lg('→ attempt '+a+' …');await sleep(350);
+      const failed=Math.random()*100<fail;
+      const chip=document.createElement('span');chip.className='cstep'+(failed?'':' hit');
+      chip.textContent='#'+a+(failed?' ✗':' ✓');$('boChips').appendChild(chip);
+      if(!failed){lg('<span style="color:var(--good)">200 OK — succeeded on attempt '+a+'</span>');running=false;$('boRun').disabled=false;return;}
+      lg('<span style="color:var(--bad)">500 Internal Server Error</span>');
+      if(a===max){lg('<span style="color:var(--bad)">retries exhausted → alert + dead-letter / surface to caller</span>');break;}
+      let d=Math.min(base*Math.pow(2,a-1),5000);
+      if(jit)d=Math.round(d*(0.5+Math.random()*0.5));
+      lg('  ⏳ sleeping '+d+'ms  <span style="color:var(--faint)">(min('+base+'×2^'+(a-1)+', 5000)'+(jit?' × jitter':'')+')</span>');
+      await sleep(Math.min(650,Math.max(280,d/4)));
+    }
+    running=false;$('boRun').disabled=false;
+  };
+})();
+
+/* ---------- token bucket ---------- */
+(function(){
+  let cap=8,tokens=8,refill=2,ok=0,rej=0;
+  function paintDots(){const d=$('tbDots');d.innerHTML='';
+    for(let i=0;i<cap;i++){const t=document.createElement('i');if(i>=tokens)t.className='empty';d.appendChild(t);}}
+  function paint(){$('tbOk').textContent=ok;$('tbRej').textContent=rej;paintDots();}
+  setInterval(()=>{if(tokens<cap){tokens=Math.min(cap,tokens+refill*0.5);paintDots();}},500);
+  $('tbCap').oninput=e=>{cap=+e.target.value;$('tbCapv').textContent=cap;tokens=Math.min(tokens,cap);paint();};
+  $('tbRef').oninput=e=>{refill=+e.target.value;$('tbRefv').textContent=refill;};
+  function send(n){for(let i=0;i<n;i++)setTimeout(()=>{
+    if(tokens>=1){tokens=Math.max(0,Math.floor(tokens-1));ok++;}else{rej++;}
+    paint();},i*80);}
+  $('tbSend').onclick=()=>send(1);
+  $('tbBurst').onclick=()=>send(12);
+  paint();
+})();
+
+/* ---------- network stack ---------- */
+(function(){
+  const NS=[
+    {t:'DNS lookup',d:'Resolve api.shop.com → 93.184.216.34. Cached by OS/resolver with a TTL. In Node: dns.lookup() (thread pool) vs dns.resolve() (c-ares, async).',a:'dns.lookup()'},
+    {t:'TCP 3-way handshake',d:'SYN → SYN-ACK → ACK. A full round-trip before one byte of HTTP. This is the entire reason keep-alive and pooling exist.',a:'net.connect() / net.Socket'},
+    {t:'TLS 1.3 handshake',d:'ClientHello/ServerHello, key agreement. One more RTT (0-RTT resumption on repeat). Certificate validation happens here.',a:'tls.connect()'},
+    {t:'HTTP request on the wire',d:'Method, path, headers, body. With keep-alive the socket stays open for reuse; HTTP/2 multiplexes many streams on it.',a:'http.request() · fetch (undici pool)'},
+    {t:'Node HTTP server',d:'Socket bytes are parsed into (req, res) objects; one callback invocation per request. This is the exact seam where Node enters the picture.',a:"http.createServer((req, res) => …)"},
+    {t:'Framework layer',d:'Express/NestJS/Fastify route the request, run middleware/guards/pipes, call your handler. A Nest controller is a structured callback on top of createServer.',a:'@Controller() · app.use()'}];
+  const rows=$('netRows');
+  NS.forEach((s,i)=>{
+    const r=document.createElement('div');r.className='netrow';
+    r.innerHTML='<span class="nn">'+(i+1)+'</span><span class="nt">'+s.t+'</span>';
+    r.onclick=()=>show(i);rows.appendChild(r);
+    if(i<NS.length-1){const a=document.createElement('div');a.className='arrow';a.textContent='↓';rows.appendChild(a);}});
+  function show(i){document.querySelectorAll('.netrow').forEach((r,j)=>r.classList.toggle('lit',j===i));
+    $('netTitle').textContent=NS[i].t;$('netBody').textContent=NS[i].d;$('netApi').textContent=NS[i].a;}
+  show(0);
+  let tracing=false;
+  $('netTrace').onclick=async()=>{if(tracing)return;tracing=true;
+    for(let i=0;i<NS.length;i++){show(i);await sleep(420);}tracing=false;};
+})();
+
+/* ---------- cache-aside ---------- */
+(function(){
+  let hits=0,misses=0,busy=false;
+  const MISS=['GET /user/42 arrives','cache lookup: user:42 → MISS','SELECT * FROM users WHERE id = 42','SET user:42 (TTL 60s + jitter)','respond 200 — 180ms'];
+  const HIT=['GET /user/42 arrives','cache lookup: user:42 → HIT','database skipped entirely','respond 200 — 2ms'];
+  async function walk(steps,hitLast){
+    if(busy)return;busy=true;
+    const c=$('caSteps');c.innerHTML='';
+    for(const s of steps){const el=document.createElement('span');
+      el.className='cstep';el.textContent=s;c.appendChild(el);
+      await sleep(60);el.classList.add('lit');await sleep(430);}
+    if(hitLast){c.lastChild.classList.add('hit');hits++;}else misses++;
+    $('caHits').textContent=hits;$('caMiss').textContent=misses;busy=false;
+  }
+  $('caReq1').onclick=()=>walk(MISS,false);
+  $('caReq2').onclick=()=>walk(HIT,true);
+})();
+
+/* ---------- LRU ---------- */
+(function(){
+  class LRU{constructor(c){this.cap=c;this.m=new Map();}
+    get(k){if(!this.m.has(k))return undefined;const v=this.m.get(k);this.m.delete(k);this.m.set(k,v);return v;}
+    set(k,v){let ev=null;if(this.m.has(k))this.m.delete(k);
+      else if(this.m.size>=this.cap){ev=this.m.keys().next().value;this.m.delete(ev);}
+      this.m.set(k,v);return ev;}}
+  let lru=new LRU(3),hits=0,misses=0,evic=0;
+  const log=$('lruLog');
+  const lg=t=>{log.insertAdjacentHTML('afterbegin','<div>'+t+'</div>');while(log.children.length>5)log.lastChild.remove();};
+  function paint(evictedKey){
+    const v=$('lruView');v.innerHTML='';
+    const entries=[...lru.m.entries()].reverse(); // MRU first
+    entries.forEach(([k,val],i)=>{const c=document.createElement('div');
+      c.className='lruc'+(i===0?' mru':'');c.innerHTML='<b>'+esc(k)+'</b>'+esc(String(val))+'<span>'+(i===0?'MRU':i===entries.length-1?'LRU':'')+'</span>';
+      v.appendChild(c);});
+    if(evictedKey){const c=document.createElement('div');c.className='lruc out';c.innerHTML='<b>'+esc(evictedKey)+'</b>evicted';v.appendChild(c);}
+    if(!entries.length)v.innerHTML='<span style="color:var(--faint);font:12px var(--mono)">empty</span>';
+    const tot=hits+misses;
+    $('lruStats').innerHTML='hits <b>'+hits+'</b> · misses '+misses+' · evictions '+evic+' · hit rate '+(tot?Math.round(hits/tot*100):0)+'%';
+  }
+  function key(){return $('lruKey').value.trim()||'user:1';}
+  $('lruCap').oninput=e=>{$('lruCapv').textContent=e.target.value;
+    lru=new LRU(+e.target.value);lg('capacity → '+e.target.value+' (fresh cache)');paint();};
+  $('lruSet').onclick=()=>{const k=key();const ev=lru.set(k,'v'+Math.floor(Math.random()*90+10));
+    if(ev){evic++;lg('SET '+k+' — full → evicted LRU key <b style="color:var(--bad)">'+ev+'</b>');}
+    else lg('SET '+k);paint(ev);};
+  $('lruGet').onclick=()=>{const k=key();const v=lru.get(k);
+    if(v===undefined){misses++;lg('GET '+k+' → <b style="color:var(--bad)">MISS</b>');}
+    else{hits++;lg('GET '+k+' → <b style="color:var(--good)">HIT</b> ('+v+'), promoted to MRU');}
+    paint();};
+  $('lruRand').onclick=()=>{for(let i=0;i<8;i++){const k='user:'+(1+Math.floor(Math.random()*5));
+      if(Math.random()<0.55){const v=lru.get(k);v===undefined?misses++:hits++;}
+      else{const ev=lru.set(k,'v'+Math.floor(Math.random()*90));if(ev)evic++;}}
+    lg('random traffic ×8 processed');paint();};
+  paint();
+})();
+
+/* ---------- queue sim ---------- */
+(function(){
+  const cols={api:$('qsApi'),queue:$('qsQueue'),worker:$('qsWorker'),db:$('qsDb'),dlq:$('qsDlq')};
+  const log=$('qsLog');let seq=1040,lastKey=null,busyW=false;
+  const queue=[];const doneKeys=new Set();const stats={db:0,skip:0,dlq:0};
+  const lg=t=>{log.insertAdjacentHTML('afterbegin','<div>'+t+'</div>');while(log.children.length>6)log.lastChild.remove();};
+  const pstats=()=>$('qsStats').innerHTML='<span style="font:12px var(--mono);color:var(--dim)">written to DB <b style="color:var(--good)">'+stats.db+'</b> · duplicates skipped <b style="color:var(--t4)">'+stats.skip+'</b> · dead-lettered <b style="color:var(--bad)">'+stats.dlq+'</b></span>';
+  pstats();
+  function mkChip(m){const d=document.createElement('div');d.className='qchip';
+    d.innerHTML='<b>'+m.key+'</b><span class="qatt">×'+m.attempts+'</span>';m.el=d;return d;}
+  function publish(dup){
+    const key=dup&&lastKey?lastKey:'ord-'+(++seq);lastKey=key;
+    const m={key,attempts:1};queue.push(m);
+    cols.api.appendChild(mkChip(m));
+    lg('POST /orders → enqueue <b>'+key+'</b>'+(dup?' <span style="color:var(--t4)">(duplicate of earlier msg)</span>':''));
+    setTimeout(()=>{cols.queue.appendChild(m.el);},380);
+  }
+  setInterval(()=>{
+    if(busyW||!queue.length)return;busyW=true;
+    const m=queue.shift();cols.worker.appendChild(m.el);m.el.classList.add('proc');
+    setTimeout(()=>{
+      const chaos=$('qsChaos').checked&&Math.random()<0.6;
+      if(chaos){m.attempts++;m.el.querySelector('.qatt').textContent='×'+m.attempts;
+        if(m.attempts>=3){m.el.classList.remove('proc');m.el.classList.add('dead');
+          cols.dlq.appendChild(m.el);stats.dlq++;
+          lg('☠ <b>'+m.key+'</b> failed '+m.attempts+'× → dead-letter queue + alert');}
+        else{m.el.classList.remove('proc');cols.queue.appendChild(m.el);queue.push(m);
+          lg('✗ worker crashed on <b>'+m.key+'</b> — nack, will redeliver (attempt '+m.attempts+')');}}
+      else{
+        if($('qsDed').checked&&doneKeys.has(m.key)){stats.skip++;
+          lg('⧉ <b>'+m.key+'</b> already processed — idempotency key hit, ack &amp; skip');
+          m.el.remove();}
+        else{doneKeys.add(m.key);stats.db++;m.el.classList.remove('proc');
+          cols.db.appendChild(m.el);lg('✓ <b>'+m.key+'</b> committed to DB, ack sent');}}
+      pstats();busyW=false;
+    },950);
+  },750);
+  $('qsPub').onclick=()=>publish(false);
+  $('qsDup').onclick=()=>{if(lastKey)publish(true);else publish(false);};
+})();
+
+/* ---------- closures ---------- */
+(function(){
+  let count=0,calls=0;
+  const out=$('clOut');
+  const lg=t=>{out.insertAdjacentHTML('afterbegin','<div>'+t+'</div>');while(out.children.length>5)out.lastChild.remove();};
+  $('clCall').onclick=()=>{count++;calls++;
+    $('clScope').textContent='[[Scopes]] of inc → { count: '+count+', …global }';
+    lg('inc() → '+count+'  <span style="color:var(--faint)">(call #'+calls+', count lives only in the closure)</span>');};
+  $('clReset').onclick=()=>{count=0;calls=0;
+    $('clScope').textContent='[[Scopes]] of inc → { count: 0, …global }';
+    lg('new counter() — old closure unreachable → count garbage-collected');};
+})();
+
+/* ---------- prototype ---------- */
+(function(){
+  const PD={dog:'Own properties only: { name: "Rex" }. bark() is NOT here — lookup walks up the chain until it finds it (or hits null and returns undefined).',
+    dp:'Dog.prototype holds bark() — ONE copy shared by every Dog instance. This is how "methods" are memory-cheap in JS.',
+    op:'Object.prototype: toString, hasOwnProperty, valueOf… the last real stop on nearly every chain.',
+    nl:'null — the end. The chain always terminates here; Object.create(null) starts you one step closer, which is why it makes a safe dictionary.'};
+  document.querySelectorAll('.pnode').forEach(n=>n.onclick=()=>{
+    document.querySelectorAll('.pnode').forEach(x=>x.classList.toggle('on',x===n));
+    $('prDetail').textContent=PD[n.dataset.k];});
+})();
+
+/* ---------- references mini ---------- */
+(function(){
+  let a,b,mode='alias';
+  function reset(){a={x:1,meta:{v:1}};
+    b=mode==='alias'?a:mode==='spread'?{...a}:{...a,meta:{...a.meta}};
+    render('b created');}
+  function render(v){
+    $('refA').textContent=JSON.stringify(a,null,1);
+    $('refB').textContent=b?JSON.stringify(b,null,1):'—';
+    let verdict='';
+    if(a===b)verdict='a === b → SAME object. Every mutation to b hits a.';
+    else if(a.meta===b.meta)verdict='a !== b but a.meta === b.meta → spread is SHALLOW. Nested objects still shared.';
+    else verdict='fully independent — deep clone.';
+    $('refVerdict').textContent=verdict+'  ('+v+')';}
+  document.querySelectorAll('[data-m]').forEach(btn=>btn.onclick=()=>{
+    mode=btn.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('acc',x===btn));reset();});
+  $('refM1').onclick=()=>{if(b){b.x=2;render('b.x = 2');}};
+  $('refM2').onclick=()=>{if(b){b.meta.v=9;render('b.meta.v = 9');}};
+  document.querySelector('[data-m]').classList.add('acc');reset();
+})();
+
+/* ---------- generators ---------- */
+(function(){
+  const steps=[
+    {hl:-1,out:'→ gen created but NOT started. Generator bodies are lazy: zero lines have run.'},
+    {hl:1,out:"→ next() ran until the first yield: { value: 'parse request', done: false }. State frozen mid-function."},
+    {hl:2,out:"→ next() resumed exactly where it paused: { value: 'query database', done: false }. Locals survived."},
+    {hl:3,out:"→ next() hit return: { value: 'send response', done: true }."},
+    {hl:3,out:'→ next() again: { value: undefined, done: true }. Exhausted forever.'}];
+  let idx=0;
+  function paint(){
+    const lines=$('genCode').textContent.split('\n');
+    $('genCode').innerHTML=lines.map((l,i)=>{
+      const on=(steps[idx].hl===1&&i===1)||(steps[idx].hl===2&&i===2)||(steps[idx].hl===3&&i===3);
+      return '<span style="'+(on?'background:rgba(255,210,63,.16);display:inline-block;width:100%':'')+'">'+esc(l)+'</span>';}).join('\n');
+    $('genOut').textContent=steps[idx].out;}
+  $('genNext').onclick=()=>{if(idx<steps.length-1){idx++;paint();}};
+  $('genReset').onclick=()=>{idx=0;paint();};
+  paint();
+})();
+
+/* ---------- TS reveal ---------- */
+document.querySelectorAll('.tsc').forEach(c=>c.onclick=()=>c.classList.toggle('open'));
+
+/* ---------- saga ---------- */
+(function(){
+  const STEPS=[{n:'1 · Create order',c:null},{n:'2 · Reserve inventory',c:'Release stock'},{n:'3 · Charge payment',c:'Refund payment'},{n:'4 · Send notification',c:null}];
+  const stepsEl=$('sgSteps');
+  STEPS.forEach(s=>{const li=document.createElement('li');
+    li.innerHTML='<span class="sic">·</span><span>'+s.n+'</span><span class="scomp"></span>';
+    stepsEl.appendChild(li);});
+  const lis=[...stepsEl.children];
+  const log=$('sgLog');
+  const lg=t=>{log.insertAdjacentHTML('afterbegin','<div>'+t+'</div>');while(log.children.length>6)log.lastChild.remove();};
+  let running=false;
+  $('sgRun').onclick=async()=>{
+    if(running)return;running=true;$('sgRun').disabled=true;
+    const failAt=+$('sgFail').value;const banner=$('sgBanner');
+    banner.className='';banner.textContent='';log.innerHTML='';
+    lis.forEach((li,i)=>{li.className='';li.querySelector('.sic').textContent='·';li.querySelector('.scomp').textContent='';});
+    const completed=[];let failed=false;
+    for(let i=0;i<STEPS.length;i++){
+      lis[i].classList.add('run');lg('▶ '+STEPS[i].n+' …');await sleep(650);
+      lis[i].classList.remove('run');
+      if(i===failAt){lis[i].classList.add('fail');lis[i].querySelector('.sic').textContent='✗';
+        lg('<span style="color:var(--bad)">✗ '+STEPS[i].n+' FAILED</span>');failed=true;break;}
+      lis[i].classList.add('ok');lis[i].querySelector('.sic').textContent='✓';
+      lg('<span style="color:var(--good)">✓ '+STEPS[i].n+' committed</span>');completed.push(i);}
+    await sleep(350);
+    if(!failed){banner.className='win';banner.textContent='✓ ORDER COMPLETE — all four local transactions committed. The easy path.';}
+    else if(failAt===3){banner.className='note';
+      banner.textContent='⚠ Notification failed — but steps 1–3 are COMMITTED. Emails are not compensatable, so we don\'t roll back: the event goes to the outbox and is retried until delivered. Design rule: compensate the reversible, retry the irreversible.';
+      lg('→ order event written to OUTBOX, relay will retry notification');}
+    else{banner.className='err';
+      banner.textContent='↩ ROLLED BACK — compensations ran in reverse, system is consistent again. No half-reserved inventory, no ghost charges.';
+      for(let i=completed.length-1;i>0;i--){ // skip compensating step 0 (create order) only if you want; here we compensate all committed
+      }
+      for(let i=completed.length-1;i>=0;i--){
+        await sleep(520);lis[i].classList.add('comp');
+        const comp=STEPS[i].c||'Cancel order';
+        lis[i].querySelector('.scomp').textContent='↩ '+comp;
+        lg('<span style="color:#ffb3b3">↩ compensation: '+comp+'</span>');}}
+    running=false;$('sgRun').disabled=false;
+  };
+})();
+
+/* ---------- circuit breaker ---------- */
+(function(){
+  let state='CLOSED',hist=[],openUntil=0;
+  const log=$('cbLog');
+  const lg=t=>{log.insertAdjacentHTML('afterbegin','<div>'+t+'</div>');while(log.children.length>5)log.lastChild.remove();};
+  $('cbFail').oninput=e=>$('cbFailv').textContent=e.target.value;
+  function paintDots(){const d=$('cbDots');d.innerHTML='';
+    hist.slice(-8).forEach(h=>{const i=document.createElement('i');i.className=h?'bad':'ok';d.appendChild(i);});}
+  function paintState(){$('cbState').textContent=state;$('cbState').className='cbstate '+state;}
+  function trip(){state='OPEN';openUntil=Date.now()+4000;lg('🔺 breaker OPEN — downstream shielded');paintState();}
+  setInterval(()=>{
+    if(state==='OPEN'){const left=Math.max(0,openUntil-Date.now());
+      $('cbCool').textContent=left>0?('cooldown '+ (left/1000).toFixed(1)+'s'):'';
+      if(left<=0){state='HALF-OPEN';lg('🟡 HALF-OPEN — letting one probe through');paintState();}}
+    else $('cbCool').textContent='';},180);
+  $('cbCall').onclick=()=>{
+    if(state==='OPEN'){lg('⚡ call rejected instantly (no network wait) — fast-fail is the point');return;}
+    const fail=Math.random()*100<+$('cbFail').value;
+    hist.push(fail);if(hist.length>10)hist.shift();
+    if(state==='HALF-OPEN'){
+      if(fail){lg('probe FAILED → back to OPEN');trip();}
+      else{state='CLOSED';hist=[false];lg('<span style="color:var(--good)">probe OK → breaker CLOSED, traffic restored</span>');}}
+    else{lg(fail?'<span style="color:var(--bad)">✗ downstream error ('+hist.filter(Boolean).length+' in last 5 = OPEN threshold is 3)</span>':'<span style="color:var(--good)">✓ downstream OK</span>');
+      if(hist.slice(-5).filter(Boolean).length>=3)trip();}
+    paintDots();};
+  paintDots();paintState();
+})();
+</script>
+</body>
+</html>
