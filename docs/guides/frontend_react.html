@@ -32,6 +32,10 @@ a{color:var(--cyan);text-decoration:none}
 button{font-family:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:4px}
 
+/* reveal: hidden ONLY when JS booted successfully */
+html.js .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+html.js .rv.in{opacity:1;transform:none}
+
 /* ---------- top bar ---------- */
 .topbar{position:fixed;top:0;left:0;right:0;z-index:50;height:58px;display:flex;align-items:center;gap:18px;padding:0 20px;
   background:rgba(10,16,32,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
@@ -123,10 +127,6 @@ pre.code{background:#0a111f;border:1px solid var(--line);border-radius:10px;padd
 .codehead .dots{display:flex;gap:5px}.codehead .dots i{width:9px;height:9px;border-radius:50%;display:block}
 .codehead .dots i:nth-child(1){background:#ff5f57}.codehead .dots i:nth-child(2){background:#febc2e}.codehead .dots i:nth-child(3){background:#28c840}
 
-/* reveal */
-.rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
-.rv.in{opacity:1;transform:none}
-
 /* flashcards */
 .flashgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 .flash{height:170px;perspective:900px;cursor:pointer}
@@ -213,7 +213,7 @@ table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:20px}
 .cmp .hot td:first-child{color:var(--cyan)}
 
 /* ts quiz */
-.tsq{margin-bottom:22px}
+.tsq{margin-bottom:6px}
 .tsq .qq{font-size:15px;font-weight:600;margin-bottom:12px}
 .tsq .qq span{font-family:var(--mono);color:var(--cyan);font-size:12px;margin-right:8px}
 .opt{display:block;width:100%;text-align:left;font-family:var(--mono);font-size:12.5px;padding:11px 15px;margin-bottom:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);transition:.2s}
@@ -246,7 +246,7 @@ table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:20px}
 
 /* architecture */
 .arch{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start}
-.layers{display:flex;flex-direction:column;gap:0}
+.layers{display:flex;flex-direction:column}
 .layer{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:15px 20px;text-align:left;color:var(--ink);font-family:var(--body);font-size:15px;font-weight:600;transition:.2s;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .layer small{font-family:var(--mono);font-size:10.5px;color:var(--dim);font-weight:400}
 .layer:hover{border-color:var(--line2);transform:translateX(5px)}
@@ -269,14 +269,13 @@ table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:20px}
 .step-h .chev{margin-left:auto;color:var(--dim);transition:.3s;font-family:var(--mono)}
 .step.open .chev{transform:rotate(90deg);color:var(--cyan)}
 .step-b{max-height:0;overflow:hidden;transition:max-height .4s ease}
-.step.open .step-b{max-height:220px}
+.step.open .step-b{max-height:240px}
 .step-b p{padding:0 20px 18px 60px;color:var(--mut);font-size:14px}
-.step-b p code{font-family:var(--mono);font-size:12px;color:var(--cyan)}
 
 /* testing pyramid */
 .pyrwrap{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
 .pyr{display:flex;flex-direction:column;align-items:center;gap:6px}
-.pl{display:grid;place-items:center;font-family:var(--mono);font-size:12.5px;padding:16px;border-radius:6px;transition:.25s;cursor:default;text-align:center}
+.pl{display:grid;place-items:center;font-family:var(--mono);font-size:12.5px;padding:16px;border-radius:6px;transition:.25s;text-align:center}
 .pl:hover{transform:scale(1.05)}
 .pl.e2e{width:100%;background:rgba(255,107,138,.12);border:1px solid rgba(255,107,138,.4);color:var(--rose)}
 .pl.int{width:72%;background:rgba(255,194,75,.12);border:1px solid rgba(255,194,75,.4);color:var(--amber)}
@@ -323,7 +322,7 @@ select{font-family:var(--mono);font-size:12.5px;background:var(--panel2);color:v
 .ratebtn:hover{transform:translateY(-2px)}
 .ratebtn.r2:hover{background:rgba(74,222,128,.12)}.ratebtn.r1:hover{background:rgba(255,194,75,.12)}.ratebtn.r0:hover{background:rgba(255,107,138,.12)}
 .iv-empty{color:var(--dim);font-family:var(--mono);font-size:13px;text-align:center;padding:50px 0}
-.iv-progress{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px}
+.iv-progress{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
 .iv-summary h3{font-family:var(--disp);font-size:24px;margin-bottom:8px}
 .iv-summary .score{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--cyan);margin:14px 0}
 .sumrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;padding:9px 0;border-bottom:1px dashed var(--line);color:var(--mut)}
@@ -352,7 +351,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 
 <div class="glow a"></div><div class="glow b"></div><div class="glow c"></div>
 
-<!-- ======= TOP BAR ======= -->
 <header class="topbar">
   <div class="logo"><span class="atom">⚛</span><span>senior-react-<b>prep.tsx</b></span></div>
   <nav class="mainnav" id="mainnav">
@@ -373,7 +371,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <div class="readypill"><span>readiness</span><span class="bar"><i id="readyBarTop"></i></span><b id="readyTop">0%</b></div>
 </header>
 
-<!-- ======= HERO ======= -->
 <section class="hero">
   <div>
     <div class="term"><span class="path">~/interview-prep</span> $ <span class="cmd">npm run senior</span> <span class="flag">--focus="runtime &amp; failure modes"</span><span class="caret"></span></div>
@@ -410,21 +407,16 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <p>Готовься не как к набору вопросов про React, а по уровням глубины: <em>почему React работает именно так</em> — и что ломается, когда это не так.</p>
 </div></div>
 
-<!-- ======= 01 FUNDAMENTALS ======= -->
 <section class="sec" id="fundamentals">
   <div class="sec-head rv"><div><div class="idx">/ 01</div><h2>React fundamentals</h2></div>
   <div class="lead">API — не главное. Главное — уметь ответить на вопрос <b>«почему»</b>. Переверни карточку и ответь вслух, потом проверь себя.</div></div>
-  <div class="flashgrid" id="flashgrid">
-    <!-- cards injected -->
-  </div>
+  <div class="flashgrid" id="flashgrid"></div>
   <p class="hint rv">клик по карточке — flip. Задача: ответить быстрее, чем за 20 секунд</p>
 </section>
 
-<!-- ======= 02 RENDERING ======= -->
 <section class="sec" id="rendering">
   <div class="sec-head rv"><div><div class="idx">/ 02</div><h2>Rendering &amp; references</h2></div>
   <div class="lead">Самая частая область на Senior-собеседовании: <b>render → reconciliation → commit</b>, batching, Fiber и идентичность объектов в props.</div></div>
-
   <div class="grid2">
     <div class="card lift rv">
       <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>inline-object.tsx — новый ref каждый render</div>
@@ -456,18 +448,15 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <p class="hint rv">key работает так же: это идентичность для reconciliation. key={index} ломает state при reorder/insert</p>
 </section>
 
-<!-- ======= 03 HOOKS ======= -->
 <section class="sec" id="hooks">
   <div class="sec-head rv"><div><div class="idx">/ 03</div><h2>Hooks: stale closure</h2></div>
   <div class="lead">Классическая задача на реальное понимание React. Разбери баг и три фикса — запускай каждый вариант и смотри на консоль.</div></div>
-
   <div class="tabs rv" id="hookTabs">
     <button class="tabbtn active" data-t="bug">🐞 Баг</button>
     <button class="tabbtn" data-t="fix1">Фикс 1 · functional update</button>
     <button class="tabbtn" data-t="fix2">Фикс 2 · deps [count]</button>
     <button class="tabbtn" data-t="fix3">Фикс 3 · useRef</button>
   </div>
-
   <div class="tabpanel active" data-p="bug">
     <pre class="code"><span class="f">useEffect</span>(() =&gt; {
   <span class="k">const</span> handler = () =&gt; <span class="f">setCount</span>(count + <span class="n">1</span>); <span class="c">// count захвачен с 1-го render!</span>
@@ -478,7 +467,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     <div class="console" id="cons-bug"></div>
     <div class="verdict bad" id="verd-bug"><b>Stale closure.</b> handler захватил count=0 из первого render. deps=[] → переподписки нет → каждый клик считает 0+1.</div>
   </div>
-
   <div class="tabpanel" data-p="fix1">
     <pre class="code"><span class="k">const</span> handler = () =&gt; <span class="f">setCount</span>(prev =&gt; prev + <span class="n">1</span>);
 <span class="c">// ↑ функциональный апдейт: closure не нужен,</span>
@@ -487,7 +475,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     <div class="console" id="cons-fix1"></div>
     <div class="verdict good" id="verd-fix1"><b>Работает.</b> prev всегда актуален. Лучший фикс для «инкрементов» — deps=[] остаются валидными.</div>
   </div>
-
   <div class="tabpanel" data-p="fix2">
     <pre class="code"><span class="f">useEffect</span>(() =&gt; {
   <span class="k">const</span> handler = () =&gt; <span class="f">setCount</span>(count + <span class="n">1</span>);
@@ -498,7 +485,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     <div class="console" id="cons-fix2"></div>
     <div class="verdict good" id="verd-fix2"><b>Работает,</b> но каждый render с новым count = removeEventListener + addEventListener. Для interval/listeners на горячих данных — churn. Иногда это ок, иногда нет.</div>
   </div>
-
   <div class="tabpanel" data-p="fix3">
     <pre class="code"><span class="k">const</span> countRef = <span class="f">useRef</span>(<span class="n">0</span>);
 <span class="f">useEffect</span>(() =&gt; { countRef.current = count; }); <span class="c">// синхронизация</span>
@@ -512,11 +498,9 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <p class="hint rv">на интервью сначала назови баг вслух, потом предложи все три фикса и скажи про trade-offs — это и есть senior-ответ</p>
 </section>
 
-<!-- ======= 04 PERFORMANCE ======= -->
 <section class="sec" id="performance">
   <div class="sec-head rv"><div><div class="idx">/ 04</div><h2>Performance: memo-симулятор</h2></div>
   <div class="lead"><b>useMemo и useCallback — инструменты оптимизации, а не ритуал.</b> Поиграй тумблерами и посмотри, когда мемоизация спасает, а когда сама становится дороже re-render.</div></div>
-
   <div class="grid2">
     <div class="card rv">
       <div class="swrow"><code>React.memo(Child)</code><span style="color:var(--mut);font-size:13px">обернуть ребёнка</span><label class="sw"><input type="checkbox" id="swMemo"><span class="tr"></span></label></div>
@@ -540,11 +524,9 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   </div>
 </section>
 
-<!-- ======= 05 STATE ======= -->
 <section class="sec" id="state">
   <div class="sec-head rv"><div><div class="idx">/ 05</div><h2>State management</h2></div>
   <div class="lead">Ключевой вопрос: <b>почему серверный state не хранят в Redux/MobX?</b> Сначала разложи данные по корзинам.</div></div>
-
   <div class="rv">
     <div class="pool" id="pool"></div>
     <div class="buckets">
@@ -559,7 +541,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     </div>
     <div class="sortmsg" id="sortmsg">Выбери чип и кликни корзину — или перетащи. Разложено: <b id="sortScore">0/8</b></div>
   </div>
-
   <table class="cmp rv">
     <tr><th>Инструмент</th><th>Для чего</th><th>Граница применимости</th></tr>
     <tr><td>useState</td><td>Локальный state одного компонента</td><td>Не лезет между ветками дерева</td></tr>
@@ -573,11 +554,9 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <p class="hint rv">users / orders / transactions → TanStack Query &nbsp;·&nbsp; sidebarOpen / theme / wizardStep / selectedAccount → client store</p>
 </section>
 
-<!-- ======= 06 TYPESCRIPT ======= -->
 <section class="sec" id="typescript">
   <div class="sec-head rv"><div><div class="idx">/ 06</div><h2>React + TypeScript</h2></div>
   <div class="lead">Generics, discriminated unions, narrowing, utility types. Эталонный паттерн — типизированный <b>useFetch&lt;T&gt;</b>.</div></div>
-
   <div class="grid2">
     <div class="rv">
       <div class="codehead"><span class="dots"><i></i><i></i><i></i></span>useFetch.ts — generic hook</div>
@@ -598,21 +577,21 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
       <p class="hint">unknown vs any: unknown заставляет сузить тип перед использованием — any выключает проверку entirely</p>
     </div>
     <div class="rv" id="tsQuiz">
-      <div class="card" style="margin-bottom:14px"><div class="tsq" data-ts="1">
+      <div class="card" style="margin-bottom:14px"><div class="tsq">
         <div class="qq"><span>Q1</span>Данные из fetch ещё не проверены. Какой тип?</div>
         <button class="opt">any</button>
         <button class="opt" data-ok>unknown</button>
         <button class="opt">never</button>
         <div class="expl"><b style="color:var(--green)">unknown</b> — безопасный верхний тип: компилятор заставит сделать narrowing (type guard / zod) до использования. any отключает проверки.</div>
       </div></div>
-      <div class="card" style="margin-bottom:14px"><div class="tsq" data-ts="2">
+      <div class="card" style="margin-bottom:14px"><div class="tsq">
         <div class="qq"><span>Q2</span>Какая запись — корректный discriminated union для состояния запроса?</div>
         <button class="opt">{ loading: boolean; data: T; error: Error }</button>
         <button class="opt" data-ok>{ status:"idle" } | { status:"loading" } | { status:"success"; data:T } | { status:"error"; error:Error }</button>
         <button class="opt">T | null | Error</button>
         <div class="expl"><b style="color:var(--green)">Вариант 2</b>: поле status — дискриминант. TS сам сужает тип: в ветке success data существует, error — нет. Вариант 1 допускает data+error одновременно.</div>
       </div></div>
-      <div class="card"><div class="tsq" data-ts="3">
+      <div class="card"><div class="tsq">
         <div class="qq"><span>Q3</span>Типизация ref для &lt;input&gt;:</div>
         <button class="opt">useRef&lt;any&gt;()</button>
         <button class="opt">useRef&lt;HTMLInputElement&gt;()</button>
@@ -623,16 +602,13 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   </div>
 </section>
 
-<!-- ======= 07 BROWSER / EVENT LOOP ======= -->
 <section class="sec" id="browser">
   <div class="sec-head rv"><div><div class="idx">/ 07</div><h2>Browser: Event Loop</h2></div>
   <div class="lead">Senior обязан прогнать этот код по фазам вручную. Запусти симулятор и смотри, как задачи движутся между стеком и очередями.</div></div>
-
   <pre class="code rv"><span class="f">console.log</span>(<span class="s">"1"</span>);
 <span class="f">setTimeout</span>(() =&gt; <span class="f">console.log</span>(<span class="s">"2"</span>));
 <span class="t">Promise</span>.<span class="f">resolve</span>().<span class="f">then</span>(() =&gt; <span class="f">console.log</span>(<span class="s">"3"</span>));
 <span class="f">console.log</span>(<span class="s">"4"</span>);</pre>
-
   <div class="rv">
     <div class="el-ctl">
       <button class="btn sm" id="elPrev">◀ Шаг</button>
@@ -650,7 +626,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
     <div class="el-note" id="elNote">Нажми «Авто» или «Шаг ▶», чтобы начать выполнение скрипта.</div>
     <div class="el-result" id="elResult">Итог: 1 → 4 → 3 → 2</div>
   </div>
-
   <div class="el-theory rv">
     <div class="card"><h6 style="color:var(--amber)">⚡ Microtasks — drain до конца</h6><p>Promise.then / catch / finally<br>queueMicrotask()<br>MutationObserver<br><span style="color:var(--dim)">выполняются ВСЕ перед следующим macrotask и перед rendering</span></p></div>
     <div class="card"><h6 style="color:var(--rose)">🐢 Macrotasks — по одной</h6><p>setTimeout / setInterval<br>I/O, UI events, postMessage<br>requestAnimationFrame — отдельно, перед paint<br><span style="color:var(--dim)">React effects идут после commit и paint</span></p></div>
@@ -658,7 +633,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <p class="hint rv">также держи в голове: event propagation (capture → target → bubble), делегирование, WebSocket vs SSE, browser storage</p>
 </section>
 
-<!-- ======= 08 ARCHITECTURE ======= -->
 <section class="sec" id="architecture">
   <div class="sec-head rv"><div><div class="idx">/ 08</div><h2>Frontend architecture</h2></div>
   <div class="lead">Feature-based структура + слой API + TanStack Query. Кликай по слоям — справа детали и что говорить на интервью.</div></div>
@@ -668,14 +642,12 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   </div>
 </section>
 
-<!-- ======= 09 SLOW APP ======= -->
 <section class="sec" id="slowapp">
   <div class="sec-head rv"><div><div class="idx">/ 09</div><h2>«Приложение стало медленным»</h2></div>
   <div class="lead">Классический ситуативный вопрос. Порядок шагов — это и есть ответ. <b>Measure first.</b></div></div>
   <div class="steps rv" id="stepsList"></div>
 </section>
 
-<!-- ======= 10 TESTING ======= -->
 <section class="sec" id="testing">
   <div class="sec-head rv"><div><div class="idx">/ 10</div><h2>Testing</h2></div>
   <div class="lead">Пирамида + философия React Testing Library: тестировать то, что видит и делает пользователь.</div></div>
@@ -695,7 +667,6 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   </div>
 </section>
 
-<!-- ======= 11 PRACTICE ======= -->
 <section class="sec" id="practice">
   <div class="sec-head rv"><div><div class="idx">/ 11</div><h2>Практические задачи</h2></div>
   <div class="lead">Прорешай руками. Уровни Senior — это design-задачи, идеально ложащиеся на опыт с <b>wallet / payments / transactions</b>.</div></div>
@@ -709,14 +680,12 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
   <div id="pLists" class="rv"></div>
 </section>
 
-<!-- ======= 12 PLAN ======= -->
 <section class="sec" id="plan">
   <div class="sec-head rv"><div><div class="idx">/ 12</div><h2>План на 4 недели</h2></div>
   <div class="lead">Базу (JSX, props, «что такое компонент») пропускаем — у тебя уже есть реальный опыт. Отмечай закрытые темы.</div></div>
   <div class="weeks rv" id="weeks"></div>
 </section>
 
-<!-- ======= 13 INTERVIEW ======= -->
 <section class="sec" id="interview">
   <div class="sec-head rv"><div><div class="idx">/ 13</div><h2>Mock Senior Interview</h2></div>
   <div class="lead">Вопросы по одному, сложность растёт: Junior → Middle → Senior → Staff. Ответь вслух, сверься, оцени себя честно.</div></div>
@@ -749,307 +718,489 @@ footer.main{max-width:1200px;margin:60px auto 40px;padding:30px 24px 0;border-to
 </div>
 
 <script>
-/* ================= helpers & store ================= */
-const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>[...c.querySelectorAll(s)];
-const store={
-  get(k,d){try{const v=localStorage.getItem('srp-'+k);return v?JSON.parse(v):d}catch(e){return d}},
-  set(k,v){try{localStorage.setItem('srp-'+k,JSON.stringify(v))}catch(e){}}
+"use strict";
+/* Boot flag: content hiding is gated behind html.js, so if this script
+   ever fails to parse/run, the page still shows everything. */
+document.documentElement.classList.add("js");
+
+var $ = function(s, c){ return (c || document).querySelector(s); };
+var $$ = function(s, c){ return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+
+var store = {
+  get: function(k, d){ try { var v = localStorage.getItem("srp-" + k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set: function(k, v){ try { localStorage.setItem("srp-" + k, JSON.stringify(v)); } catch(e){} }
 };
 
-/* ================= scramble title ================= */
-function scramble(el,delay){
-  const text=el.textContent,chars='!<>-_/[]{}=+*^?#';let i=0;
-  setTimeout(()=>{const iv=setInterval(()=>{
-    i++;const done=Math.floor(i/2);let out='';
-    for(let j=0;j<text.length;j++){out+=text[j]===' '?' ':(j<done?text[j]:chars[Math.random()*chars.length|0]);}
-    el.textContent=out;
-    if(done>=text.length){clearInterval(iv);el.textContent=text;}
-  },30);},delay);
+/* ---------- scramble title ---------- */
+function scramble(el, delay){
+  if(!el) return;
+  var text = el.textContent, chars = "!<>-_/[]{}=+*^?#", i = 0;
+  setTimeout(function(){
+    var iv = setInterval(function(){
+      i++;
+      var done = Math.floor(i / 2), out = "";
+      for(var j = 0; j < text.length; j++){
+        if(text[j] === " "){ out += " "; continue; }
+        out += (j < done) ? text[j] : chars[Math.floor(Math.random() * chars.length)];
+      }
+      el.textContent = out;
+      if(done >= text.length){ clearInterval(iv); el.textContent = text; }
+    }, 30);
+  }, delay);
 }
-scramble($('#heroTitle .l1'),200);scramble($('#heroTitle .l2'),500);scramble($('#heroTitle .l3'),850);
+scramble($("#heroTitle .l1"), 200);
+scramble($("#heroTitle .l2"), 500);
+scramble($("#heroTitle .l3"), 850);
 
-/* ================= reveal on scroll ================= */
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
-$$('.rv').forEach(el=>io.observe(el));
+/* ---------- reveal on scroll ---------- */
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+  });
+}, { threshold: 0, rootMargin: "0px 0px -8% 0px" });
+$$(".rv").forEach(function(el){ io.observe(el); });
 
-/* ================= nav spy ================= */
-const spy=new IntersectionObserver(es=>es.forEach(e=>{
-  if(e.isIntersecting){$$('#mainnav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}
-}),{rootMargin:'-35% 0px -55% 0px'});
-$$('.sec').forEach(s=>spy.observe(s));
+/* ---------- nav spy ---------- */
+var spy = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(e.isIntersecting){
+      $$("#mainnav a").forEach(function(a){
+        a.classList.toggle("active", a.getAttribute("href") === "#" + e.target.id);
+      });
+    }
+  });
+}, { rootMargin: "-35% 0px -55% 0px" });
+$$(".sec").forEach(function(s){ spy.observe(s); });
 
-/* ================= readiness ================= */
+/* ---------- readiness ---------- */
 function recompute(){
-  const boxes=$$('[data-box]'),done=boxes.filter(b=>b.checked).length;
-  const boxPct=boxes.length?done/boxes.length:0, quizPct=(store.get('quiz',0))/100;
-  const r=Math.round(boxPct*70+quizPct*30);
-  $('#readyBarTop').style.width=r+'%';$('#readyTop').textContent=r+'%';$('#readyBottom').textContent=r+'%';
-  $('#heroDone').innerHTML=done+'<em>/'+boxes.length+'</em>';
-  $('#pBar').style.width=Math.round(boxPct*100)+'%';
-  const pd=$$('[data-box^="p-"]');$('#pCount').textContent='задач решено: '+pd.filter(b=>b.checked).length+' / '+pd.length;
+  var boxes = $$("[data-box]");
+  var done = boxes.filter(function(b){ return b.checked; }).length;
+  var boxPct = boxes.length ? done / boxes.length : 0;
+  var quizPct = store.get("quiz", 0) / 100;
+  var r = Math.round(boxPct * 70 + quizPct * 30);
+  $("#readyBarTop").style.width = r + "%";
+  $("#readyTop").textContent = r + "%";
+  $("#readyBottom").textContent = r + "%";
+  $("#heroDone").innerHTML = done + "<em>/" + boxes.length + "</em>";
+  $("#pBar").style.width = Math.round(boxPct * 100) + "%";
+  var pd = $$('[data-box^="p-"]');
+  $("#pCount").textContent = "задач решено: " + pd.filter(function(b){ return b.checked; }).length + " / " + pd.length;
 }
-document.addEventListener('change',e=>{
-  if(e.target.matches('[data-box]')){const b=store.get('boxes',{});b[e.target.dataset.box]=e.target.checked;store.set('boxes',b);recompute();}
+document.addEventListener("change", function(e){
+  if(e.target.matches && e.target.matches("[data-box]")){
+    var b = store.get("boxes", {});
+    b[e.target.dataset.box] = e.target.checked;
+    store.set("boxes", b);
+    recompute();
+  }
 });
-(function restore(){const b=store.get('boxes',{});$$('[data-box]').forEach(el=>{if(b[el.dataset.box])el.checked=true;});})();
+(function restore(){
+  var b = store.get("boxes", {});
+  $$("[data-box]").forEach(function(el){ if(b[el.dataset.box]) el.checked = true; });
+})();
 
-/* ================= 01 flashcards ================= */
-const CARDS=[
- ['useState','hook','Когда setState «асинхронный»? Что даёт functional update и зачем он нужен в обработчиках/циклах?'],
- ['useEffect','hook','Когда запускается — до или после paint? Зачем deps array? Что будет при [] и как возникает stale closure?'],
- ['useRef','hook','Почему изменение .current не вызывает re-render? Два применения: DOM-ссылка и «хранилище последнего значения».'],
- ['useMemo','hook','Когда действительно нужен? Почему на дешёвых операциях мемоизация дороже самого вычисления?'],
- ['useCallback','hook','Почему функция пересоздаётся каждый render и в каких случаях это реально проблема (memo-дети, effects)?'],
- ['useReducer','hook','Когда выбирать вместо useState: связанные поля, сложные переходы, тестируемость логики.'],
- ['useContext','hook','Почему изменение value ре-рендерит ВСЕХ потребителей? Как бороться: разделение, memo, селекторы.'],
- ['Custom Hooks','pattern','Почему для переиспользования логики не нужен компонент-обёртка? Правила вызова хуков и почему они существуют.'],
- ['controlled / uncontrolled','forms','Где источник правды о значении поля: state+onChange или DOM+ref? Когда что уместно?'],
- ['lifting state up','pattern','Когда поднимать state, а когда это приводит к prop drilling и лишним re-render всего поддерева?'],
- ['composition','pattern','Почему children и компонентная композиция решают prop drilling лучше, чем прокидывание props?'],
- ['keys','reconciliation','Как key участвует в diff? Почему key={index} ломает state и анимации при reorder/insert/delete?'],
- ['Error Boundaries','failure','Какие ошибки они ловят, а какие нет (events, effects, async)? Почему только классовые компоненты?']
+/* ---------- 01 flashcards ---------- */
+var CARDS = [
+  ["useState","hook","Когда setState «асинхронный»? Что даёт functional update и зачем он нужен в обработчиках/циклах?"],
+  ["useEffect","hook","Когда запускается — до или после paint? Зачем deps array? Что будет при [] и как возникает stale closure?"],
+  ["useRef","hook","Почему изменение .current не вызывает re-render? Два применения: DOM-ссылка и «хранилище последнего значения»."],
+  ["useMemo","hook","Когда действительно нужен? Почему на дешёвых операциях мемоизация дороже самого вычисления?"],
+  ["useCallback","hook","Почему функция пересоздаётся каждый render и в каких случаях это реально проблема (memo-дети, effects)?"],
+  ["useReducer","hook","Когда выбирать вместо useState: связанные поля, сложные переходы, тестируемость логики."],
+  ["useContext","hook","Почему изменение value ре-рендерит ВСЕХ потребителей? Как бороться: разделение, memo, селекторы."],
+  ["Custom Hooks","pattern","Почему для переиспользования логики не нужен компонент-обёртка? Правила вызова хуков и почему они существуют."],
+  ["controlled / uncontrolled","forms","Где источник правды о значении поля: state+onChange или DOM+ref? Когда что уместно?"],
+  ["lifting state up","pattern","Когда поднимать state, а когда это приводит к prop drilling и лишним re-render всего поддерева?"],
+  ["composition","pattern","Почему children и компонентная композиция решают prop drilling лучше, чем прокидывание props?"],
+  ["keys","reconciliation","Как key участвует в diff? Почему key={index} ломает state и анимации при reorder/insert/delete?"],
+  ["Error Boundaries","failure","Какие ошибки они ловят, а какие нет (events, effects, async)? Почему только классовые компоненты?"]
 ];
-$('#flashgrid').innerHTML=CARDS.map((c,i)=>'<div class="flash rv" style="transition-delay:'+(i%4*60)+'ms"><div class="in3d"><div class="face"><span class="cat">'+c[1]+'</span><span class="name">'+c[0]+'</span><span class="cat" style="color:var(--cyan)">flip →</span></div><div class="face back"><span class="cat">почему?</span><span class="q"><b>?</b> '+c[2]+'</span><span class="cat">↺ обратно</span></div></div></div>').join('');
-$$('#flashgrid .flash').forEach(f=>{io.observe(f);f.addEventListener('click',()=>f.classList.toggle('flipped'));});
-
-/* ================= 02 rendering demo ================= */
-let rr=1;
-$('#rrBtn').addEventListener('click',()=>{
-  rr++;$('#rrCount').textContent=rr;$('#childCount').textContent=rr;
-  const a=$('#refA');a.textContent='obj #'+rr+' · new!';a.classList.remove('pop');void a.offsetWidth;a.classList.add('pop');
+$("#flashgrid").innerHTML = CARDS.map(function(c, i){
+  return '<div class="flash rv" style="transition-delay:' + ((i % 4) * 60) + 'ms"><div class="in3d">' +
+    '<div class="face"><span class="cat">' + c[1] + '</span><span class="name">' + c[0] + '</span><span class="cat" style="color:var(--cyan)">flip →</span></div>' +
+    '<div class="face back"><span class="cat">почему?</span><span class="q"><b>?</b> ' + c[2] + '</span><span class="cat">↺ обратно</span></div>' +
+    '</div></div>';
+}).join("");
+$$("#flashgrid .flash").forEach(function(f){
+  io.observe(f);
+  f.addEventListener("click", function(){ f.classList.toggle("flipped"); });
 });
 
-/* ================= 03 hooks tabs + console ================= */
-function bindTabs(tabRoot,panelRoot){
-  $$('.tabbtn',$(tabRoot)).forEach(b=>b.addEventListener('click',()=>{
-    $$('.tabbtn',$(tabRoot)).forEach(x=>x.classList.toggle('active',x===b));
-    $$('.tabpanel').forEach(p=>p.classList.toggle('active',p.dataset.p===b.dataset.t));
-  }));
+/* ---------- 02 rendering demo ---------- */
+var rr = 1;
+$("#rrBtn").addEventListener("click", function(){
+  rr++;
+  $("#rrCount").textContent = rr;
+  $("#childCount").textContent = rr;
+  var a = $("#refA");
+  a.textContent = "obj #" + rr + " · new!";
+  a.classList.remove("pop"); void a.offsetWidth; a.classList.add("pop");
+});
+
+/* ---------- 03 hooks tabs + console ---------- */
+function bindTabs(rootSel, panelRootSel){
+  $$(rootSel + " .tabbtn").forEach(function(b){
+    b.addEventListener("click", function(){
+      $$(rootSel + " .tabbtn").forEach(function(x){ x.classList.toggle("active", x === b); });
+      $$(panelRootSel + " .tabpanel").forEach(function(p){ p.classList.toggle("active", p.dataset.p === b.dataset.t); });
+    });
+  });
 }
-bindTabs('#hookTabs');
-const DEMOS={
- bug:{lines:[['click #1 → setCount(0 + 1)','dim'],['click #2 → setCount(0 + 1)','dim'],['click #3 → setCount(0 + 1)','dim'],['count = 1 … и всегда будет 1','err']],v:'verd-bug'},
- fix1:{lines:[['click #1 → setCount(prev ⇒ prev+1)','dim'],['count = 1','ok'],['click #2 → count = 2','ok'],['click #3 → count = 3','ok']],v:'verd-fix1'},
- fix2:{lines:[['count=0: subscribe handler₀','dim'],['click → count=1 → cleanup + subscribe handler₁','dim'],['click → count=2 → cleanup + subscribe handler₂','ok'],['count = 3 ✓ (ценой переподписок)','warn']],v:'verd-fix2'},
- fix3:{lines:[['subscribe один раз, ref синхронизируется','dim'],['click → setCount(ref.current+1) → count=1','ok'],['click → count=2','ok'],['click → count=3 ✓ подписка не трогалась','ok']],v:'verd-fix3'}
+bindTabs("#hookTabs", "#hooks");
+bindTabs("#pTabs", "#pLists");
+
+var DEMOS = {
+  bug:  { lines: [["click #1 → setCount(0 + 1)","dim"],["click #2 → setCount(0 + 1)","dim"],["click #3 → setCount(0 + 1)","dim"],["count = 1 … и всегда будет 1","err"]], v: "verd-bug" },
+  fix1: { lines: [["click #1 → setCount(prev ⇒ prev+1)","dim"],["count = 1","ok"],["click #2 → count = 2","ok"],["click #3 → count = 3","ok"]], v: "verd-fix1" },
+  fix2: { lines: [["count=0: subscribe handler₀","dim"],["click → count=1 → cleanup + subscribe handler₁","dim"],["click → count=2 → cleanup + subscribe handler₂","ok"],["count = 3 ✓ (ценой переподписок)","warn"]], v: "verd-fix2" },
+  fix3: { lines: [["subscribe один раз, ref синхронизируется","dim"],["click → setCount(ref.current+1) → count=1","ok"],["click → count=2","ok"],["click → count=3 ✓ подписка не трогалась","ok"]], v: "verd-fix3" }
 };
-$$('.run-demo').forEach(btn=>btn.addEventListener('click',()=>{
-  const d=DEMOS[btn.dataset.demo],cons=$('#cons-'+btn.dataset.demo);
-  cons.innerHTML='';$('#'+d.v).classList.remove('show');
-  d.lines.forEach((l,i)=>setTimeout(()=>{
-    const div=document.createElement('div');div.className='cline c-'+l[1];div.textContent='> '+l[0];cons.appendChild(div);
-    if(i===d.lines.length-1)setTimeout(()=>$('#'+d.v).classList.add('show'),250);
-  },i*420));
-}));
-
-/* ================= 04 memo simulator ================= */
-let memoTotal=0;
-$('#runMemo').addEventListener('click',()=>{
-  const m=$('#swMemo').checked,c=$('#swCb').checked,o=$('#swObj').checked;
-  const n=$('#memoNum'),msg=$('#memoMsg');let r;
-  if(!m){r=5;msg.textContent='Без React.memo ребёнок рендерится при каждом render родителя — на любые изменения.';n.className='bignum bad';}
-  else if(!(c&&o)){r=5;msg.textContent='memo есть, но '+(c?'объект в props':'callback в props')+' пересоздаётся → новые references → shallow compare проваливается. Мемоизация впустую.';n.className='bignum bad';}
-  else{r=0;msg.textContent='Все props идентичны по ссылке → React.memo пропустил все 5 рендеров. Вот когда мемоизация окупается.';n.className='bignum zero';}
-  n.textContent='+'+r;memoTotal+=r;$('#memoTotal').textContent=memoTotal;
-  n.classList.remove('pop');void n.offsetWidth;n.classList.add('pop');
+$$(".run-demo").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var d = DEMOS[btn.dataset.demo];
+    var cons = $("#cons-" + btn.dataset.demo);
+    cons.innerHTML = "";
+    $("#" + d.v).classList.remove("show");
+    d.lines.forEach(function(l, i){
+      setTimeout(function(){
+        var div = document.createElement("div");
+        div.className = "cline c-" + l[1];
+        div.textContent = "> " + l[0];
+        cons.appendChild(div);
+        if(i === d.lines.length - 1){
+          setTimeout(function(){ $("#" + d.v).classList.add("show"); }, 250);
+        }
+      }, i * 420);
+    });
+  });
 });
-$('#resetMemo').addEventListener('click',()=>{memoTotal=0;$('#memoTotal').textContent=0;$('#memoNum').textContent='—';$('#memoNum').className='bignum';$('#memoMsg').textContent='Нажми «Parent re-render ×5», чтобы увидеть результат.';});
 
-/* ================= 05 sort game ================= */
-const ITEMS=[['users from API','server'],['orders from API','server'],['transactions','server'],['список товаров','server'],['sidebarOpen','client'],['theme','client'],['wizardStep','client'],['selectedAccount','client']];
-let selChip=null,sorted=0;
-const pool=$('#pool');
-ITEMS.sort(()=>Math.random()-.5).forEach(([t,s],i)=>{
-  const c=document.createElement('span');c.className='chip';c.textContent=t;c.dataset.side=s;c.draggable=true;c.id='chip'+i;
-  c.addEventListener('click',()=>{if(c.classList.contains('locked'))return;$$('.chip.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');selChip=c;});
-  c.addEventListener('dragstart',e=>{selChip=c;e.dataTransfer.setData('text',c.id);});
-  pool.appendChild(c);
+/* ---------- 04 memo simulator ---------- */
+var memoTotal = 0;
+$("#runMemo").addEventListener("click", function(){
+  var m = $("#swMemo").checked, c = $("#swCb").checked, o = $("#swObj").checked;
+  var n = $("#memoNum"), msg = $("#memoMsg"), r;
+  if(!m){
+    r = 5; n.className = "bignum bad";
+    msg.textContent = "Без React.memo ребёнок рендерится при каждом render родителя — на любые изменения.";
+  } else if(!(c && o)){
+    r = 5; n.className = "bignum bad";
+    msg.textContent = "memo есть, но " + (c ? "объект в props" : "callback в props") + " пересоздаётся → новые references → shallow compare проваливается. Мемоизация впустую.";
+  } else {
+    r = 0; n.className = "bignum zero";
+    msg.textContent = "Все props идентичны по ссылке → React.memo пропустил все 5 рендеров. Вот когда мемоизация окупается.";
+  }
+  n.textContent = "+" + r;
+  memoTotal += r;
+  $("#memoTotal").textContent = memoTotal;
+  n.classList.remove("pop"); void n.offsetWidth; n.classList.add("pop");
+});
+$("#resetMemo").addEventListener("click", function(){
+  memoTotal = 0;
+  $("#memoTotal").textContent = "0";
+  $("#memoNum").textContent = "—";
+  $("#memoNum").className = "bignum";
+  $("#memoMsg").textContent = "Нажми «Parent re-render ×5», чтобы увидеть результат.";
+});
+
+/* ---------- 05 sort game ---------- */
+var ITEMS = [["users from API","server"],["orders from API","server"],["transactions","server"],["список товаров","server"],["sidebarOpen","client"],["theme","client"],["wizardStep","client"],["selectedAccount","client"]];
+var selChip = null, sorted = 0;
+ITEMS.sort(function(){ return Math.random() - .5; }).forEach(function(it, i){
+  var c = document.createElement("span");
+  c.className = "chip"; c.textContent = it[0]; c.dataset.side = it[1];
+  c.draggable = true; c.id = "chip" + i;
+  c.addEventListener("click", function(){
+    if(c.classList.contains("locked")) return;
+    $$(".chip.sel").forEach(function(x){ x.classList.remove("sel"); });
+    c.classList.add("sel"); selChip = c;
+  });
+  c.addEventListener("dragstart", function(e){ selChip = c; e.dataTransfer.setData("text", c.id); });
+  $("#pool").appendChild(c);
 });
 function tryPlace(bucket){
-  if(!selChip||selChip.classList.contains('locked'))return;
-  if(selChip.dataset.side===bucket.dataset.side){
-    $('.chips',bucket).appendChild(selChip);selChip.classList.remove('sel');selChip.classList.add('locked');selChip.draggable=false;
-    selChip=null;sorted++;$('#sortScore').textContent=sorted+'/8';
-    if(sorted===8){const m=$('#sortmsg');m.classList.add('win');m.innerHTML='✓ 8/8 — server state и client state больше не перепутаются. Кэш ≠ UI state.';}
-  }else{
-    selChip.classList.add('shake');bucket.classList.add('flash-bad');
-    setTimeout(()=>{selChip&&selChip.classList.remove('shake');bucket.classList.remove('flash-bad');},450);
-    $('#sortmsg').innerHTML='✗ Подсказка: кто владелец данных — сервер или интерфейс? Разложено: <b>'+sorted+'/8</b>';
+  if(!selChip || selChip.classList.contains("locked")) return;
+  if(selChip.dataset.side === bucket.dataset.side){
+    $(".chips", bucket).appendChild(selChip);
+    selChip.classList.remove("sel"); selChip.classList.add("locked");
+    selChip.draggable = false; selChip = null;
+    sorted++;
+    $("#sortScore").textContent = sorted + "/8";
+    if(sorted === 8){
+      var m = $("#sortmsg");
+      m.classList.add("win");
+      m.textContent = "✓ 8/8 — server state и client state больше не перепутаются. Кэш ≠ UI state.";
+    }
+  } else {
+    selChip.classList.add("shake"); bucket.classList.add("flash-bad");
+    setTimeout(function(){ selChip && selChip.classList.remove("shake"); bucket.classList.remove("flash-bad"); }, 450);
+    $("#sortmsg").innerHTML = "✗ Подсказка: кто владелец данных — сервер или интерфейс? Разложено: <b>" + sorted + "/8</b>";
   }
 }
-$$('.bucket').forEach(b=>{
-  b.addEventListener('click',()=>tryPlace(b));
-  b.addEventListener('dragover',e=>{e.preventDefault();b.classList.add('over');});
-  b.addEventListener('dragleave',()=>b.classList.remove('over'));
-  b.addEventListener('drop',e=>{e.preventDefault();b.classList.remove('over');const c=document.getElementById(e.dataTransfer.getData('text'));if(c)selChip=c;tryPlace(b);});
+$$(".bucket").forEach(function(b){
+  b.addEventListener("click", function(){ tryPlace(b); });
+  b.addEventListener("dragover", function(e){ e.preventDefault(); b.classList.add("over"); });
+  b.addEventListener("dragleave", function(){ b.classList.remove("over"); });
+  b.addEventListener("drop", function(e){
+    e.preventDefault(); b.classList.remove("over");
+    var c = document.getElementById(e.dataTransfer.getData("text"));
+    if(c) selChip = c;
+    tryPlace(b);
+  });
 });
 
-/* ================= 06 TS quiz ================= */
-$$('.tsq').forEach(q=>{
-  $$('.opt',q).forEach(o=>o.addEventListener('click',()=>{
-    if(q.dataset.done)return;q.dataset.done=1;
-    $$('.opt',q).forEach(x=>x.disabled=true);
-    o.classList.add(o.hasAttribute('data-ok')?'ok':'bad');
-    if(!o.hasAttribute('data-ok'))$('[data-ok]',q).classList.add('ok');
-    $('.expl',q).classList.add('show');
-  }));
+/* ---------- 06 TS quiz ---------- */
+$$(".tsq").forEach(function(q){
+  $$(".opt", q).forEach(function(o){
+    o.addEventListener("click", function(){
+      if(q.dataset.done) return;
+      q.dataset.done = "1";
+      $$(".opt", q).forEach(function(x){ x.disabled = true; });
+      o.classList.add(o.hasAttribute("data-ok") ? "ok" : "bad");
+      if(!o.hasAttribute("data-ok")) $("[data-ok]", q).classList.add("ok");
+      $(".expl", q).classList.add("show");
+    });
+  });
 });
 
-/* ================= 07 event loop simulator ================= */
-const F=[
- {note:'Старт: весь скрипт — одна macrotask на стеке.',stack:['script'],micro:[],macro:[],out:[]},
- {note:'Синхронный вызов — выполняется немедленно.',stack:['console.log("1")','script'],micro:[],macro:[],out:[]},
- {note:'"1" ушло в консоль, идём дальше по скрипту.',stack:['script'],micro:[],macro:[],out:['1']},
- {note:'setTimeout регистрирует колбэк cb₂ в macrotask queue. Сам вызов мгновенный.',stack:['setTimeout(cb₂)','script'],micro:[],macro:[],out:['1']},
- {note:'cb₂ ждёт в очереди. Задержка 0 мс ничего не значит — очередь важнее.',stack:['script'],micro:[],macro:['cb₂'],out:['1']},
- {note:'.then() кладёт cb₃ в microtask queue.',stack:['promise.then(cb₃)','script'],micro:[],macro:['cb₂'],out:['1']},
- {note:'Ещё один синхронный вызов.',stack:['console.log("4")','script'],micro:['cb₃'],macro:['cb₂'],out:['1']},
- {note:'"4" в консоли. Скрипт дочитан до конца.',stack:['script'],micro:['cb₃'],macro:['cb₂'],out:['1','4']},
- {note:'Стек пуст → event loop сначала выгребает ВСЕ microtasks.',stack:[],micro:['cb₃'],macro:['cb₂'],out:['1','4']},
- {note:'Достаём cb₃ из microtask queue на стек.',stack:['cb₃'],micro:[],macro:['cb₂'],out:['1','4']},
- {note:'cb₃ отработал → "3" в консоли. Microtasks пусты.',stack:[],micro:[],macro:['cb₂'],out:['1','4','3']},
- {note:'Теперь берём одну macrotask — cb₂.',stack:[],micro:[],macro:['cb₂'],out:['1','4','3']},
- {note:'cb₂ на стеке.',stack:['cb₂'],micro:[],macro:[],out:['1','4','3']},
- {note:'Готово. Microtasks всегда впереди macrotasks — поэтому 3 раньше 2.',stack:[],micro:[],macro:[],out:['1','4','3','2'],end:1}
+/* ---------- 07 event loop simulator ---------- */
+var F = [
+  {note:"Старт: весь скрипт — одна macrotask на стеке.",stack:["script"],micro:[],macro:[],out:[]},
+  {note:"Синхронный вызов — выполняется немедленно.",stack:["console.log(\"1\")","script"],micro:[],macro:[],out:[]},
+  {note:"\"1\" ушло в консоль, идём дальше по скрипту.",stack:["script"],micro:[],macro:[],out:["1"]},
+  {note:"setTimeout регистрирует колбэк cb₂ в macrotask queue. Сам вызов мгновенный.",stack:["setTimeout(cb₂)","script"],micro:[],macro:[],out:["1"]},
+  {note:"cb₂ ждёт в очереди. Задержка 0 мс ничего не значит — очередь важнее.",stack:["script"],micro:[],macro:["cb₂"],out:["1"]},
+  {note:".then() кладёт cb₃ в microtask queue.",stack:["promise.then(cb₃)","script"],micro:[],macro:["cb₂"],out:["1"]},
+  {note:"Ещё один синхронный вызов.",stack:["console.log(\"4\")","script"],micro:["cb₃"],macro:["cb₂"],out:["1"]},
+  {note:"\"4\" в консоли. Скрипт дочитан до конца.",stack:["script"],micro:["cb₃"],macro:["cb₂"],out:["1","4"]},
+  {note:"Стек пуст → event loop сначала выгребает ВСЕ microtasks.",stack:[],micro:["cb₃"],macro:["cb₂"],out:["1","4"]},
+  {note:"Достаём cb₃ из microtask queue на стек.",stack:["cb₃"],micro:[],macro:["cb₂"],out:["1","4"]},
+  {note:"cb₃ отработал → \"3\" в консоли. Microtasks пусты.",stack:[],micro:[],macro:["cb₂"],out:["1","4","3"]},
+  {note:"Теперь берём одну macrotask — cb₂.",stack:[],micro:[],macro:["cb₂"],out:["1","4","3"]},
+  {note:"cb₂ на стеке.",stack:["cb₂"],micro:[],macro:[],out:["1","4","3"]},
+  {note:"Готово. Microtasks всегда впереди macrotasks — поэтому 3 раньше 2.",stack:[],micro:[],macro:[],out:["1","4","3","2"],end:1}
 ];
-let fi=0,elTimer=null;
+var fi = 0, elTimer = null;
 function drawEL(){
-  const f=F[fi];
-  const ren=(id,arr,empty)=>{$(id).innerHTML=arr.length?arr.map(x=>'<div class="litem">'+x+'</div>').join(''):'<div class="empty">'+empty+'</div>';};
-  ren('#laneStack',f.stack,'∅ empty');ren('#laneMicro',f.micro,'∅ empty');ren('#laneMacro',f.macro,'∅ empty');
-  $('#laneCons').innerHTML=f.out.length?f.out.map((x,i)=>'<div class="litem">'+x+'</div>').join(''):'<div class="empty">—</div>';
-  $('#elNote').textContent=f.note;$('#elStep').textContent=fi+' / '+F.length;
-  $('#elResult').classList.toggle('show',!!f.end);
+  var f = F[fi];
+  function ren(id, arr, empty){
+    $(id).innerHTML = arr.length ? arr.map(function(x){ return '<div class="litem">' + x + '</div>'; }).join("") : '<div class="empty">' + empty + '</div>';
+  }
+  ren("#laneStack", f.stack, "∅ empty");
+  ren("#laneMicro", f.micro, "∅ empty");
+  ren("#laneMacro", f.macro, "∅ empty");
+  $("#laneCons").innerHTML = f.out.length ? f.out.map(function(x){ return '<div class="litem">' + x + '</div>'; }).join("") : '<div class="empty">—</div>';
+  $("#elNote").textContent = f.note;
+  $("#elStep").textContent = fi + " / " + F.length;
+  $("#elResult").classList.toggle("show", !!f.end);
 }
-function elStep(){if(fi<F.length-1){fi++;drawEL();}if(fi===F.length-1&&elTimer){clearInterval(elTimer);elTimer=null;$('#elAuto').textContent='▶ Авто';}}
-$('#elNext').addEventListener('click',elStep);
-$('#elPrev').addEventListener('click',()=>{if(fi>0){fi--;drawEL();}});
-$('#elReset').addEventListener('click',()=>{fi=0;drawEL();if(elTimer){clearInterval(elTimer);elTimer=null;$('#elAuto').textContent='▶ Авто';}});
-$('#elAuto').addEventListener('click',function(){
-  if(elTimer){clearInterval(elTimer);elTimer=null;this.textContent='▶ Авто';return;}
-  if(fi===F.length-1)fi=0;
-  this.textContent='⏸ Пауза';elTimer=setInterval(elStep,1000);drawEL();
+function elStep(){
+  if(fi < F.length - 1){ fi++; drawEL(); }
+  if(fi === F.length - 1 && elTimer){ clearInterval(elTimer); elTimer = null; $("#elAuto").textContent = "▶ Авто"; }
+}
+$("#elNext").addEventListener("click", elStep);
+$("#elPrev").addEventListener("click", function(){ if(fi > 0){ fi--; drawEL(); } });
+$("#elReset").addEventListener("click", function(){
+  fi = 0; drawEL();
+  if(elTimer){ clearInterval(elTimer); elTimer = null; $("#elAuto").textContent = "▶ Авто"; }
+});
+$("#elAuto").addEventListener("click", function(){
+  var self = this;
+  if(elTimer){ clearInterval(elTimer); elTimer = null; self.textContent = "▶ Авто"; return; }
+  if(fi === F.length - 1) fi = 0;
+  self.textContent = "⏸ Пауза";
+  elTimer = setInterval(elStep, 1000);
+  drawEL();
 });
 drawEL();
 
-/* ================= 08 architecture ================= */
-const LAYERS=[
- ['Pages','routes / screen composition','Композиция фич под роут. Здесь lazy(), error boundaries, layout.','[lazy() + Suspense на роуты','Error Boundary на страницу','никакой бизнес-логики — только композиция]'],
- ['Features','units of user scenarios','Единица ценности: orders, transactions, wallet. Всё, что нужно сценарию, живёт внутри.','[свои components, hooks, local state','фичи не импортируют друг друга напрямую','публичный API фичи — index.ts]'],
- ['Shared','UI kit · utils · API client','Переиспользуемое без знания о фичах.','[дизайн-система, кнопки, инпуты','типизированный API-клиент (axios/fetch обёртка)','утилиты, константы, hooks без домена]'],
- ['API layer','typed request functions','Единственная точка, где известен транспорт и DTO.','[функции getUsers(), createTx() — типизированы вх/вых','маппинг DTO → доменные модели','здесь же обработка сетевых ошибок]'],
- ['TanStack Query','server cache','Не «загрузчик», а кэш серверных данных.','[cacheTime / staleTime — осознанно','invalidateQueries после мутаций','optimistic updates + rollback','retry, refetchOnFocus, infinite/pagination]'],
- ['Cross-cutting','auth · permissions · errors','Сквозные вещи, о которых спрашивают на Senior.','[auth token flow + refresh','permission-хуки и route guards','единый error handling и loading states']']
+/* ---------- 08 architecture ---------- */
+var LAYERS = [
+  ["Pages","routes / screen composition","Композиция фич под роут. Здесь lazy(), error boundaries, layout.",["lazy() + Suspense на роуты","Error Boundary на страницу","никакой бизнес-логики — только композиция"]],
+  ["Features","units of user scenarios","Единица ценности: orders, transactions, wallet. Всё, что нужно сценарию, живёт внутри.",["свои components, hooks, local state","фичи не импортируют друг друга напрямую","публичный API фичи — index.ts"]],
+  ["Shared","UI kit · utils · API client","Переиспользуемое без знания о фичах.",["дизайн-система, кнопки, инпуты","типизированный API-клиент (axios/fetch обёртка)","утилиты, константы, hooks без домена"]],
+  ["API layer","typed request functions","Единственная точка, где известен транспорт и DTO.",["функции getUsers(), createTx() — типизированы вход/выход","маппинг DTO → доменные модели","здесь же обработка сетевых ошибок"]],
+  ["TanStack Query","server cache","Не «загрузчик», а кэш серверных данных.",["cacheTime / staleTime — осознанно","invalidateQueries после мутаций","optimistic updates + rollback","retry, refetchOnFocus, infinite/pagination"]],
+  ["Cross-cutting","auth · permissions · errors","Сквозные вещи, о которых спрашивают на Senior.",["auth token flow + refresh","permission-хуки и route guards","единый error handling и loading states"]]
 ];
-$('#archLayers').innerHTML=LAYERS.map((l,i)=>(i?'<div class="arrowdown">↓</div>':'')+'<button class="layer'+(i===0?' active':'')+'" data-i="'+i+'"><span>'+l[0]+'</span><small>'+l[1]+'</small></button>').join('');
+$("#archLayers").innerHTML = LAYERS.map(function(l, i){
+  return (i ? '<div class="arrowdown">↓</div>' : '') +
+    '<button class="layer' + (i === 0 ? ' active' : '') + '" data-i="' + i + '"><span>' + l[0] + '</span><small>' + l[1] + '</small></button>';
+}).join("");
 function showLayer(i){
-  const l=LAYERS[i];
-  $('#archDetail').innerHTML='<h4>'+l[0]+'</h4><p style="font-family:var(--mono);font-size:11px;color:var(--amber)">'+l[1]+'</p><p>'+l[2]+'</p><ul>'+l[3].map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  var l = LAYERS[i];
+  $("#archDetail").innerHTML = '<h4>' + l[0] + '</h4><p style="font-family:var(--mono);font-size:11px;color:var(--amber)">' + l[1] + '</p><p>' + l[2] + '</p><ul>' + l[3].map(function(x){ return '<li>' + x + '</li>'; }).join("") + '</ul>';
 }
-$$('#archLayers .layer').forEach(b=>b.addEventListener('click',()=>{$$('#archLayers .layer').forEach(x=>x.classList.remove('active'));b.classList.add('active');showLayer(+b.dataset.i);}));
+$$("#archLayers .layer").forEach(function(b){
+  b.addEventListener("click", function(){
+    $$("#archLayers .layer").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    showLayer(+b.dataset.i);
+  });
+});
 showLayer(0);
 
-/* ================= 09 slow app stepper ================= */
-const STEPS=[
- ['Measure first','Никаких оптимизаций «по ощущениям». Сначала данные: что именно медленно, где, на каком сценарии.'],
- ['React DevTools Profiler','Запиши сценарий, включив «Record why each component rendered». Ищи длинные коммиты и лишних участников.'],
- ['Find unnecessary renders','Кто рендерится без необходимости? Причины: новый reference в props, частый state слишком высоко, контекст.'],
- ['Check component tree','Опусти часто меняющийся state вниз или подними тяжёлое поддерево вверх. Изоляция > мемоизация.'],
- ['Check expensive calculations','Большие filter/sort/map в render → useMemo, вынос из компонента, а для тяжёлого — Web Worker.'],
- ['Check network','Waterfall запросов? N+1? Нет кэша? Preload критичных данных, параллелизация, HTTP/2 push вместо цепочек.'],
- ['Check bundle','Bundle analyzer → code-splitting по роутам, React.lazy, динамические import() тяжёлых библиотек.'],
- ['Optimize → re-measure','Точечные фиксы и повторный замер. Оптимизация без повторного замера — суеверие.']
+/* ---------- 09 slow app stepper ---------- */
+var STEPS = [
+  ["Measure first","Никаких оптимизаций «по ощущениям». Сначала данные: что именно медленно, где, на каком сценарии."],
+  ["React DevTools Profiler","Запиши сценарий, включив «Record why each component rendered». Ищи длинные коммиты и лишних участников."],
+  ["Find unnecessary renders","Кто рендерится без необходимости? Причины: новый reference в props, частый state слишком высоко, контекст."],
+  ["Check component tree","Опусти часто меняющийся state вниз или подними тяжёлое поддерево вверх. Изоляция > мемоизация."],
+  ["Check expensive calculations","Большие filter/sort/map в render → useMemo, вынос из компонента, а для тяжёлого — Web Worker."],
+  ["Check network","Waterfall запросов? N+1? Нет кэша? Preload критичных данных, параллелизация вместо цепочек."],
+  ["Check bundle","Bundle analyzer → code-splitting по роутам, React.lazy, динамические import() тяжёлых библиотек."],
+  ["Optimize → re-measure","Точечные фиксы и повторный замер. Оптимизация без повторного замера — суеверие."]
 ];
-$('#stepsList').innerHTML=STEPS.map((s,i)=>'<div class="step'+(i===0?' open':'')+'"><button class="step-h">'+s[0]+'<span class="chev">▶</span></button><div class="step-b"><p>'+s[1]+'</p></div></div>').join('');
-$$('#stepsList .step-h').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
+$("#stepsList").innerHTML = STEPS.map(function(s, i){
+  return '<div class="step' + (i === 0 ? ' open' : '') + '"><button class="step-h">' + s[0] + '<span class="chev">▶</span></button><div class="step-b"><p>' + s[1] + '</p></div></div>';
+}).join("");
+$$("#stepsList .step-h").forEach(function(h){
+  h.addEventListener("click", function(){ h.parentElement.classList.toggle("open"); });
+});
 
-/* ================= 11 practice ================= */
-const PRACTICE={
- easy:['Counter','Todo List','Search с фильтрацией','Pagination','Modal','Accordion','Tabs','Dropdown'],
- medium:['Autocomplete','Debounced search','Infinite scroll','Data table','Multi-step form','File upload','Optimistic update','CRUD application'],
- senior:['Design a reusable DataTable','Design an autocomplete component','Design form architecture','Design notification system','Frontend architecture banking dashboard','Real-time transaction updates','Design permission system']
+/* ---------- 11 practice ---------- */
+var PRACTICE = {
+  easy: ["Counter","Todo List","Search с фильтрацией","Pagination","Modal","Accordion","Tabs","Dropdown"],
+  medium: ["Autocomplete","Debounced search","Infinite scroll","Data table","Multi-step form","File upload","Optimistic update","CRUD application"],
+  senior: ["Design a reusable DataTable","Design an autocomplete component","Design form architecture","Design notification system","Frontend architecture banking dashboard","Real-time transaction updates","Design permission system"]
 };
-$('#pLists').innerHTML=Object.keys(PRACTICE).map(k=>'<div class="plist tabpanel'+(k==='easy'?' active':'')+'" data-p="'+k+'">'+PRACTICE[k].map((t,i)=>'<label class="task"><input type="checkbox" data-box="p-'+k+'-'+i+'"><span class="box">✓</span><span class="lbl">'+t+'</span></label>').join('')+'</div>').join('');
-$$('#pTabs .tabbtn').forEach(b=>b.addEventListener('click',()=>{
-  $$('#pTabs .tabbtn').forEach(x=>x.classList.toggle('active',x===b));
-  $$('#pLists .tabpanel').forEach(p=>p.classList.toggle('active',p.dataset.p===b.dataset.t));
-}));
+$("#pLists").innerHTML = Object.keys(PRACTICE).map(function(k){
+  return '<div class="plist tabpanel' + (k === "easy" ? ' active' : '') + '" data-p="' + k + '">' +
+    PRACTICE[k].map(function(t, i){
+      return '<label class="task"><input type="checkbox" data-box="p-' + k + '-' + i + '"><span class="box">✓</span><span class="lbl">' + t + '</span></label>';
+    }).join("") + '</div>';
+}).join("");
 
-/* ================= 12 plan ================= */
-const WEEKS=[
- ['WEEK 1 · RUNTIME',['React rendering','Hooks deep-dive','Closures & scope','Effects & lifecycles','Event loop']],
- ['WEEK 2 · DATA & SPEED',['State management','TanStack Query','Performance','TypeScript patterns','Browser APIs']],
- ['WEEK 3 · SYSTEM',['React architecture','Testing','Security (XSS/CSRF/CSP)','Frontend system design','Real-world scenarios']],
- ['WEEK 4 · PRACTICE',['Coding exercises','React debugging','System design drills','Mock interviews']]
+/* ---------- 12 plan ---------- */
+var WEEKS = [
+  ["WEEK 1 · RUNTIME",["React rendering","Hooks deep-dive","Closures & scope","Effects & lifecycles","Event loop"]],
+  ["WEEK 2 · DATA & SPEED",["State management","TanStack Query","Performance","TypeScript patterns","Browser APIs"]],
+  ["WEEK 3 · SYSTEM",["React architecture","Testing","Security (XSS/CSRF/CSP)","Frontend system design","Real-world scenarios"]],
+  ["WEEK 4 · PRACTICE",["Coding exercises","React debugging","System design drills","Mock interviews"]]
 ];
-$('#weeks').innerHTML=WEEKS.map((w,wi)=>'<div class="card week"><div class="wnum">// '+w[0]+'</div>'+w[1].map((t,ti)=>'<label class="task"><input type="checkbox" data-box="w'+(wi+1)+'-'+ti+'"><span class="box">✓</span><span class="lbl">'+t+'</span></label>').join('')+'</div>').join('');
+$("#weeks").innerHTML = WEEKS.map(function(w, wi){
+  return '<div class="card week"><div class="wnum">// ' + w[0] + '</div>' +
+    w[1].map(function(t, ti){
+      return '<label class="task"><input type="checkbox" data-box="w' + (wi + 1) + '-' + ti + '"><span class="box">✓</span><span class="lbl">' + t + '</span></label>';
+    }).join("") + '</div>';
+}).join("");
 
-/* ================= 13 mock interview ================= */
-const QB=[
- {lvl:'junior',q:'Чем props отличаются от state?',a:'Props — входные данные от родителя, ребёнок не может их менять. State — внутренние данные компонента; изменение через setState запускает re-render. Источник правды всегда один: либо state, либо props, но не оба.'},
- {lvl:'junior',q:'Зачем нужен key при рендере списков?',a:'key — идентичность элемента для reconciliation: React сопоставляет fiber-узлы между рендерами. Без key или с key={index} при reorder/insert ломаются state элементов и анимации — React путает, «какой» это элемент.'},
- {lvl:'junior',q:'Controlled и uncontrolled компоненты — в чём разница?',a:'Controlled: значение живёт в React state (value + onChange), React — источник правды. Uncontrolled: значение в DOM, доступ через ref. Controlled удобнее для валидации и зависимых полей; uncontrolled — для простых форм и интеграций.'},
- {lvl:'junior',q:'Когда запускается useEffect?',a:'После commit phase, когда DOM уже обновлён (обычно после paint) — не во время render. Без deps — после каждого рендера; с [] — только на mount; с [a] — при изменении a. Cleanup запускается перед следующим эффектом и на unmount.'},
- {lvl:'middle',q:'Что произойдёт, если «соврать» в dependency array?',a:'Эффект будет работать со stale closure: устаревшие данные, пропущенные обновления, бесконечные циклы или тихие баги. Поэтому ESLint exhaustive-deps — не рекомендация, а защита. Исключения нужно уметь объяснить.'},
- {lvl:'middle',q:'Почему React.memo(Child) не спасает при <Child data={{ name: "John" }} />?',a:'Объект-литерал создаётся заново на каждый render родителя → новый reference → shallow compare props проваливается → Child рендерится. Фиксы: useMemo для объекта, вынос константы из компонента, либо передача примитивов.'},
- {lvl:'middle',q:'Что изменил React 18 в batching?',a:'Автоматический batching везде: внутри Promise, setTimeout, нативных обработчиков — раньше он работал только в обработчиках React. Несколько setState подряд = один re-render. Escape hatch для редких случаев — flushSync.'},
- {lvl:'middle',q:'Когда useMemo / useCallback приносят вред?',a:'Когда вычисление дешёвое: сама мемоизация стоит денег — сравнение deps, память под кэш, сложнее код. Правило: мемоизируем дорогое или то, что уходит в memo-детей / effects / Context. Остальное переживёт re-render.'},
- {lvl:'middle',q:'Bubbling, capturing и делегирование событий?',a:'Событие идёт capture (window → target), потом bubble (target → window). Делегирование — один обработчик на корне, разбор по event.target; React сам так работает, вешая слушатели на root, а не на каждый элемент.'},
- {lvl:'senior',q:'Stale closure в useEffect с window.addEventListener — причина и решения?',a:'handler создан на первом render и захватил тогдашний count; deps=[] → переподписки нет → клик всегда видит старое значение. Фиксы: setCount(prev => prev+1); deps [count] (переподписка); ref с последним значением. Важно назвать все три и trade-offs.'},
- {lvl:'senior',q:'Render phase vs commit phase. При чём тут Fiber?',a:'Render phase — вычисление изменений в памяти, его можно прервать, перезапустить, приоритизировать. Commit — синхронное применение к DOM + layout effects, неделим. Fiber — единица работы, позволяющая резать render на куски и планировать их (concurrent rendering).'},
- {lvl:'senior',q:'Почему серверный state не стоит хранить в Redux / MobX?',a:'Серверные данные — это кэш со своими задачами: синхронизация, инвалидация, retry, stale-while-revalidate, гонки запросов. Храня их в клиент-сторе, ты пишешь TanStack Query вручную. Разделение: server state → Query, UI state → Zustand/Redux/MobX.'},
- {lvl:'senior',q:'Optimistic update: как реализовать и где он ломается?',a:'Меняем кэш до ответа сервера (onMutate), при ошибке — откат на snapshot. Ломается на: гонках ответов, нескольких параллельных оптимистичных мутациях, потере соединения, отсутствии rollback. Нужны queue мутаций и повторная синхронизация.'},
- {lvl:'senior',q:'Context: почему ре-рендерятся все потребители и как с этим жить?',a:'Изменение value ре-рендерит всех useContext-потребителей под провайдером. Меры: разделить контексты (state / actions), memo провайдера, выносить частый state из контекста, либо селекторы через useSyncExternalStore / zustand.'},
- {lvl:'staff',q:'Design a reusable DataTable.',a:'API: columns, data, controlled/uncontrolled режимы сортировки-фильтрации-пагинации; серверный vs клиентский режим; row virtualization для больших данных; состояния loading/error/empty; column config и density; доступность (aria-sort, keyboard nav); адаптер вместо привязки к конкретному API.'},
- {lvl:'staff',q:'Real-time обновления транзакций в кошельке.',a:'Канал: WebSocket/SSE с reconnect + exponential backoff. События не рисуем напрямую, а мержим в кэш TanStack Query (setQueryData / invalidate). Обязательно: троттлинг всплесков событий, порядок и дедупликация, догоняющая синхронизация от курсора после дисконнекта, optimistic-конфликты.'},
- {lvl:'staff',q:'Система permissions на фронтенде.',a:'Permissions приходят с сервера — фронтенд только UX, а не защита. Слой: usePermission() + компонент <Can> / <Allowed to="tx.refund">; route guards; скрытие и disabled-состояния. Единая точка проверки, чтобы UI не расходился; настоящая авторизация — всегда на backend.'},
- {lvl:'staff',q:'«Наше приложение стало медленным» — план действий.',a:'Measure first: Profiler + Performance tab + Lighthouse → локализовать сценарий. Затем: лишние рендеры (why rendered), тяжёлые вычисления, network waterfall, размер бандла. Точечные фиксы (изоляция state, memo, lazy, virtualization, кэш) и повторный замер. Не начинать с «useMemo везде».'}
+/* ---------- 13 mock interview ---------- */
+var QB = [
+  {lvl:"junior",q:"Чем props отличаются от state?",a:"Props — входные данные от родителя, ребёнок не может их менять. State — внутренние данные компонента; изменение через setState запускает re-render. Источник правды всегда один: либо state, либо props, но не оба."},
+  {lvl:"junior",q:"Зачем нужен key при рендере списков?",a:"key — идентичность элемента для reconciliation: React сопоставляет fiber-узлы между рендерами. Без key или с key={index} при reorder/insert ломаются state элементов и анимации — React путает, «какой» это элемент."},
+  {lvl:"junior",q:"Controlled и uncontrolled компоненты — в чём разница?",a:"Controlled: значение живёт в React state (value + onChange), React — источник правды. Uncontrolled: значение в DOM, доступ через ref. Controlled удобнее для валидации и зависимых полей; uncontrolled — для простых форм и интеграций."},
+  {lvl:"junior",q:"Когда запускается useEffect?",a:"После commit phase, когда DOM уже обновлён (обычно после paint) — не во время render. Без deps — после каждого рендера; с [] — только на mount; с [a] — при изменении a. Cleanup запускается перед следующим эффектом и на unmount."},
+  {lvl:"middle",q:"Что произойдёт, если «соврать» в dependency array?",a:"Эффект будет работать со stale closure: устаревшие данные, пропущенные обновления, бесконечные циклы или тихие баги. Поэтому ESLint exhaustive-deps — не рекомендация, а защита. Исключения нужно уметь объяснить."},
+  {lvl:"middle",q:"Почему React.memo(Child) не спасает при inline-объекте в props?",a:"Объект-литерал создаётся заново на каждый render родителя → новый reference → shallow compare props проваливается → Child рендерится. Фиксы: useMemo для объекта, вынос константы из компонента, либо передача примитивов."},
+  {lvl:"middle",q:"Что изменил React 18 в batching?",a:"Автоматический batching везде: внутри Promise, setTimeout, нативных обработчиков — раньше он работал только в обработчиках React. Несколько setState подряд = один re-render. Escape hatch для редких случаев — flushSync."},
+  {lvl:"middle",q:"Когда useMemo / useCallback приносят вред?",a:"Когда вычисление дешёвое: сама мемоизация стоит денег — сравнение deps, память под кэш, сложнее код. Правило: мемоизируем дорогое или то, что уходит в memo-детей / effects / Context. Остальное переживёт re-render."},
+  {lvl:"middle",q:"Bubbling, capturing и делегирование событий?",a:"Событие идёт capture (window → target), потом bubble (target → window). Делегирование — один обработчик на корне, разбор по event.target; React сам так работает, вешая слушатели на root, а не на каждый элемент."},
+  {lvl:"senior",q:"Stale closure в useEffect с window.addEventListener — причина и решения?",a:"handler создан на первом render и захватил тогдашний count; deps=[] → переподписки нет → клик всегда видит старое значение. Фиксы: setCount(prev => prev+1); deps [count] (переподписка); ref с последним значением. Важно назвать все три и trade-offs."},
+  {lvl:"senior",q:"Render phase vs commit phase. При чём тут Fiber?",a:"Render phase — вычисление изменений в памяти, его можно прервать, перезапустить, приоритизировать. Commit — синхронное применение к DOM + layout effects, неделим. Fiber — единица работы, позволяющая резать render на куски и планировать их (concurrent rendering)."},
+  {lvl:"senior",q:"Почему серверный state не стоит хранить в Redux / MobX?",a:"Серверные данные — это кэш со своими задачами: синхронизация, инвалидация, retry, stale-while-revalidate, гонки запросов. Храня их в клиент-сторе, ты пишешь TanStack Query вручную. Разделение: server state → Query, UI state → Zustand/Redux/MobX."},
+  {lvl:"senior",q:"Optimistic update: как реализовать и где он ломается?",a:"Меняем кэш до ответа сервера (onMutate), при ошибке — откат на snapshot. Ломается на: гонках ответов, нескольких параллельных оптимистичных мутациях, потере соединения, отсутствии rollback. Нужны queue мутаций и повторная синхронизация."},
+  {lvl:"senior",q:"Context: почему ре-рендерятся все потребители и как с этим жить?",a:"Изменение value ре-рендерит всех useContext-потребителей под провайдером. Меры: разделить контексты (state / actions), memo провайдера, выносить частый state из контекста, либо селекторы через useSyncExternalStore / zustand."},
+  {lvl:"staff",q:"Design a reusable DataTable.",a:"API: columns, data, controlled/uncontrolled режимы сортировки-фильтрации-пагинации; серверный vs клиентский режим; row virtualization для больших данных; состояния loading/error/empty; column config и density; доступность (aria-sort, keyboard nav); адаптер вместо привязки к конкретному API."},
+  {lvl:"staff",q:"Real-time обновления транзакций в кошельке.",a:"Канал: WebSocket/SSE с reconnect + exponential backoff. События не рисуем напрямую, а мержим в кэш TanStack Query (setQueryData / invalidate). Обязательно: троттлинг всплесков событий, порядок и дедупликация, догоняющая синхронизация от курсора после дисконнекта, optimistic-конфликты."},
+  {lvl:"staff",q:"Система permissions на фронтенде.",a:"Permissions приходят с сервера — фронтенд только UX, а не защита. Слой: usePermission() + компонент Can; route guards; скрытие и disabled-состояния. Единая точка проверки, чтобы UI не расходился; настоящая авторизация — всегда на backend."},
+  {lvl:"staff",q:"«Наше приложение стало медленным» — план действий.",a:"Measure first: Profiler + Performance tab + Lighthouse → локализовать сценарий. Затем: лишние рендеры (why rendered), тяжёлые вычисления, network waterfall, размер бандла. Точечные фиксы (изоляция state, memo, lazy, virtualization, кэш) и повторный замер. Не начинать с «useMemo везде»."}
 ];
-const ORDER={junior:0,middle:1,senior:2,staff:3};
-let queue=[],qi=0,ratings={},weak=[];
-const ivCard=$('#ivCard');
+var ORDER = {junior:0, middle:1, senior:2, staff:3};
+var queue = [], qi = 0, ratings = {}, weak = [];
+var ivCard = $("#ivCard");
+
 function startIV(list){
-  queue=list;qi=0;ratings={};weak=[];
-  if(!queue.length){ivCard.innerHTML='<div class="iv-empty">// пока нет слабых вопросов — сначала прогони сессию</div>';return;}
+  queue = list; qi = 0; ratings = {}; weak = [];
+  if(!queue.length){
+    ivCard.innerHTML = '<div class="iv-empty">// пока нет слабых вопросов — сначала прогони сессию</div>';
+    return;
+  }
   renderQ();
 }
-$('#ivStart').addEventListener('click',()=>{
-  const v=$('#ivLevel').value;
-  let list;
-  if(v==='all')list=[...QB].sort((a,b)=>ORDER[a.lvl]-ORDER[b.lvl]);
-  else if(v==='weak')list=QB.filter(q=>weak.includes(q.q));
-  else list=QB.filter(q=>q.lvl===v);
+$("#ivStart").addEventListener("click", function(){
+  var v = $("#ivLevel").value, list;
+  if(v === "all"){ list = QB.slice().sort(function(a,b){ return ORDER[a.lvl] - ORDER[b.lvl]; }); }
+  else if(v === "weak"){ list = QB.filter(function(q){ return weak.indexOf(q.q) !== -1; }); }
+  else { list = QB.filter(function(q){ return q.lvl === v; }); }
   startIV(list);
 });
 function renderQ(){
-  const q=queue[qi];
-  $('#ivProg').textContent='вопрос '+(qi+1)+' / '+queue.length;
-  ivCard.innerHTML='<div><span class="lvlb '+q.lvl+'">'+q.lvl+'</span></div><div class="iv-q">'+q.q+'</div><div class="iv-ans" id="ivAns">'+q.a+'</div><button class="btn sm" id="ivShow">👁 Показать эталонный ответ</button><div class="iv-rate" id="ivRate"><button class="ratebtn r2">✓ Уверенно · 2</button><button class="ratebtn r1">~ Частично · 1</button><button class="ratebtn r0">✗ Слабо · 0</button></div>';
-  $('#ivShow').addEventListener('click',function(){this.style.display='none';$('#ivAns').classList.add('show');$('#ivRate').classList.add('show');});
-  $$('#ivRate .ratebtn').forEach((b,i)=>b.addEventListener('click',()=>{
-    const pts=2-i;ratings[q.q]=pts;if(pts===0)weak.push(q.q);
-    qi++;qi<queue.length?renderQ():summary();
-  }));
+  var q = queue[qi];
+  $("#ivProg").textContent = "вопрос " + (qi + 1) + " / " + queue.length;
+  ivCard.innerHTML = '<div><span class="lvlb ' + q.lvl + '">' + q.lvl + '</span></div>' +
+    '<div class="iv-q">' + q.q + '</div>' +
+    '<div class="iv-ans" id="ivAns">' + q.a + '</div>' +
+    '<button class="btn sm" id="ivShow">👁 Показать эталонный ответ</button>' +
+    '<div class="iv-rate" id="ivRate"><button class="ratebtn r2">✓ Уверенно · 2</button><button class="ratebtn r1">~ Частично · 1</button><button class="ratebtn r0">✗ Слабо · 0</button></div>';
+  $("#ivShow").addEventListener("click", function(){
+    this.style.display = "none";
+    $("#ivAns").classList.add("show");
+    $("#ivRate").classList.add("show");
+  });
+  $$("#ivRate .ratebtn").forEach(function(b, i){
+    b.addEventListener("click", function(){
+      var pts = 2 - i;
+      ratings[q.q] = pts;
+      if(pts === 0) weak.push(q.q);
+      qi++;
+      if(qi < queue.length) renderQ(); else summary();
+    });
+  });
 }
 function summary(){
-  $('#ivProg').textContent='сессия завершена';
-  const total=Object.values(ratings).reduce((a,b)=>a+b,0),max=queue.length*2;
-  const by={};queue.forEach(q=>{by[q.lvl]=by[q.lvl]||[0,0];by[q.lvl][0]+=ratings[q.q];by[q.lvl][1]+=2;});
-  const pct=Math.round(total/max*100);
-  if(pct>store.get('quiz',0)){store.set('quiz',pct);}
-  ivCard.innerHTML='<div class="iv-summary"><h3>// Результат сессии</h3><div class="score">'+total+' / '+max+'</div>'+
-   Object.keys(by).map(k=>'<div class="sumrow"><span>'+k.toUpperCase()+'</span><b>'+by[k][0]+' / '+by[k][1]+'</b></div>').join('')+
-   '<div class="sumrow"><span>readiness contribution</span><b>'+pct+'% of quiz weight</b></div>'+
-   (weak.length?'<p style="margin-top:14px;color:var(--rose);font-size:13.5px">Слабые вопросы ('+weak.length+'): прогони их через «Только слабые».</p>':'<p style="margin-top:14px;color:var(--green);font-size:13.5px">Слабых вопросов нет. Мощно.</p>')+
-   '<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn sm" id="again">↻ Ещё раз</button>'+(weak.length?'<button class="btn primary sm" id="weakBtn">Прицелиться по слабым</button>':'')+'</div></div>';
-  $('#again').addEventListener('click',()=>startIV(queue));
-  const wb=$('#weakBtn');if(wb)wb.addEventListener('click',()=>startIV(QB.filter(q=>weak.includes(q.q))));
+  $("#ivProg").textContent = "сессия завершена";
+  var total = 0, max = queue.length * 2;
+  Object.keys(ratings).forEach(function(k){ total += ratings[k]; });
+  var by = {};
+  queue.forEach(function(q){
+    by[q.lvl] = by[q.lvl] || [0,0];
+    by[q.lvl][0] += ratings[q.q];
+    by[q.lvl][1] += 2;
+  });
+  var pct = Math.round(total / max * 100);
+  if(pct > store.get("quiz", 0)) store.set("quiz", pct);
+  var html = '<div class="iv-summary"><h3>// Результат сессии</h3><div class="score">' + total + ' / ' + max + '</div>';
+  Object.keys(by).forEach(function(k){
+    html += '<div class="sumrow"><span>' + k.toUpperCase() + '</span><b>' + by[k][0] + ' / ' + by[k][1] + '</b></div>';
+  });
+  html += '<div class="sumrow"><span>readiness contribution</span><b>' + pct + '% of quiz weight</b></div>';
+  html += weak.length
+    ? '<p style="margin-top:14px;color:var(--rose);font-size:13.5px">Слабые вопросы (' + weak.length + '): прогони их через «Только слабые».</p>'
+    : '<p style="margin-top:14px;color:var(--green);font-size:13.5px">Слабых вопросов нет. Мощно.</p>';
+  html += '<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn sm" id="again">↻ Ещё раз</button>' +
+    (weak.length ? '<button class="btn primary sm" id="weakBtn">Прицелиться по слабым</button>' : '') + '</div></div>';
+  ivCard.innerHTML = html;
+  $("#again").addEventListener("click", function(){ startIV(queue); });
+  var wb = $("#weakBtn");
+  if(wb) wb.addEventListener("click", function(){ startIV(QB.filter(function(q){ return weak.indexOf(q.q) !== -1; })); });
   recompute();
 }
 
-/* ================= status bar tips ================= */
-const TIPS=['measure first, optimize second','useEffect runs after commit, not during render','server state ≠ client state','key is identity, not position','stale closure: the handler remembers the first render','don\'t test implementation details','Fiber makes rendering interruptible','unknown > any','memo is a tool, not a ritual','re-render itself is not the problem — wasted re-render is'];
-let ti=0;setInterval(()=>{const el=$('#sbTip');el.style.opacity=0;setTimeout(()=>{ti=(ti+1)%TIPS.length;el.textContent=TIPS[ti];el.style.opacity=1;},400);},6000);
+/* ---------- status bar tips ---------- */
+var TIPS = [
+  "measure first, optimize second",
+  "useEffect runs after commit, not during render",
+  "server state is a cache, not a store",
+  "key is identity, not position",
+  "stale closure: the handler remembers the first render",
+  "test behaviour, not implementation details",
+  "Fiber makes rendering interruptible",
+  "unknown > any",
+  "memo is a tool, not a ritual",
+  "wasted re-render is the problem, not re-render"
+];
+var ti = 0;
+setInterval(function(){
+  var el = $("#sbTip");
+  el.style.opacity = 0;
+  setTimeout(function(){
+    ti = (ti + 1) % TIPS.length;
+    el.textContent = TIPS[ti];
+    el.style.opacity = 1;
+  }, 400);
+}, 6000);
 
 recompute();
 </script>
