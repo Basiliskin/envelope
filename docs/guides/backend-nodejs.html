@@ -804,6 +804,85 @@ parentPort.postMessage(scryptSync(workerData, 'salt', 64).toString('hex'));</pre
     </div>
   </div>
 
+  <div class="codewin rv"><div class="cbar"><span class="cname">producer-consumer.ts — the lab, written as real promises + timers</span></div><pre class="src">// What the lab simulates: a producer faster than its consumer, and the
+// "wait for drain" handshake that keeps memory bounded. Plain async/await,
+// setTimeout, and a small queue — no DOM. The shape is exactly what
+// readable.on('data') → writable.write() does for you inside pipeline().
+
+const HWM = 16;            // highWaterMark — pause producer above this
+const PRODUCER_HZ = 45;    // emit rate  (the fast side)
+const CONSUMER_HZ = 12;    // drain rate (the slow side — backpressure builds)
+
+const queue: string[] = [];
+const waiting: Array&lt;() =&gt; void&gt; = [];   // producers paused, waiting for drain
+
+const sleep = (ms: number) =&gt; new Promise(r =&gt; setTimeout(r, ms));
+
+async function producer(): Promise&lt;void&gt; {
+  let i = 0;
+  while (true) {
+    await sleep(1000 / PRODUCER_HZ);            // ⏱ emit on a timer
+
+    if (queue.length &gt;= HWM) {                  // ⛔ buffer full → backpressure
+      await new Promise&lt;void&gt;(r =&gt; waiting.push(r));
+    }
+    queue.push(`chunk-${i++}`);
+  }
+}
+
+async function consumer(): Promise&lt;void&gt; {
+  while (true) {
+    await sleep(1000 / CONSUMER_HZ);            // ⏱ consume on a slower timer
+    const item = queue.shift();
+    if (!item) continue;
+    await processItem(item);                    // your real handler
+
+    if (queue.length &lt; HWM &amp;&amp; waiting.length &gt; 0) {
+      waiting.shift()!();                       // ⏬ drained → resume one producer
+    }
+  }
+}
+
+// ❌ Without backpressure: just queue.push(...) and let memory grow.
+// At 45 emits/sec with a stalled consumer you buffer 2,700 chunks per minute.
+// For real streams that's gigabytes of RAM and an OOM kill at 3am.
+Promise.all([producer(), consumer()]);
+let buffer=0, prod=45, cons=12, bpOn=true, paused=false, dead=false, last=performance.now();
+const log=$('bpLog');
+const lg=t=&gt;{ log.insertAdjacentHTML('afterbegin','&lt;div&gt;'+t+'&lt;/div&gt;');
+  while(log.children.length&gt;5) log.lastChild.remove(); };
+
+function frame(now){
+  const dt=Math.min(0.1,(now-last)/1000); last=now;
+  if(!dead){
+    if(paused){
+      if(buffer&lt;=HWM*0.4){ paused=false;
+        lg('⬇ drained below 40% of HWM → &lt;b&gt;resume&lt;/b&gt; producer'); }
+    } else {
+      buffer += prod*dt;
+      if(bpOn &amp;&amp; buffer&gt;=HWM){ buffer=HWM; paused=true;
+        lg('⚠ write() returned false at highWaterMark → &lt;b&gt;pause&lt;/b&gt; producer'); }
+    }
+    buffer -= cons*dt;
+    if(buffer&lt;0) buffer=0;
+    if(!bpOn &amp;&amp; buffer&gt;=CAP){ buffer=CAP; dead=true;
+      $('bpCrash').hidden=false;
+      lg('💥 heap limit reached — process would OOM'); }
+  }
+  const f=$('bpFill'); f.style.width=buffer+'%';
+  f.className='bpfill'+(buffer&gt;=HWM?' hot':buffer&gt;=HWM*0.7?' warm':'');
+  $('bpLvl').textContent=Math.round(buffer)+' / '+CAP+' chunks'+(paused?' · PRODUCER PAUSED':'');
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+$('bpProd').oninput =e=&gt;{ prod=+e.target.value; $('bpProdv').textContent=prod; };
+$('bpCons').oninput =e=&gt;{ cons=+e.target.value; $('bpConsv').textContent=cons; };
+$('bpOnChk').onchange=e=&gt;{ bpOn=e.target.checked;
+  lg(bpOn ? 'backpressure handling ON' : 'backpressure handling OFF — buffer is now unbounded'); };
+$('bpReset').onclick=()=&gt;{ buffer=0; dead=false; paused=false;
+  $('bpCrash').hidden=true; log.innerHTML=''; };</pre></div>
+
   <div class="dd rv">
     <div class="dd-col bad"><div class="dd-h">✗ DON'T — buffer the whole file</div>
       <div class="codewin"><div class="cbar"><span class="cname">whole-file.ts</span></div><pre class="src">const data = await fs.readFile('4gb-video.mp4'); // RAM explodes
@@ -1001,6 +1080,70 @@ process.on('SIGTERM', () =&gt; shutdown(0));  // k8s sends SIGTERM, then SIGKILL
     </div>
   </div>
 
+  <div class="codewin rv"><div class="cbar"><span class="cname">undici-agent.ts — a real connection pool that amortizes handshakes</span></div><pre class="src">// undici is the client behind Node's built-in fetch() (Node 18+). Pass an
+// Agent to fetch() (or install it globally) and TCP+TLS handshakes are
+// reused across requests. Built-in http/https do the same via http.Agent({ keepAlive: true }).
+
+import { Agent, fetch, setGlobalDispatcher } from 'undici';
+
+// ✅ ONE Agent, reused across the whole process — 10 requests, 1 TCP, 1 TLS
+const agent = new Agent({
+  keepAliveTimeout: 30_000,    // hold idle sockets for 30s before closing
+  connections: 50,             // per-origin pool size
+  pipelining: 1,               // requests per socket (1 is safe for HTTP/1.1)
+});
+setGlobalDispatcher(agent);    // affects every fetch() in the process
+
+const responses = await Promise.all(
+  Array.from({ length: 10 }, () =&gt; fetch('https://api.example.com/items')),
+);
+
+// ❌ Without pooling — 10 fresh TCP+TLS per request, ~10× the latency,
+// and the remote bears the cost of the handshakes too. This is one of the
+// most common senior-level performance bugs in Node services.
+const slow = await Promise.all(
+  Array.from({ length: 10 }, () =&gt; fetch('https://api.example.com/items')), // new socket each call
+);
+const KA1 = [                  // no keep-alive: TCP+TLS before every request
+  ['TCP',120],['TLS',140],['GET /a',40],
+  ['TCP',120],['TLS',140],['GET /b',40],
+  ['TCP',120],['TLS',140],['GET /c',40],
+];
+const KA2 = [                  // keep-alive: handshakes amortized across the pool
+  ['TCP',120],['TLS',140],
+  ['GET /a',40],['GET /b',40],['GET /c',40],
+];
+const tot = a =&gt; a.reduce((s,x) =&gt; s+x[1], 0);
+
+function play(el, segs, delayBase){
+  el.innerHTML=''; let cum=0;
+  segs.forEach((s,i) =&gt; {
+    const start=cum; cum += s[1];
+    setTimeout(() =&gt; {
+      const d = document.createElement('div');
+      d.className = 'ka-seg ' + (
+        s[0]==='GET /a'||s[0]==='GET /b'||s[0]==='GET /c' ? 'r' : 'h'  // r=request, h=handshake
+      );
+      d.style.width = (s[1]*0.55)+'px';
+      d.title = s[0]+' · '+s[1]+'ms';
+      d.textContent = s[0];
+      el.appendChild(d);
+    }, delayBase + start*1.6);
+  });
+  return cum;
+}
+
+$('kaRun').onclick = () =&gt; {
+  const t1 = play($('ka1'), KA1, 0);
+  const t2 = play($('ka2'), KA2, 0);
+  setTimeout(() =&gt; {
+    $('kaTotals').innerHTML =
+      'total without keep-alive: &lt;b style="color:var(--bad)"&gt;'+t1+'ms&lt;/b&gt; · ' +
+      'with keep-alive: &lt;b style="color:var(--good)"&gt;'+t2+'ms&lt;/b&gt; ' +
+      '— six handshake round-trips saved';
+  }, t1*1.6 + 300);
+};</pre></div>
+
   <h3 class="blk rv">Status codes — click any</h3>
   <div class="scgrid rv" id="scGrid"></div>
   <div id="scDetail" class="rv">← pick a code</div>
@@ -1024,6 +1167,55 @@ process.on('SIGTERM', () =&gt; shutdown(0));  // k8s sends SIGTERM, then SIGKILL
       <p class="tx" style="margin-top:10px"><code class="il">delay = min(base × 2ⁿ, cap) × jitter</code>. Jitter is not decoration — synchronized retries from 1000 clients without it create a thundering herd that re-crashes the service you're trying to save.</p>
     </div>
   </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">with-retry.ts — drop-in async wrapper, capped exponential + jitter</span></div><pre class="src">// The lab's formula, as a real wrapper you can drop around any async call.
+// Same shape lives in cockatiel, p-retry, axios-retry, Bottleneck.
+
+type RetryOpts = {
+  maxAttempts?: number;
+  base?: number;          // ms — base delay
+  cap?: number;           // ms — ceiling so it can't grow forever
+  jitter?: boolean;
+  shouldRetry?: (e: unknown) =&gt; boolean;
+};
+
+export async function withRetry&lt;T&gt;(
+  fn: () =&gt; Promise&lt;T&gt;,
+  {
+    maxAttempts = 5,
+    base = 200,
+    cap  = 5_000,
+    jitter = true,
+    shouldRetry = () =&gt; true,
+  }: RetryOpts = {},
+): Promise&lt;T&gt; {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt &lt;= maxAttempts; attempt++) {
+    try { return await fn(); }
+    catch (e) {
+      lastErr = e;
+      if (attempt === maxAttempts || !shouldRetry(e)) throw e;
+
+      //   delay = min(base * 2^(n-1), cap)   ← capped exponential
+      //          * (0.5 + random() * 0.5)    ← 50–100% jitter
+      const exp   = Math.min(base * 2 ** (attempt - 1), cap);
+      const delay = jitter ? Math.round(exp * (0.5 + Math.random() * 0.5)) : exp;
+      await new Promise(r =&gt; setTimeout(r, delay));
+    }
+  }
+  throw lastErr;
+}
+
+// Usage: retry ONLY retriable failures (network / 5xx / 429 / timeout),
+// never 4xx, never non-idempotent writes without an Idempotency-Key.
+try {
+  const data = await withRetry(
+    () =&gt; fetch(url, { signal: AbortSignal.timeout(2_500) }).then(r =&gt; r.json()),
+    { shouldRetry: e =&gt; e instanceof TypeError /* fetch network failure */ },
+  );
+} catch (e) {
+  // retries exhausted → dead-letter, alert, surface to caller — never silent.
+}</pre></div>
 
   <div class="dd rv">
     <div class="dd-col bad"><div class="dd-h">✗ DON'T — requests that never end</div>
@@ -1055,6 +1247,55 @@ process.on('SIGTERM', () =&gt; shutdown(0));  // k8s sends SIGTERM, then SIGKILL
       <p class="tx" style="font-size:12.5px">Each request spends a token; tokens refill over time. Burst above capacity and the excess gets <code class="il">429</code>. Variants you should name: token bucket (this), leaky bucket (constant outflow), sliding window counters (Redis-friendly).</p>
     </div>
   </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">token-bucket.ts — per-key limiter with time-based refill</span></div><pre class="src">// The lab's dots, expressed as a real limiter. Refill is computed from
+// elapsed wall-clock time, not from a tick counter, so it works under
+// any event rate. Swap the Map for Redis (INCR + EXPIRE) to scale out.
+
+class TokenBucket {
+  private tokens: number;
+  private lastRefill: number;
+
+  constructor(
+    private readonly capacity: number,         // max burst
+    private readonly refillPerSec: number,     // sustained rate
+  ) {
+    this.tokens     = capacity;
+    this.lastRefill = Date.now();
+  }
+
+  take(n = 1): boolean {
+    this.refill();
+    if (this.tokens &lt; n) return false;         // over budget → 429
+    this.tokens -= n;
+    return true;
+  }
+
+  private refill() {
+    const now = Date.now();
+    const elapsedSec = (now - this.lastRefill) / 1000;
+    this.tokens     = Math.min(this.capacity, this.tokens + elapsedSec * this.refillPerSec);
+    this.lastRefill = now;
+  }
+}
+
+// Per-IP limiter — lab defaults: capacity 8, refill 2/sec
+const buckets = new Map&lt;string, TokenBucket&gt;();
+export function rateLimit(ip: string): boolean {
+  let b = buckets.get(ip);
+  if (!b) { b = new TokenBucket(8, 2); buckets.set(ip, b); }
+  return b.take();
+}
+
+// HTTP handler:
+if (!rateLimit(req.ip)) {
+  return res.status(429).set('Retry-After', '1').send('rate limited');
+}
+
+// Other buckets you'll be asked about:
+//   leaky bucket   → constant outflow (smoother, more buffering)
+//   sliding-window → Redis-friendly counters (ZADD/ZREMRANGEBYSCORE)
+//   fixed window   → cheapest, susceptible to burst-at-boundary</pre></div>
 </section>
 
 <!-- NETWORKING -->
@@ -1101,6 +1342,39 @@ process.on('SIGTERM', () =&gt; shutdown(0));  // k8s sends SIGTERM, then SIGKILL
       <div class="csteps" id="caSteps"></div>
     </div>
   </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">cache-aside.ts — single-flight + TTL jitter, the production shape</span></div><pre class="src">// The lab's MISS and HIT paths, wired into one function. Two details that
+// turn "works in dev" into "doesn't fall over in prod":
+//   (1) SINGLE-FLIGHT — 1,000 concurrent misses collapse to ONE DB hit.
+//   (2) TTL + JITTER   — expiries don't sync, so no stampede on the key.
+
+type CacheEntry&lt;T&gt; = { value: T; expiresAt: number };
+
+const cache    = new Map&lt;string, CacheEntry&lt;unknown&gt;&gt;();
+const inflight = new Map&lt;string, Promise&lt;unknown&gt;&gt;();
+
+export async function getUser(id: string): Promise&lt;User&gt; {
+  // 🟢 HIT — fast path
+  const hit = cache.get(id);
+  if (hit &amp;&amp; hit.expiresAt &gt; Date.now()) return hit.value as User;
+
+  // 🔒 SINGLE-FLIGHT — only ONE in-flight load per key
+  const pending = inflight.get(id);
+  if (pending) return pending as Promise&lt;User&gt;;
+
+  const p = loadUserFromDb(id).then(user =&gt; {
+    // SET with TTL + jitter so expiries don't sync (stampede defence)
+    const ttl = 60_000 + Math.floor(Math.random() * 10_000);
+    cache.set(id, { value: user, expiresAt: Date.now() + ttl });
+    return user;
+  }).finally(() =&gt; inflight.delete(id));
+
+  inflight.set(id, p);
+  return p;
+}
+
+// In Redis:  GET key → hit. Else SET key val PX <ttl+rand> NX (lock) → load → SET key val PX ttl.
+// Stampede-free invalidation: pre-warm a new key BEFORE deleting the old one.</pre></div>
 
   <div class="lab rv">
     <div class="lab-h"><span class="pulse"></span> LAB — LRU CACHE (capacity-limited, recency-ordered)</div>
@@ -1511,6 +1785,48 @@ Now what? You owe the system an ANSWER for this moment.</pre></div>
     </div>
   </div>
 
+  <div class="codewin rv"><div class="cbar"><span class="cname">saga.ts — orchestrator: forward steps, reverse compensations</span></div><pre class="src">// Real-world: forward through the steps; on any failure, run the
+// compensations in REVERSE order. Use when each step is in a different
+// service / DB and you can't take a single 2-phase-commit lock across them.
+
+type Step = {
+  name: string;
+  do:   () =&gt; Promise&lt;void&gt;;   // local transaction
+  undo: () =&gt; Promise&lt;void&gt;;   // compensating transaction
+};
+
+export async function runSaga(steps: Step[]): Promise&lt;void&gt; {
+  const done: Step[] = [];
+  try {
+    for (const step of steps) {
+      await step.do();           // forward: commit each local transaction
+      done.push(step);
+    }
+  } catch (e) {
+    // compensate in REVERSE; log but don't rethrow — we still try every undo
+    for (const step of [...done].reverse()) {
+      try { await step.undo(); }
+      catch (e2) { logger.error({ err: e2, step: step.name }, 'compensation failed'); }
+    }
+    throw e;                     // surface the original failure to the caller
+  }
+}
+
+// Concrete order flow — the same four steps the lab walks through:
+await runSaga([
+  { name: 'create-order',   do: () =&gt; db.orders.insert(order),
+                              undo: () =&gt; db.orders.delete(order.id) },
+  { name: 'reserve-stock',  do: () =&gt; inventory.hold(items),
+                              undo: () =&gt; inventory.release(items) },
+  { name: 'charge-payment', do: () =&gt; stripe.charge(card, amount),
+                              undo: () =&gt; stripe.refund(chargeId) },
+  { name: 'send-email',     do: () =&gt; mailer.send(to, template),
+                              undo: async () =&gt; {
+                                // emails aren't compensatable — write to outbox
+                                await db.outbox.insert({ topic: 'mail', payload: { ... } });
+                              } },
+]);</pre></div>
+
   <div class="g2 rv">
     <div class="card"><h4>Saga</h4><p>A chain of local transactions, each with a <b>compensating action</b>. Orchestration (one coordinator — easier to reason about) vs choreography (services react to events — looser coupling, harder to see the whole flow).</p></div>
     <div class="card"><h4>Outbox pattern</h4><p>Write the domain change AND the event into the <b>same DB transaction</b>; a relay (poller / CDC / Debezium) publishes the event afterwards. Kills the "saved but never published" dual-write bug.</p></div>
@@ -1542,6 +1858,64 @@ Now what? You owe the system an ANSWER for this moment.</pre></div>
       <p class="tx" style="margin-top:8px">CLOSED → traffic flows. OPEN → requests fail <b class="k">instantly</b> without touching the sick service (that fast-fail is the whole point: it stops pile-ups). HALF-OPEN after the cooldown lets one probe through. Flip failure rate to 0% and watch recovery.</p>
     </div>
   </div>
+
+  <div class="codewin rv"><div class="cbar"><span class="cname">circuit-breaker.ts — full CLOSED / OPEN / HALF_OPEN state machine</span></div><pre class="src">// Wrap every outbound call to a dependency that can fail loudly. Lab
+// defaults: trip at 3 fails in the last 5 calls, OPEN for 4s, then
+// HALF_OPEN lets one probe through. Same shape: cockatiel, opossum.
+
+type State = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+
+export class CircuitBreaker {
+  state: State = 'CLOSED';
+  private history: boolean[] = [];          // true = fail (rolling window)
+  private openedAt = 0;
+
+  constructor(private opts: {
+    failureThreshold: number;     // open after N fails in window
+    windowSize: number;           // rolling window length
+    cooldownMs: number;           // OPEN duration before HALF_OPEN probe
+  }) {}
+
+  async exec&lt;T&gt;(fn: () =&gt; Promise&lt;T&gt;): Promise&lt;T&gt; {
+    // OPEN → fast-fail WITHOUT touching the sick service (the whole point)
+    if (this.state === 'OPEN' &amp;&amp; Date.now() - this.openedAt &lt; this.opts.cooldownMs) {
+      throw new Error('breaker OPEN — fast-fail, no network call');
+    }
+    if (this.state === 'OPEN') this.state = 'HALF_OPEN';    // cooldown elapsed → probe
+
+    try {
+      const out = await fn();
+      this.recordSuccess();
+      return out;
+    } catch (e) {
+      this.recordFailure();
+      throw e;
+    }
+  }
+
+  private recordSuccess() {
+    if (this.state === 'HALF_OPEN') { this.state = 'CLOSED'; this.history = []; }
+    else this.history.push(false);
+  }
+  private recordFailure() {
+    this.history.push(true);
+    if (this.history.length &gt; this.opts.windowSize) this.history.shift();
+    // trip on threshold OR on a failed probe
+    if (this.state === 'HALF_OPEN'
+      || this.history.filter(Boolean).length &gt;= this.opts.failureThreshold) {
+      this.state    = 'OPEN';
+      this.openedAt = Date.now();
+    }
+  }
+}
+
+// Use: wrap every dependency, layer with timeouts, have a fallback ready.
+const breaker = new CircuitBreaker({ failureThreshold: 3, windowSize: 5, cooldownMs: 4_000 });
+try {
+  return await breaker.exec(() =&gt; fetch(sickUrl, { signal: AbortSignal.timeout(2_000) }));
+} catch (e) {
+  return fallback();   // serve stale, degrade gracefully, return 503
+}</pre></div>
 
   <div class="signal rv"><b>🎯 THE SENIOR ANSWER, OUT LOUD</b> "I'd make each step idempotent, drive the flow with an orchestrator saga backed by an outbox so no event is lost, put timeouts and a circuit breaker on every outbound call, dead-letter anything that fails repeatedly, and accept eventual consistency — with compensations for everything reversible and retries for everything that isn't."</div>
 </section>
