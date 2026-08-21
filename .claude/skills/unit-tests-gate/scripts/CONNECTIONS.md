@@ -12,15 +12,15 @@ flowchart TD
 
 ## Inbound index
 
-| File | Inbound | Top importers |
-|------|---------|---------------|
-| `check-tests.mjs` | 0 |  |
+| File              | Inbound | Top importers |
+| ----------------- | ------- | ------------- |
+| `check-tests.mjs` | 0       |               |
 
 ## Outbound index
 
-| File | Outbound | Top dependencies |
-|------|----------|------------------|
-| `check-tests.mjs` | 0 |  |
+| File              | Outbound | Top dependencies |
+| ----------------- | -------- | ---------------- |
+| `check-tests.mjs` | 0        |                  |
 
 ## Findings
 
